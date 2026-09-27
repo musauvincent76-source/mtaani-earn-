@@ -7,6 +7,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Orbitron:wght@700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -30,6 +31,9 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 .link{color:#ffcc00;font-size:11px;cursor:pointer;text-decoration:underline;margin-top:8px;display:inline-block}
 .rule-box{background:#1a2332;border-left:3px solid #ffcc00;padding:10px;border-radius:8px;margin:8px 0;font-size:11px;line-height:1.5}
 .countdown{background:#000;border:1px solid #ffcc00;padding:8px;border-radius:8px;text-align:center;margin:8px 0}
+/* --- ADDED CLASSIC QR STYLE --- */
+.qr-gold-box{border:3px solid gold;background:#000;padding:10px;border-radius:14px;text-align:center;margin:10px 0;position:relative}
+.qr-gold-box img{width:110px;height:110px;border:4px solid #fff;border-radius:10px;background:#fff}
 </style>
 </head>
 <body>
@@ -63,12 +67,29 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 <div style="display:flex;gap:24px;margin-top:14px"><div><p style="font-size:11px;color:#aaa">BALANCE</p><h2 id="balMain" style="color:#ffcc00">KES 0</h2></div><div><p style="font-size:11px;color:#aaa">STATUS</p><b id="statusText">ACTIVE</b><p id="expiryText" style="font-size:10px;color:#aaa"></p></div></div>
 <button class="btn btn-dark" style="padding:8px;font-size:11px;margin-top:12px" onclick="logout()">LOGOUT</button>
 </div>
+
+<div id="ownerQRPanel" style="display:none" class="box qr-gold-box">
+<h3 style="color:gold">👑 OWNER QR CONTROL</h3>
+<p style="font-size:11px;color:#aaa">Badilisha QR Code - Watu wa jana wote FAKE</p>
+<input id="newQrCodeInput" placeholder="MTAANI ORIGINAL | CODE: XT9-2026 | VERIFIED">
+<button class="btn btn-yellow" onclick="updateQrCode()">UPDATE QR LEO</button>
+<p id="qrUpdateMsg" style="font-size:11px;color:#00ff88;margin-top:6px"></p>
+</div>
+
 <div class="grid">
 <div class="box" style="margin:0;text-align:center"><p style="font-size:11px;font-weight:700">DAILY CHECK-IN</p><div class="spin" onclick="doCheckin()">CHECK IN</div><p style="font-size:11px;color:#00ff88">+10 per day</p></div>
 <div class="box" style="margin:0;text-align:center;opacity:0.7"><p style="font-size:11px;font-weight:700">SPIN & WIN <span class="tag tag-soon">SOON</span></p><div class="spin" style="border-color:#555" onclick="showComingSoon('Spin & Win')">SOON</div><p style="font-size:11px;color:#aaa">Coming Soon</p></div>
 </div>
 <div class="box" id="freeTasks" style="border:2px solid #ffcc00">
 <h4>Mtaani Adverts / Feeds <span class="tag tag-free">OPEN</span> <span class="tag tag-new">3 BOB/VIEW</span></h4>
+
+<div class="qr-gold-box" id="officialQRBox">
+<p style="font-size:10px;color:gold;font-weight:900;letter-spacing:1px">🔐 OFFICIAL QR - SCAN TO VERIFY</p>
+<img id="qrTodayImg" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=MTAANI%20ORIGINAL%20CODE%20XT9-2026%20VERIFIED" alt="QR">
+<p id="qrCodeText" style="font-size:9px;color:#fff;margin-top:6px;background:#1a2332;padding:4px;border-radius:6px">MTAANI ORIGINAL | CODE: XT9-2026 | VERIFIED</p>
+<p style="font-size:8px;color:#ff6600;margin-top:4px">Weka hii QR kwa Status yako! Bila hii = FAKE</p>
+</div>
+
 <div class="rule-box">
 <b style="color:#ffcc00">📌 OFFICIAL RULES - OWNER 0703182307 UNLIMITED:</b><br>
 1. Rate: <b>3 KES per view</b><br>
@@ -79,7 +100,8 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 6. Typed views must match views in screenshot - OCR checks<br>
 7. Same screenshot cannot be reused<br>
 8. After 2 view submissions OR 2 shares, dashboard locks - Pay 80 to unlock all<br>
-9. Free 2x is ONLY for direct users - Referred users PAY 80 directly
+9. Free 2x is ONLY for direct users - Referred users PAY 80 directly<br>
+10. <b style="color:gold">NEW: Screenshot MUST show OFFICIAL GOLD QR - No QR = FAKE</b>
 </div>
 <div class="countdown">
 <p style="font-size:10px;color:#aaa">WHATSAPP STATUS EXPIRES IN</p>
@@ -87,7 +109,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 <p style="font-size:9px;color:#ff6600">Submit before expiry!</p>
 </div>
 <div class="task"><span>1. Full Screenshot of WhatsApp Status</span><span class="tag tag-free">REQUIRED</span></div>
-<p style="font-size:10px;color:#aaa;margin:4px 0">Must show entire screen with time at top. Do not crop.</p>
+<p style="font-size:10px;color:#aaa;margin:4px 0">Must show entire screen with time at top + GOLD QR. Do not crop.</p>
 <input type="file" id="fileFree" accept="image/*">
 <div class="task"><span>2. When did you post? (Date & Time)</span></div>
 <input id="postedTime" type="datetime-local">
@@ -95,7 +117,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 <input id="viewsCount" type="number" placeholder="Enter views - Max 53">
 <div style="margin-top:10px;background:#0f172a;padding:10px;border-radius:8px">
 <label style="font-size:11px;display:flex;align-items:center;gap:8px"><input type="checkbox" id="notEdited" style="width:auto"> I confirm this screenshot is NOT edited/cropped and shows full screen with time</label>
-<label style="font-size:11px;display:flex;align-items:center;gap:8px;margin-top:6px"><input type="checkbox" id="fullScreen" style="width:auto"> This is FULL screenshot - Time is visible at top</label>
+<label style="font-size:11px;display:flex;align-items:center;gap:8px;margin-top:6px"><input type="checkbox" id="fullScreen" style="width:auto"> This is FULL screenshot - Time is visible at top + GOLD QR visible</label>
 </div>
 <button class="btn btn-yellow" onclick="submitViews()" id="viewBtn">SUBMIT VIEWS (3 KES each)</button>
 <div id="myViewsStatus" style="margin-top:8px"></div>
@@ -146,6 +168,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 let currentPhone = localStorage.getItem('mt_current_phone') || '';
 let currentData = null;
+let CURRENT_QR_TEXT = "MTAANI ORIGINAL | CODE: XT9-2026 | VERIFIED";
 // --- OWNER UNLIMITED ---
 const OWNER_PHONES = ["0703182307","703182307"];
 function isOwner(phone){ if(!phone) return false; let p=phone.trim().replace(/\s+/g,''); if(p.startsWith('+254')) p='0'+p.slice(4); if(p.startsWith('254')) p='0'+p.slice(3); return p.includes('703182307') || OWNER_PHONES.includes(p); }
@@ -155,6 +178,51 @@ function getDeviceId(){ let id = localStorage.getItem('mt_device_id'); if(!id){ 
 function showComingSoon(name){ alert('🚧 Coming Soon! - '+name+' Coming Soon'); }
 function showLogin(){document.getElementById('loginBox').style.display='block';}
 function showRegister(){document.getElementById('loginBox').style.display='none';}
+
+// --- QR SYSTEM ---
+async function loadOfficialQR(){
+  try{
+    const doc = await db.collection('config').doc('qr_code').get();
+    if(doc.exists){
+      CURRENT_QR_TEXT = doc.data().text;
+    }
+    document.getElementById('qrCodeText').innerText = CURRENT_QR_TEXT;
+    document.getElementById('qrTodayImg').src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="+encodeURIComponent(CURRENT_QR_TEXT);
+    if(isOwner(currentPhone)){
+      document.getElementById('newQrCodeInput').value = CURRENT_QR_TEXT;
+    }
+  }catch(e){ console.log("QR load error", e); }
+}
+async function updateQrCode(){
+  const newText = document.getElementById('newQrCodeInput').value.trim();
+  if(!newText){ alert('Weka maneno ya QR'); return; }
+  if(!isOwner(currentPhone)){ alert('Owner only'); return; }
+  try{
+    await db.collection('config').doc('qr_code').set({text:newText, updatedAt:new Date(), updatedBy:currentPhone});
+    document.getElementById('qrUpdateMsg').innerText = '✅ QR Updated! Sasa wote wa jana FAKE';
+    CURRENT_QR_TEXT = newText;
+    document.getElementById('qrCodeText').innerText = CURRENT_QR_TEXT;
+    document.getElementById('qrTodayImg').src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="+encodeURIComponent(CURRENT_QR_TEXT);
+  }catch(e){ alert(e.message); }
+}
+// Read QR from uploaded image
+function readQRFromFile(file){
+  return new Promise((resolve)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img,0,0);
+      const imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+      const code = jsQR(imageData.data, canvas.width, canvas.height);
+      if(code){ resolve(code.data); } else { resolve(null); }
+    };
+    img.onerror = ()=> resolve(null);
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 async function registerUser(){
   const rawP=document.getElementById('phoneInput').value;
   const p=normalizePhone(rawP);
@@ -230,6 +298,10 @@ async function loadUser(){
   }catch(e){ console.log(e); return false; }
 }
 async function render(){
+  await loadOfficialQR();
+  if(isOwner(currentPhone)){
+    document.getElementById('ownerQRPanel').style.display='block';
+  }
   // OWNER DASHBOARD - UNLIMITED
   if(isOwner(currentPhone)){
     document.getElementById('guestView').style.display='none';
@@ -299,7 +371,7 @@ async function updateBalance(inc){ await db.collection('users').doc(currentPhone
 async function doCheckin(){ try{ const sc = currentData.shareCount||0; const vc = currentData.viewCount||0; if(!isOwner(currentPhone) && currentData.state!=='paid' && (sc>=2 || vc>=2)){document.getElementById('unlockBox').style.display='block';return;} await updateBalance(10); alert('Checked In +10'); }catch(e){alert(e.message)} }
 let timeLeft = 23 * 60 * 60; setInterval(()=>{ timeLeft--; if(timeLeft < 0) timeLeft = 23*60*60; const h = Math.floor(timeLeft/3600); const m = Math.floor((timeLeft%3600)/60); const s = timeLeft%60; const el = document.getElementById('countdown23'); if(el) el.innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; },1000);
 
-// --- SECURITY: ANTI-EDIT, ANTI-FAKE, OCR, HASH ---
+// --- SECURITY: ANTI-EDIT, ANTI-FAKE, OCR, HASH, QR ---
 async function getImageHash(file){ const buffer = await file.arrayBuffer(); const hashBuffer = await crypto.subtle.digest('SHA-256', buffer); return Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,'0')).join(''); }
 async function isImageEdited(file){
   if(isOwner(currentPhone)) return {edited:false};
@@ -321,7 +393,7 @@ async function submitViews(){
   if(!file){ alert('❌ Upload FULL screenshot!'); return; }
   if(!postedTimeStr){ alert('❌ Enter post time!'); return; }
   if(!typedViews || typedViews <=0){ alert('❌ Enter valid views'); return; }
-  if(!notEdited ||!fullScreen){ alert('❌ Confirm checkboxes - Full screen + Not edited'); return; }
+  if(!notEdited ||!fullScreen){ alert('❌ Confirm checkboxes - Full screen + Not edited + QR visible'); return; }
   const postedTime = new Date(postedTimeStr);
   const now = new Date();
   const diffHours = (now - postedTime) / (1000*60*60);
@@ -333,6 +405,26 @@ async function submitViews(){
   }
   btn.innerText = "⏳ VERIFYING IMAGE..."; btn.disabled = true;
   try {
+    // --- STEP 0: QR CHECK - CLASSIC ---
+    btn.innerText = "⏳ CHECKING GOLD QR...";
+    const qrInImage = await readQRFromFile(file);
+    if(!isOwner(currentPhone)){
+      if(!qrInImage){
+        alert(`❌ FAKE! Screenshot haina GOLD QR ya MTAANI! Weka advert yenye QR ya leo!`);
+        document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ FAKE - Hakuna QR ndani! Tafuta QR ya leo: ${CURRENT_QR_TEXT}</div>`;
+        btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false;
+        try{ await db.collection('pending_views').add({phone: currentPhone, views: typedViews, amount: 0, status: 'rejected', reason: 'no_qr_found', qrExpected: CURRENT_QR_TEXT, time: new Date(), name: currentData.phone}); }catch(e){}
+        return;
+      }
+      if(qrInImage.trim()!== CURRENT_QR_TEXT.trim()){
+        alert(`❌ FAKE! QR ya jana! QR ya leo ni: ${CURRENT_QR_TEXT}\nWewe umeleta: ${qrInImage}`);
+        document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ FAKE QR - Ya jana! Expected: ${CURRENT_QR_TEXT}</div>`;
+        btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false;
+        try{ await db.collection('pending_views').add({phone: currentPhone, views: typedViews, amount: 0, status: 'rejected', reason: 'wrong_qr_'+qrInImage, qrExpected: CURRENT_QR_TEXT, time: new Date(), name: currentData.phone}); }catch(e){}
+        return;
+      }
+    }
+
     const editCheck = await isImageEdited(file);
     if(editCheck.edited){
       alert(`❌ THIS IMAGE IS EDITED! Detected: ${editCheck.reason} - AUTOMATIC CANCELLED! Send original WhatsApp screenshot!`);
@@ -369,10 +461,10 @@ async function submitViews(){
     }
     const finalViews = isOwner(currentPhone)? typedViews : viewsInPic;
     const amount = finalViews * 3;
-    await db.collection('pending_views').add({ phone: currentPhone, views: finalViews, amount: amount, rate: 3, status: 'pending', imageHash: imgHash, verifiedViews: finalViews, typedViews: typedViews, autoVerified: true, postedAt: postedTime, expiresAt: new Date(postedTime.getTime() + 23*60*60*1000), isFullScreenshot: fullScreen, isNotEdited: notEdited, time: new Date(), name: currentData.phone, ocrText: text.substring(0,200), isOwner:isOwner(currentPhone) });
+    await db.collection('pending_views').add({ phone: currentPhone, views: finalViews, amount: amount, rate: 3, status: 'pending', imageHash: imgHash, verifiedViews: finalViews, typedViews: typedViews, autoVerified: true, postedAt: postedTime, expiresAt: new Date(postedTime.getTime() + 23*60*60*1000), isFullScreenshot: fullScreen, isNotEdited: notEdited, time: new Date(), name: currentData.phone, ocrText: text.substring(0,200), isOwner:isOwner(currentPhone), qrVerified: qrInImage||'owner_bypass', qrExpected: CURRENT_QR_TEXT });
     if(!isOwner(currentPhone)){ await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)}); }
-    document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING - ✅ VERIFIED ${finalViews} x 3 = KES ${amount} ${isOwner(currentPhone)?'👑 OWNER':''}</div>`;
-    alert('✅ VERIFIED! '+finalViews+' x 3 = KES '+amount+' - WAITING ADMIN');
+    document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING - ✅ VERIFIED ${finalViews} x 3 = KES ${amount} | QR ✅ ${isOwner(currentPhone)?'👑 OWNER':''}</div>`;
+    alert('✅ VERIFIED! '+finalViews+' x 3 = KES '+amount+' + QR ✅ - WAITING ADMIN');
     btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; render();
   } catch(e){ alert('Error: '+e.message); btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; }
 }
@@ -383,7 +475,7 @@ async function loadMyViewsStatus(){
       const d = snap.docs[0].data();
       if(d.status==='pending'){ document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING - ${d.views} x 3 = KES ${d.amount} ${d.autoVerified?'✅ VERIFIED':''} ${d.isOwner?'👑':''}</div>`; }
       else if(d.status==='approved'){ document.getElementById('myViewsStatus').innerHTML = `<div style="background:green;color:white;padding:10px;border-radius:8px;">✅ APPROVED - KES ${d.amount}</div>`; }
-      else if(d.status==='rejected'){ const reason = d.reason==='expired_23hrs'? 'EXPIRED' : d.reason.includes('over_53')? 'AUTO-CANCELLED >53' : d.reason.includes('edited')? 'EDITED IMAGE' : 'REJECTED'; document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ ${reason} ${d.views? '('+d.views+')':''}</div>`; }
+      else if(d.status==='rejected'){ const reason = d.reason==='expired_23hrs'? 'EXPIRED' : d.reason.includes('over_53')? 'AUTO-CANCELLED >53' : d.reason.includes('edited')? 'EDITED IMAGE' : d.reason.includes('qr')? 'FAKE QR' : 'REJECTED'; document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ ${reason} ${d.views? '('+d.views+')':''}</div>`; }
     }
   }catch(e){}
 }
@@ -453,7 +545,7 @@ async function loadMyInvites(){
   }catch(e){ listEl.innerHTML = 'Error: '+e.message; }
 }
 const urlRef=new URLSearchParams(window.location.search).get('ref');if(urlRef){document.getElementById('refInput').value=urlRef;}
-(async()=>{if(currentPhone){const ok=await loadUser();if(ok) await render();else {document.getElementById('guestView').style.display='block';}} else {document.getElementById('guestView').style.display='block';}})();
+(async()=>{if(currentPhone){const ok=await loadUser();if(ok) await render();else {document.getElementById('guestView').style.display='block'; await loadOfficialQR();}} else {document.getElementById('guestView').style.display='block'; await loadOfficialQR();}})();
 </script>
 </body>
 </html>
