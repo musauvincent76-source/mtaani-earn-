@@ -69,9 +69,9 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 
 <div id="ownerQRPanel" style="display:none" class="box qr-gold-box">
 <h3 style="color:gold">👑 OWNER QR CONTROL</h3>
-<p style="font-size:11px;color:#aaa">Badilisha QR Code - Watu wa jana wote FAKE</p>
+<p style="font-size:11px;color:#aaa">Change QR Code - Yesterday users will be FAKE</p>
 <input id="newQrCodeInput" placeholder="MTAANI ORIGINAL | CODE: XT9-2026 | VERIFIED">
-<button class="btn btn-yellow" onclick="updateQrCode()">UPDATE QR LEO</button>
+<button class="btn btn-yellow" onclick="updateQrCode()">UPDATE QR TODAY</button>
 <p id="qrUpdateMsg" style="font-size:11px;color:#00ff88;margin-top:6px"></p>
 </div>
 
@@ -84,12 +84,12 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 <h4>Mtaani Adverts / Feeds <span class="tag tag-free">OPEN</span> <span class="tag tag-new">3 BOB/VIEW</span></h4>
 
 <div id="todayAdvertBox" style="display:none;border:3px solid gold;background:#000;padding:0;border-radius:16px;overflow:hidden;margin:12px 0;position:relative">
-<p style="background:linear-gradient(90deg,gold,#ffcc00);color:#000;text-align:center;font-weight:900;font-size:11px;padding:6px;letter-spacing:1px">🔥 TODAY'S OFFICIAL ADVERT + QR - DOWNLOAD HAPA 🔥</p>
+<p style="background:linear-gradient(90deg,gold,#ffcc00);color:#000;text-align:center;font-weight:900;font-size:11px;padding:6px;letter-spacing:1px">🔥 TODAY'S OFFICIAL ADVERT + QR - DOWNLOAD HERE 🔥</p>
 <img id="todayAdvertMergedImg" style="width:100%;display:block">
 <div style="padding:10px;background:#000;text-align:center">
 <p id="todayAdvertQRText" style="font-size:9px;color:gold"></p>
-<button class="btn btn-yellow" style="margin-top:8px" onclick="downloadTodayAdvert()">⬇️ DOWNLOAD ADVERT YA LEO (na QR)</button>
-<p style="font-size:9px;color:#aaa;margin-top:6px">Download hii, weka kwa WhatsApp Status yako. Ndani yake kuna QR ya leo.</p>
+<button class="btn btn-yellow" style="margin-top:8px" onclick="downloadTodayAdvert()">⬇️ DOWNLOAD TODAY'S ADVERT (with QR)</button>
+<p style="font-size:9px;color:#aaa;margin-top:6px">Download this, post on WhatsApp Status. Inside it has today's QR.</p>
 </div>
 </div>
 
@@ -97,7 +97,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 <p style="font-size:10px;color:gold;font-weight:900;letter-spacing:1px">🔐 OFFICIAL QR - SCAN TO VERIFY</p>
 <img id="qrTodayImg" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=MTAANI%20ORIGINAL%20CODE%20XT9-2026%20VERIFIED" alt="QR">
 <p id="qrCodeText" style="font-size:9px;color:#fff;margin-top:6px;background:#1a2332;padding:4px;border-radius:6px">MTAANI ORIGINAL | CODE: XT9-2026 | VERIFIED</p>
-<p style="font-size:8px;color:#ff6600;margin-top:4px">Weka hii QR kwa Status yako! Bila hii = FAKE</p>
+<p style="font-size:8px;color:#ff6600;margin-top:4px">Put this QR on your Status! Without it = FAKE</p>
 </div>
 
 <div class="rule-box">
@@ -158,7 +158,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 </div>
 <div class="box" style="border:2px solid #00ff88">
 <h4>👥 My Invited People <span id="inviteCount" class="tag tag-new">0</span></h4>
-<p style="font-size:11px;color:#aaa">Watu umewaleta - Registered / Active / Paid</p>
+<p style="font-size:11px;color:#aaa">People you invited - Registered / Active / Paid</p>
 <div id="myInvitesList" style="margin-top:10px;max-height:350px;overflow-y:auto">Loading...</div>
 <button class="btn btn-dark" style="font-size:11px;padding:8px" onclick="loadMyInvites()">🔄 REFRESH LIST</button>
 </div>
@@ -193,7 +193,7 @@ function downloadTodayAdvert(){
   const a = document.createElement('a'); a.href = img; a.download = 'MTAANI_ADVERT_TODAY.png'; a.click();
 }
 
-// --- MAINTENANCE CHECK - NEW 🔧 ---
+// --- MAINTENANCE CHECK - ADDED WITHOUT REMOVING ANYTHING 🔧 ---
 async function checkMaintenance(){
   try{
     const doc = await db.collection('config').doc('site_status').get();
@@ -203,12 +203,12 @@ async function checkMaintenance(){
         <div style="max-width:400px;width:100%;background:rgba(16,24,40,0.9);border:2px solid #ffcc00;border-radius:20px;padding:30px;text-align:center">
           <div style="font-size:60px">🔧</div>
           <h1 style="color:#ffcc00;font-family:Orbitron,sans-serif;margin-top:10px;font-size:22px">UNDER MAINTENANCE</h1>
-          <p style="color:#aaa;font-size:13px;margin-top:10px;line-height:1.6">MTAANI EARN inafanyiwa upgrade mkuu! Tunaboresha system ili pesa iingie faster.</p>
+          <p style="color:#aaa;font-size:13px;margin-top:10px;line-height:1.6">MTAANI EARN is being upgraded! We are improving the system for faster earnings.</p>
           <div style="margin-top:20px;background:#000;padding:12px;border-radius:10px;border:1px dashed gold">
-            <p style="font-size:11px;color:gold;font-weight:900">⏰ WE ARE COMING BACK- 30 MIN</p>
+            <p style="font-size:11px;color:gold;font-weight:900">⏰ WE ARE COMING BACK - 30 MIN</p>
             <p style="font-size:10px;color:#fff;margin-top:4px">CEO ALEX 👑 fixing our website!</p>
           </div>
-          <p style="font-size:9px;color:#666;margin-top:15px">Till 3624692 still active - usijali pesa yako iko safe</p>
+          <p style="font-size:9px;color:#666;margin-top:15px">Till 3624692 still active - your money is safe</p>
         </div>
       </div>`;
       return true;
@@ -234,11 +234,11 @@ async function loadOfficialQR(){
 }
 async function updateQrCode(){
   const newText = document.getElementById('newQrCodeInput').value.trim();
-  if(!newText){ alert('Weka maneno ya QR'); return; }
+  if(!newText){ alert('Enter QR text'); return; }
   if(!isOwner(currentPhone)){ alert('Owner only'); return; }
   try{
     await db.collection('config').doc('qr_code').set({text:newText, updatedAt:new Date(), updatedBy:currentPhone});
-    document.getElementById('qrUpdateMsg').innerText = '✅ QR Updated! Sasa wote wa jana FAKE';
+    document.getElementById('qrUpdateMsg').innerText = '✅ QR Updated! All yesterday QR now FAKE';
     CURRENT_QR_TEXT = newText;
     document.getElementById('qrCodeText').innerText = CURRENT_QR_TEXT;
     document.getElementById('qrTodayImg').src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="+encodeURIComponent(CURRENT_QR_TEXT);
@@ -248,13 +248,17 @@ function readQRFromFile(file){
   return new Promise((resolve)=>{
     const img = new Image();
     img.onload = ()=>{
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width; canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img,0,0);
-      const imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
-      const code = jsQR(imageData.data, canvas.width, canvas.height);
-      if(code){ resolve(code.data); } else { resolve(null); }
+      const tryDecode = (scale)=>{
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * scale; canvas.height = img.height * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        const imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+        const code = jsQR(imageData.data, canvas.width, canvas.height);
+        return code? code.data : null;
+      };
+      let result = tryDecode(1) || tryDecode(2) || tryDecode(0.5);
+      resolve(result);
     };
     img.onerror = ()=> resolve(null);
     img.src = URL.createObjectURL(file);
@@ -416,6 +420,8 @@ async function isImageEdited(file){
     return {edited:false};
   }catch(e){ return {edited:false}; }
 }
+
+// FIXED submitViews - STRICT OCR + QR
 async function submitViews(){
   const typedViews = parseInt(document.getElementById('viewsCount').value);
   const file = document.getElementById('fileFree').files[0];
@@ -425,76 +431,89 @@ async function submitViews(){
   const btn = document.getElementById('viewBtn');
   if(!file){ alert('❌ Upload FULL screenshot!'); return; }
   if(!postedTimeStr){ alert('❌ Enter post time!'); return; }
-  if(!typedViews || typedViews <=0){ alert('❌ Enter valid views'); return; }
+  if(!typedViews || typedViews <=0 || typedViews >53){ alert('❌ Enter valid views 1-53'); return; }
   if(!notEdited ||!fullScreen){ alert('❌ Confirm checkboxes - Full screen + Not edited + QR visible'); return; }
   const postedTime = new Date(postedTimeStr);
-  const now = new Date();
-  const diffHours = (now - postedTime) / (1000*60*60);
+  const diffHours = (new Date() - postedTime) / (1000*60*60);
   if(!isOwner(currentPhone) && diffHours > 23){
-    alert('❌ EXPIRED! '+Math.floor(diffHours)+' hrs ago - AUTOMATIC CANCELLED');
-    document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ EXPIRED - AUTOMATIC CANCELLED</div>`;
-    try{ await db.collection('pending_views').add({phone: currentPhone, views: typedViews, amount: 0, status: 'rejected', reason: 'expired_23hrs', postedAt: postedTime, time: new Date(), name: currentData.phone}); if(!isOwner(currentPhone)){ await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)}); } }catch(e){}
-    render(); return;
+    alert('❌ EXPIRED! '+Math.floor(diffHours)+' hrs ago');
+    return;
   }
   btn.innerText = "⏳ VERIFYING IMAGE..."; btn.disabled = true;
   try {
     btn.innerText = "⏳ CHECKING GOLD QR...";
     const qrInImage = await readQRFromFile(file);
-    if(!isOwner(currentPhone)){
-      if(!qrInImage){
-        alert(`❌ FAKE! Screenshot haina GOLD QR ya MTAANI!`);
-        document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ FAKE - Hakuna QR ndani!</div>`;
-        btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false;
-        return;
-      }
-      if(qrInImage.trim()!== CURRENT_QR_TEXT.trim()){
-        alert(`❌ FAKE! QR ya jana! QR ya leo ni: ${CURRENT_QR_TEXT}`);
-        document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ FAKE QR - Ya jana!</div>`;
-        btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false;
-        return;
-      }
-    }
-    const editCheck = await isImageEdited(file);
-    if(editCheck.edited){
-      alert(`❌ THIS IMAGE IS EDITED! Detected: ${editCheck.reason}`);
-      document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ EDITED - ${editCheck.reason}</div>`;
+    if(!qrInImage){
+      alert(`❌ FAKE! Screenshot has NO GOLD QR!`);
+      document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ FAKE - No QR inside!</div>`;
       btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
     }
-    const imgHash = await getImageHash(file);
-    if(!isOwner(currentPhone)){
-      const dupCheck = await db.collection('pending_views').where('imageHash','==',imgHash).limit(1).get();
-      if(!dupCheck.empty){
-        alert(`❌ DUPLICATE!`);
-        document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ DUPLICATE SCREENSHOT</div>`;
-        btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
-      }
+    if(qrInImage.trim()!== CURRENT_QR_TEXT.trim()){
+      alert(`❌ FAKE QR! Yesterday QR! Today's QR is: ${CURRENT_QR_TEXT}`);
+      btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
     }
-    btn.innerText = "⏳ READING VIEWS FROM IMAGE (OCR)...";
-    const { data: { text } } = await Tesseract.recognize(file, 'eng');
-    const numbers = text.match(/\d+/g);
+
+    // Crop bottom 50% where views are
+    const croppedBlob = await new Promise((res)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const c = document.createElement('canvas');
+        const h = img.height * 0.5;
+        const y = img.height - h;
+        c.width = img.width; c.height = h;
+        c.getContext('2d').drawImage(img,0,-y,img.width,img.height);
+        c.toBlob(b=>res(b), 'image/jpeg', 0.9);
+      };
+      img.src = URL.createObjectURL(file);
+    });
+
+    btn.innerText = "⏳ READING VIEWS - STRICT MODE...";
+    const { data: { text } } = await Tesseract.recognize(croppedBlob, 'eng');
+    console.log("OCR:", text);
     let viewsInPic = 0;
-    if(numbers){ const validNums = numbers.map(n=>parseInt(n)).filter(n=>n>=1 && n<=1000); if(validNums.length>0) viewsInPic = Math.max(...validNums); }
-    if(viewsInPic === 0){ alert(`❌ Could not read views`); btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return; }
-    if(!isOwner(currentPhone) && viewsInPic > 53){
-      alert(`❌ AUTOMATIC CANCELLED! ${viewsInPic} views - Max is 53`);
-      document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ AUTOMATIC CANCELLED - ${viewsInPic} views! Max 53</div>`;
-      try{ await db.collection('pending_views').add({ phone: currentPhone, views: viewsInPic, typedViews: typedViews, amount: 0, status: 'rejected', reason: 'auto_cancelled_over_53_'+viewsInPic, imageHash: imgHash, postedAt: postedTime, time: new Date(), name: currentData.phone, ocrText: text.substring(0,200) }); await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)}); }catch(e){}
+    const lower = text.toLowerCase();
+    const m1 = lower.match(/(\d{1,3})\s*views?/);
+    const m2 = lower.match(/views?\s*(\d{1,3})/);
+    if(m1) viewsInPic = parseInt(m1[1]);
+    else if(m2) viewsInPic = parseInt(m2[1]);
+    else {
+      const nums = lower.match(/\b\d{1,3}\b/g);
+      if(nums) viewsInPic = parseInt(nums[nums.length-1]);
+    }
+
+    if(viewsInPic===0){
+      alert("❌ Could not read views! Make sure screenshot shows '18 views'");
+      btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
+    }
+
+    if(viewsInPic > 53){
+      alert(`❌ AUTOMATIC CANCELLED! Image has ${viewsInPic} views! Max is 53!`);
+      await db.collection('pending_views').add({ phone: currentPhone, views: viewsInPic, typedViews: typedViews, amount: 0, status: 'rejected', reason: 'over_53_'+viewsInPic, time: new Date(), name: currentData.phone });
+      await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)});
       btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; render(); return;
     }
-    if(!isOwner(currentPhone) && typedViews!== viewsInPic){
-      alert(`❌ YOU LIED! Image shows ${viewsInPic} but you typed ${typedViews}`);
-      document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">❌ MISMATCH - Image: ${viewsInPic} | Typed: ${typedViews}</div>`;
+
+    if(viewsInPic!== typedViews){
+      alert(`❌ CHEATING! Image shows ${viewsInPic} but you typed ${typedViews}`);
+      document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ FAKE - Image ${viewsInPic} vs Typed ${typedViews}</div>`;
       btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
     }
-    const finalViews = isOwner(currentPhone)? typedViews : viewsInPic;
-    const amount = finalViews * 3;
-    await db.collection('pending_views').add({ phone: currentPhone, views: finalViews, amount: amount, rate: 3, status: 'pending', imageHash: imgHash, verifiedViews: finalViews, typedViews: typedViews, autoVerified: true, postedAt: postedTime, expiresAt: new Date(postedTime.getTime() + 23*60*60*1000), isFullScreenshot: fullScreen, isNotEdited: notEdited, time: new Date(), name: currentData.phone, ocrText: text.substring(0,200), isOwner:isOwner(currentPhone), qrVerified: qrInImage||'owner_bypass', qrExpected: CURRENT_QR_TEXT });
+
+    const imgHash = await getImageHash(file);
+    const dupCheck = await db.collection('pending_views').where('imageHash','==',imgHash).limit(1).get();
+    if(!dupCheck.empty &&!isOwner(currentPhone)){
+      alert("❌ DUPLICATE SCREENSHOT!");
+      btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
+    }
+
+    const amount = viewsInPic * 3;
+    await db.collection('pending_views').add({ phone: currentPhone, views: viewsInPic, amount: amount, status: 'pending', imageHash: imgHash, time: new Date(), name: currentData.phone, qrVerified: qrInImage });
     if(!isOwner(currentPhone)){ await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)}); }
-    document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING - ✅ VERIFIED ${finalViews} x 3 = KES ${amount} | QR ✅</div>`;
-    alert('✅ VERIFIED! '+finalViews+' x 3 = KES '+amount+' + QR ✅');
+    alert(`✅ VERIFIED! ${viewsInPic} x 3 = KES ${amount}`);
     btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; render();
-  } catch(e){ alert('Error: '+e.message); btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; }
+  } catch(e){ alert(e.message); btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; }
 }
+
 async function loadMyViewsStatus(){
   try{
     const snap = await db.collection('pending_views').where('phone','==',currentPhone).orderBy('time','desc').limit(1).get();
@@ -502,7 +521,7 @@ async function loadMyViewsStatus(){
       const d = snap.docs[0].data();
       if(d.status==='pending'){ document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING - ${d.views} x 3 = KES ${d.amount}</div>`; }
       else if(d.status==='approved'){ document.getElementById('myViewsStatus').innerHTML = `<div style="background:green;color:white;padding:10px;border-radius:8px;">✅ APPROVED - KES ${d.amount}</div>`; }
-      else if(d.status==='rejected'){ const reason = d.reason==='expired_23hrs'? 'EXPIRED' : d.reason.includes('over_53')? 'AUTO-CANCELLED >53' : 'REJECTED'; document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ ${reason}</div>`; }
+      else if(d.status==='rejected'){ document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ ${d.reason}</div>`; }
     }
   }catch(e){}
 }
@@ -525,11 +544,11 @@ async function requestWithdraw(){
   if(!amt||amt<100){msg.innerText='Min 100 KES';return;}
   if(amt>currentData.balance){msg.innerText='Insufficient - '+currentData.balance;return;}
   const fee=7; const receive=amt-fee;
-  if(!confirm(`Unatoa KES ${amt}\nFee: ${fee}\nUtapokea: ${receive}\nConfirm?`)) return;
+  if(!confirm(`You withdraw KES ${amt}\nFee: ${fee}\nYou receive: ${receive}\nConfirm?`)) return;
   msg.innerText='Sending...';
   try{
     await db.collection('pending_withdrawals').add({phone:currentPhone,mpesaPhone:phone,amount:amt,fee:fee,receive:receive,status:'pending',time:new Date(),name:currentData.phone});
-    msg.innerText=`Request sent - Utapokea KES ${receive}`;
+    msg.innerText=`Request sent - You receive KES ${receive}`;
     document.getElementById('withdrawStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING - KES ${amt} | Receive ${receive}</div>`;
   }catch(e){msg.innerText=e.message}
 }
@@ -559,11 +578,11 @@ async function loadMyInvites(){
   try{
     const snap = await db.collection('users').where('referredBy','==',currentPhone).get();
     countEl.innerText = snap.size;
-    if(snap.empty){ listEl.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;padding:10px">Hakuna mtu bado</p>'; return; }
+    if(snap.empty){ listEl.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;padding:10px">No one yet</p>'; return; }
     let html = '';
     snap.forEach(doc=>{
       const d = doc.data();
-      let status = d.state==='paid'? '✅ AMELIPA (80)' : '⚪ Bado hajalipa - LOCKED';
+      let status = d.state==='paid'? '✅ PAID (80)' : '⚪ Not paid yet - LOCKED';
       let color = d.state==='paid'? '#00ff88' : '#ff6600';
       const badge = d.state==='paid'? '<span style="background:#00ff88;color:#000;padding:2px 6px;border-radius:10px;font-size:10px;font-weight:800">PAID</span>' : '<span style="background:#ff6600;color:#000;padding:2px 6px;border-radius:10px;font-size:10px">UNPAID</span>';
       html += `<div style="background:#1a2332;padding:10px;border-radius:8px;margin-bottom:8px;border-left:3px solid ${color}"><div style="display:flex;justify-content:space-between"><b>${d.phone}</b> ${badge}</div><p style="font-size:11px;color:${color}">${status}</p></div>`;
@@ -584,4 +603,4 @@ const urlRef=new URLSearchParams(window.location.search).get('ref');if(urlRef){d
 })();
 </script>
 </body>
-</html>
+                                                                                                                                                                                                                                                              </html>
