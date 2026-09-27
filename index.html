@@ -31,7 +31,6 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 .link{color:#ffcc00;font-size:11px;cursor:pointer;text-decoration:underline;margin-top:8px;display:inline-block}
 .rule-box{background:#1a2332;border-left:3px solid #ffcc00;padding:10px;border-radius:8px;margin:8px 0;font-size:11px;line-height:1.5}
 .countdown{background:#000;border:1px solid #ffcc00;padding:8px;border-radius:8px;text-align:center;margin:8px 0}
-/* --- ADDED CLASSIC QR STYLE --- */
 .qr-gold-box{border:3px solid gold;background:#000;padding:10px;border-radius:14px;text-align:center;margin:10px 0;position:relative}
 .qr-gold-box img{width:110px;height:110px;border:4px solid #fff;border-radius:10px;background:#fff}
 </style>
@@ -80,8 +79,19 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 <div class="box" style="margin:0;text-align:center"><p style="font-size:11px;font-weight:700">DAILY CHECK-IN</p><div class="spin" onclick="doCheckin()">CHECK IN</div><p style="font-size:11px;color:#00ff88">+10 per day</p></div>
 <div class="box" style="margin:0;text-align:center;opacity:0.7"><p style="font-size:11px;font-weight:700">SPIN & WIN <span class="tag tag-soon">SOON</span></p><div class="spin" style="border-color:#555" onclick="showComingSoon('Spin & Win')">SOON</div><p style="font-size:11px;color:#aaa">Coming Soon</p></div>
 </div>
+
 <div class="box" id="freeTasks" style="border:2px solid #ffcc00">
 <h4>Mtaani Adverts / Feeds <span class="tag tag-free">OPEN</span> <span class="tag tag-new">3 BOB/VIEW</span></h4>
+
+<div id="todayAdvertBox" style="display:none;border:3px solid gold;background:#000;padding:0;border-radius:16px;overflow:hidden;margin:12px 0;position:relative">
+<p style="background:linear-gradient(90deg,gold,#ffcc00);color:#000;text-align:center;font-weight:900;font-size:11px;padding:6px;letter-spacing:1px">🔥 TODAY'S OFFICIAL ADVERT + QR - DOWNLOAD HAPA 🔥</p>
+<img id="todayAdvertMergedImg" style="width:100%;display:block">
+<div style="padding:10px;background:#000;text-align:center">
+<p id="todayAdvertQRText" style="font-size:9px;color:gold"></p>
+<button class="btn btn-yellow" style="margin-top:8px" onclick="downloadTodayAdvert()">⬇️ DOWNLOAD ADVERT YA LEO (na QR)</button>
+<p style="font-size:9px;color:#aaa;margin-top:6px">Download hii, weka kwa WhatsApp Status yako. Ndani yake kuna QR ya leo.</p>
+</div>
+</div>
 
 <div class="qr-gold-box" id="officialQRBox">
 <p style="font-size:10px;color:gold;font-weight:900;letter-spacing:1px">🔐 OFFICIAL QR - SCAN TO VERIFY</p>
@@ -95,7 +105,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 1. Rate: <b>3 KES per view</b><br>
 2. Max Limit: <b>53 views ONLY</b> - 54+ = AUTOMATIC CANCELLED (Owner unlimited)<br>
 3. Screenshot must be <b>FULL SCREEN</b> - Must show time posted at top<br>
-4. No edited screenshots - Auto-detected = CANCELLED - Photoshop/Canva/PicsArt<br>
+4. No edited screenshots - Auto-detected = CANCELLED<br>
 5. WhatsApp Status expires in <b>24hrs</b> - Submit within <b>23 hours</b><br>
 6. Typed views must match views in screenshot - OCR checks<br>
 7. Same screenshot cannot be reused<br>
@@ -123,6 +133,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 <div id="myViewsStatus" style="margin-top:8px"></div>
 <p id="viewCountInfo" style="font-size:10px;color:#aaa;margin-top:6px"></p>
 </div>
+
 <div class="box" style="opacity:0.7">
 <h4>Daily Quiz <span class="tag tag-soon">COMING SOON</span></h4>
 <div class="task"><span>❓ What is capital of Kenya?</span><span class="tag tag-soon">SOON</span></div>
@@ -169,27 +180,31 @@ const db = firebase.firestore();
 let currentPhone = localStorage.getItem('mt_current_phone') || '';
 let currentData = null;
 let CURRENT_QR_TEXT = "MTAANI ORIGINAL | CODE: XT9-2026 | VERIFIED";
-// --- OWNER UNLIMITED ---
 const OWNER_PHONES = ["0703182307","703182307"];
 function isOwner(phone){ if(!phone) return false; let p=phone.trim().replace(/\s+/g,''); if(p.startsWith('+254')) p='0'+p.slice(4); if(p.startsWith('254')) p='0'+p.slice(3); return p.includes('703182307') || OWNER_PHONES.includes(p); }
-
 function normalizePhone(phone){ if(!phone) return ''; let p = phone.trim().replace(/\s+/g, ''); if(p.startsWith('+254')) p = '0' + p.slice(4); if(p.startsWith('254')) p = '0' + p.slice(3); return p; }
 function getDeviceId(){ let id = localStorage.getItem('mt_device_id'); if(!id){ id = 'dev_' + Math.random().toString(36).substring(2,9) + Date.now().toString(36); localStorage.setItem('mt_device_id', id); } return id; }
 function showComingSoon(name){ alert('🚧 Coming Soon! - '+name+' Coming Soon'); }
 function showLogin(){document.getElementById('loginBox').style.display='block';}
 function showRegister(){document.getElementById('loginBox').style.display='none';}
-
-// --- QR SYSTEM ---
+function downloadTodayAdvert(){
+  const img = document.getElementById('todayAdvertMergedImg').src;
+  if(!img) return;
+  const a = document.createElement('a'); a.href = img; a.download = 'MTAANI_ADVERT_TODAY.png'; a.click();
+}
 async function loadOfficialQR(){
   try{
     const doc = await db.collection('config').doc('qr_code').get();
-    if(doc.exists){
-      CURRENT_QR_TEXT = doc.data().text;
-    }
+    if(doc.exists){ CURRENT_QR_TEXT = doc.data().text; }
     document.getElementById('qrCodeText').innerText = CURRENT_QR_TEXT;
     document.getElementById('qrTodayImg').src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="+encodeURIComponent(CURRENT_QR_TEXT);
-    if(isOwner(currentPhone)){
-      document.getElementById('newQrCodeInput').value = CURRENT_QR_TEXT;
+    if(isOwner(currentPhone)){ document.getElementById('newQrCodeInput').value = CURRENT_QR_TEXT; }
+    // LOAD TODAY ADVERT - NEW PART
+    const advDoc = await db.collection('config').doc('today_advert').get();
+    if(advDoc.exists && advDoc.data().mergedImage){
+      document.getElementById('todayAdvertBox').style.display='block';
+      document.getElementById('todayAdvertMergedImg').src = advDoc.data().mergedImage;
+      document.getElementById('todayAdvertQRText').innerText = advDoc.data().qrText || CURRENT_QR_TEXT;
     }
   }catch(e){ console.log("QR load error", e); }
 }
@@ -205,7 +220,6 @@ async function updateQrCode(){
     document.getElementById('qrTodayImg').src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="+encodeURIComponent(CURRENT_QR_TEXT);
   }catch(e){ alert(e.message); }
 }
-// Read QR from uploaded image
 function readQRFromFile(file){
   return new Promise((resolve)=>{
     const img = new Image();
@@ -222,7 +236,6 @@ function readQRFromFile(file){
     img.src = URL.createObjectURL(file);
   });
 }
-
 async function registerUser(){
   const rawP=document.getElementById('phoneInput').value;
   const p=normalizePhone(rawP);
@@ -299,10 +312,7 @@ async function loadUser(){
 }
 async function render(){
   await loadOfficialQR();
-  if(isOwner(currentPhone)){
-    document.getElementById('ownerQRPanel').style.display='block';
-  }
-  // OWNER DASHBOARD - UNLIMITED
+  if(isOwner(currentPhone)){ document.getElementById('ownerQRPanel').style.display='block'; }
   if(isOwner(currentPhone)){
     document.getElementById('guestView').style.display='none';
     document.getElementById('dashView').style.display='block';
@@ -370,8 +380,6 @@ async function render(){
 async function updateBalance(inc){ await db.collection('users').doc(currentPhone).update({balance: firebase.firestore.FieldValue.increment(inc)}); currentData.balance+=inc; document.getElementById('topBal').innerText='KES '+currentData.balance; document.getElementById('balMain').innerText='KES '+currentData.balance; document.getElementById('balLock').innerText='KES '+currentData.balance; }
 async function doCheckin(){ try{ const sc = currentData.shareCount||0; const vc = currentData.viewCount||0; if(!isOwner(currentPhone) && currentData.state!=='paid' && (sc>=2 || vc>=2)){document.getElementById('unlockBox').style.display='block';return;} await updateBalance(10); alert('Checked In +10'); }catch(e){alert(e.message)} }
 let timeLeft = 23 * 60 * 60; setInterval(()=>{ timeLeft--; if(timeLeft < 0) timeLeft = 23*60*60; const h = Math.floor(timeLeft/3600); const m = Math.floor((timeLeft%3600)/60); const s = timeLeft%60; const el = document.getElementById('countdown23'); if(el) el.innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; },1000);
-
-// --- SECURITY: ANTI-EDIT, ANTI-FAKE, OCR, HASH, QR ---
 async function getImageHash(file){ const buffer = await file.arrayBuffer(); const hashBuffer = await crypto.subtle.digest('SHA-256', buffer); return Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,'0')).join(''); }
 async function isImageEdited(file){
   if(isOwner(currentPhone)) return {edited:false};
@@ -405,39 +413,33 @@ async function submitViews(){
   }
   btn.innerText = "⏳ VERIFYING IMAGE..."; btn.disabled = true;
   try {
-    // --- STEP 0: QR CHECK - CLASSIC ---
     btn.innerText = "⏳ CHECKING GOLD QR...";
     const qrInImage = await readQRFromFile(file);
     if(!isOwner(currentPhone)){
       if(!qrInImage){
-        alert(`❌ FAKE! Screenshot haina GOLD QR ya MTAANI! Weka advert yenye QR ya leo!`);
-        document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ FAKE - Hakuna QR ndani! Tafuta QR ya leo: ${CURRENT_QR_TEXT}</div>`;
+        alert(`❌ FAKE! Screenshot haina GOLD QR ya MTAANI!`);
+        document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ FAKE - Hakuna QR ndani!</div>`;
         btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false;
-        try{ await db.collection('pending_views').add({phone: currentPhone, views: typedViews, amount: 0, status: 'rejected', reason: 'no_qr_found', qrExpected: CURRENT_QR_TEXT, time: new Date(), name: currentData.phone}); }catch(e){}
         return;
       }
       if(qrInImage.trim()!== CURRENT_QR_TEXT.trim()){
-        alert(`❌ FAKE! QR ya jana! QR ya leo ni: ${CURRENT_QR_TEXT}\nWewe umeleta: ${qrInImage}`);
-        document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ FAKE QR - Ya jana! Expected: ${CURRENT_QR_TEXT}</div>`;
+        alert(`❌ FAKE! QR ya jana! QR ya leo ni: ${CURRENT_QR_TEXT}`);
+        document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ FAKE QR - Ya jana!</div>`;
         btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false;
-        try{ await db.collection('pending_views').add({phone: currentPhone, views: typedViews, amount: 0, status: 'rejected', reason: 'wrong_qr_'+qrInImage, qrExpected: CURRENT_QR_TEXT, time: new Date(), name: currentData.phone}); }catch(e){}
         return;
       }
     }
-
     const editCheck = await isImageEdited(file);
     if(editCheck.edited){
-      alert(`❌ THIS IMAGE IS EDITED! Detected: ${editCheck.reason} - AUTOMATIC CANCELLED! Send original WhatsApp screenshot!`);
-      document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ EDITED - ${editCheck.reason} - AUTOMATIC CANCELLED</div>`;
-      btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false;
-      try{ await db.collection('pending_views').add({phone: currentPhone, views: typedViews, amount: 0, status: 'rejected', reason: 'edited_'+editCheck.reason, time: new Date(), name: currentData.phone}); }catch(e){}
-      return;
+      alert(`❌ THIS IMAGE IS EDITED! Detected: ${editCheck.reason}`);
+      document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ EDITED - ${editCheck.reason}</div>`;
+      btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
     }
     const imgHash = await getImageHash(file);
     if(!isOwner(currentPhone)){
       const dupCheck = await db.collection('pending_views').where('imageHash','==',imgHash).limit(1).get();
       if(!dupCheck.empty){
-        alert(`❌ DUPLICATE! This screenshot already used!`);
+        alert(`❌ DUPLICATE!`);
         document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ DUPLICATE SCREENSHOT</div>`;
         btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
       }
@@ -447,9 +449,9 @@ async function submitViews(){
     const numbers = text.match(/\d+/g);
     let viewsInPic = 0;
     if(numbers){ const validNums = numbers.map(n=>parseInt(n)).filter(n=>n>=1 && n<=1000); if(validNums.length>0) viewsInPic = Math.max(...validNums); }
-    if(viewsInPic === 0){ alert(`❌ Could not read views - take clearer screenshot`); btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return; }
+    if(viewsInPic === 0){ alert(`❌ Could not read views`); btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return; }
     if(!isOwner(currentPhone) && viewsInPic > 53){
-      alert(`❌ AUTOMATIC CANCELLED! Detected ${viewsInPic} views - Max is 53 ONLY! 54+ NOT ALLOWED!`);
+      alert(`❌ AUTOMATIC CANCELLED! ${viewsInPic} views - Max is 53`);
       document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ AUTOMATIC CANCELLED - ${viewsInPic} views! Max 53</div>`;
       try{ await db.collection('pending_views').add({ phone: currentPhone, views: viewsInPic, typedViews: typedViews, amount: 0, status: 'rejected', reason: 'auto_cancelled_over_53_'+viewsInPic, imageHash: imgHash, postedAt: postedTime, time: new Date(), name: currentData.phone, ocrText: text.substring(0,200) }); await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)}); }catch(e){}
       btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; render(); return;
@@ -463,8 +465,8 @@ async function submitViews(){
     const amount = finalViews * 3;
     await db.collection('pending_views').add({ phone: currentPhone, views: finalViews, amount: amount, rate: 3, status: 'pending', imageHash: imgHash, verifiedViews: finalViews, typedViews: typedViews, autoVerified: true, postedAt: postedTime, expiresAt: new Date(postedTime.getTime() + 23*60*60*1000), isFullScreenshot: fullScreen, isNotEdited: notEdited, time: new Date(), name: currentData.phone, ocrText: text.substring(0,200), isOwner:isOwner(currentPhone), qrVerified: qrInImage||'owner_bypass', qrExpected: CURRENT_QR_TEXT });
     if(!isOwner(currentPhone)){ await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)}); }
-    document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING - ✅ VERIFIED ${finalViews} x 3 = KES ${amount} | QR ✅ ${isOwner(currentPhone)?'👑 OWNER':''}</div>`;
-    alert('✅ VERIFIED! '+finalViews+' x 3 = KES '+amount+' + QR ✅ - WAITING ADMIN');
+    document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING - ✅ VERIFIED ${finalViews} x 3 = KES ${amount} | QR ✅</div>`;
+    alert('✅ VERIFIED! '+finalViews+' x 3 = KES '+amount+' + QR ✅');
     btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; render();
   } catch(e){ alert('Error: '+e.message); btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; }
 }
@@ -473,9 +475,9 @@ async function loadMyViewsStatus(){
     const snap = await db.collection('pending_views').where('phone','==',currentPhone).orderBy('time','desc').limit(1).get();
     if(!snap.empty){
       const d = snap.docs[0].data();
-      if(d.status==='pending'){ document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING - ${d.views} x 3 = KES ${d.amount} ${d.autoVerified?'✅ VERIFIED':''} ${d.isOwner?'👑':''}</div>`; }
+      if(d.status==='pending'){ document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING - ${d.views} x 3 = KES ${d.amount}</div>`; }
       else if(d.status==='approved'){ document.getElementById('myViewsStatus').innerHTML = `<div style="background:green;color:white;padding:10px;border-radius:8px;">✅ APPROVED - KES ${d.amount}</div>`; }
-      else if(d.status==='rejected'){ const reason = d.reason==='expired_23hrs'? 'EXPIRED' : d.reason.includes('over_53')? 'AUTO-CANCELLED >53' : d.reason.includes('edited')? 'EDITED IMAGE' : d.reason.includes('qr')? 'FAKE QR' : 'REJECTED'; document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ ${reason} ${d.views? '('+d.views+')':''}</div>`; }
+      else if(d.status==='rejected'){ const reason = d.reason==='expired_23hrs'? 'EXPIRED' : d.reason.includes('over_53')? 'AUTO-CANCELLED >53' : 'REJECTED'; document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ ${reason}</div>`; }
     }
   }catch(e){}
 }
@@ -548,4 +550,4 @@ const urlRef=new URLSearchParams(window.location.search).get('ref');if(urlRef){d
 (async()=>{if(currentPhone){const ok=await loadUser();if(ok) await render();else {document.getElementById('guestView').style.display='block'; await loadOfficialQR();}} else {document.getElementById('guestView').style.display='block'; await loadOfficialQR();}})();
 </script>
 </body>
-</html>
+                                                                      </html>
