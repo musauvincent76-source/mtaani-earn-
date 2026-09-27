@@ -55,7 +55,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;backgr
 <div class="till-box">
 <div style="font-size:11px;color:#ffcc00;letter-spacing:2px;font-weight:900">🔥 ACTIVE TILL • VERIFIED • M-PESA MERCHANT 🔥</div>
 <div class="till-num">3624692</div>
-<div style="font-size:11px;color:#aaa;margin-top:6px">Rules: 3 BOB/View | Max 53 | >63 = Auto Cancelled | 23hrs Expiry</div>
+<div style="font-size:11px;color:#aaa;margin-top:6px">Rules: 3 BOB/View | Max 53 | >63 = Auto Cancelled | 23hrs Expiry | Withdraw Fee 7 KES | Share 2x OR Views 2x = LOCK | Referral 40 only after 80 paid | Referred users PAY direct no free</div>
 </div>
 
 <div class="stats">
@@ -67,10 +67,10 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;backgr
 
 <div style="text-align:center">
 <span class="tab active" onclick="showSection('views')" id="tab-views">👁️ VIEWS (3 BOB / 53 MAX)</span>
-<span class="tab" onclick="showSection('withdraw')" id="tab-withdraw">💸 WITHDRAWALS</span>
+<span class="tab" onclick="showSection('withdraw')" id="tab-withdraw">💸 WITHDRAWALS (FEE 7)</span>
 <span class="tab" onclick="showSection('offers')" id="tab-offers">🎁 OFFERS</span>
 <span class="tab" onclick="showSection('payments')" id="tab-payments">💰 PAYMENTS 80</span>
-<span class="tab" onclick="showSection('users')" id="tab-users">👥 USERS</span>
+<span class="tab" onclick="showSection('users')" id="tab-users">👥 USERS + REFERRALS</span>
 </div>
 
 <div id="sec-views" class="box" style="border:2px solid #ffcc00">
@@ -80,8 +80,9 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;backgr
 </div>
 
 <div id="sec-withdraw" class="box" style="display:none;border:2px solid #00ff88">
-<h3 style="color:#00ff88">💰 WITHDRAWAL REQUESTS - MANUAL REAL</h3>
-<table><thead><tr><th>USER</th><th>M-PESA NO</th><th>AMOUNT</th><th>STATUS</th><th>ACTION</th></tr></thead><tbody id="withdrawTable"></tbody></table>
+<h3 style="color:#00ff88">💰 WITHDRAWAL REQUESTS - FEE 7 KES LOGIC</h3>
+<p style="font-size:10px;color:#aaa">User anatoa 100 = Fee 7, Anapokea 93. Deduct full amount kwa balance.</p>
+<table><thead><tr><th>USER</th><th>M-PESA NO</th><th>AMOUNT / FEE / RECEIVE</th><th>STATUS</th><th>ACTION</th></tr></thead><tbody id="withdrawTable"></tbody></table>
 </div>
 
 <div id="sec-offers" class="box" style="display:none">
@@ -94,13 +95,14 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;backgr
 </div>
 
 <div id="sec-payments" class="box" style="display:none">
-<h3 style="color:#00ff88">📱 PAYMENTS - TILL 3624692</h3>
+<h3 style="color:#00ff88">📱 PAYMENTS - TILL 3624692 - 80 BOB</h3>
 <table><thead><tr><th>PHONE</th><th>M-PESA CODE</th><th>AMOUNT</th><th>DATE</th></tr></thead><tbody id="paymentsTable"></tbody></table>
 </div>
 
 <div id="sec-users" class="box" style="display:none">
-<h3 style="color:#aaa">👥 ALL USERS</h3>
-<table><thead><tr><th>PHONE</th><th>BALANCE</th><th>STATUS</th><th>REF</th><th>EXPIRY</th></tr></thead><tbody id="usersTable"></tbody></table>
+<h3 style="color:#aaa">👥 ALL USERS - REFERRAL TRACKING</h3>
+<p style="font-size:10px;color:#aaa">Direct = Free 2x then pay | Referred = Locked direct, pays 80 no free | Referral 40 paid only when they pay 80</p>
+<table><thead><tr><th>PHONE</th><th>BALANCE</th><th>STATUS</th><th>INVITED BY / REF PAID</th><th>SHARE/VIEW</th><th>REF COUNT</th><th>EXPIRY</th></tr></thead><tbody id="usersTable"></tbody></table>
 </div>
 </div>
 
@@ -144,8 +146,21 @@ async function loadData(){
   loadPendingViews(); loadWithdraws(); loadOffers(); loadPayments(); loadUsersOnly();
 }
 async function loadUsersOnly(){
-  const usersSnap = await db.collection('users').orderBy('createdAt','desc').limit(100).get();
-  let html=''; usersSnap.forEach(doc=>{const d=doc.data(); const expiry = d.expiryTime ? new Date(d.expiryTime).toLocaleDateString() : '-'; html+=`<tr><td>${d.phone}</td><td style='color:#ffcc00'>KES ${d.balance}</td><td>${d.state==='paid'?'✅':'🔒'}</td><td>${d.referralCount||0}</td><td>${expiry}</td></tr>`;});
+  const usersSnap = await db.collection('users').orderBy('createdAt','desc').limit(150).get();
+  let html=''; usersSnap.forEach(doc=>{
+    const d=doc.data(); 
+    const expiry = d.expiryTime ? new Date(d.expiryTime).toLocaleDateString() : '-';
+    const invitedBy = d.referredBy ? `${d.referredBy} ${d.referralPaid? '<span style="background:#00ff88;color:#000;padding:1px 5px;border-radius:10px;font-size:9px">40 PAID</span>':'<span style="background:#ff6600;color:#000;padding:1px 5px;border-radius:10px;font-size:9px">UNPAID</span>'}` : (d.isReferredUser? 'Direct?':'Direct User');
+    const status = d.state==='paid'? '✅ UNLOCKED' : ( (d.shareCount>=2||d.viewCount>=2||d.freeDone>=2)? '🔒 LOCKED - 80' : '🟡 FREE');
+    html+=`<tr>
+      <td>${d.phone}<br><span style="font-size:8px;color:#aaa">${d.isReferredUser? 'Via LINK - No Free':'Direct'}</span></td>
+      <td style='color:#ffcc00'>KES ${d.balance}</td>
+      <td>${status}</td>
+      <td style="font-size:10px">${invitedBy}</td>
+      <td>S:${d.shareCount||0} V:${d.viewCount||0} F:${d.freeDone||0}</td>
+      <td>${d.referralCount||0}</td>
+      <td>${expiry}</td>
+    </tr>`;});
   document.getElementById('usersTable').innerHTML=html;
 }
 async function loadPendingViews(){
@@ -160,50 +175,57 @@ async function loadPendingViews(){
     const isExpired = d.expiresAt?.toDate ? now > d.expiresAt.toDate() : false;
     const isOver63 = d.views > 63;
     const isOver53 = d.views > 53;
-    
     let statusBadge = '';
     if(isOver63) statusBadge = '<span style="background:red;color:#fff;padding:2px 6px;border-radius:10px">AUTO-CANCELLED >63</span>';
     else if(isOver53) statusBadge = '<span style="background:orange;color:#fff;padding:2px 6px;border-radius:10px">LIMIT 53 EXCEEDED</span>';
     else if(isExpired) statusBadge = '<span style="background:red;color:#fff;padding:2px 6px;border-radius:10px">EXPIRED >23HRS</span>';
     else statusBadge = '<span style="background:green;color:#fff;padding:2px 6px;border-radius:10px">OK TO APPROVE</span>';
-
-    let checks = `
-      Full: ${d.isFullScreenshot?'✅ YES':'❌ NO'}<br>
-      Not Edited: ${d.isNotEdited?'✅ YES':'❌ NO'}<br>
-      Rate: ${d.rate||3} KES
-    `;
-
+    let checks = `Full: ${d.isFullScreenshot?'✅ YES':'❌ NO'}<br>Not Edited: ${d.isNotEdited?'✅ YES':'❌ NO'}<br>Rate: ${d.rate||3} KES`;
     html+=`<tr style="${isOver63||isExpired?'background:rgba(255,0,0,0.15)':''}">
       <td>${d.phone}<br>${statusBadge}</td>
       <td>${d.views} views<br><b style='color:#00ff88'>KES ${d.amount} (${d.views}x3)</b></td>
       <td style='font-size:9px'>Posted: ${posted}<br>Expires: ${expires}<br>${isExpired?'<b style="color:red">EXPIRED!</b>':'Within 23hrs'}</td>
       <td style='font-size:9px'>${checks}</td>
       <td>
-        ${isOver63||isExpired? `<button class='btn btn-red' onclick='rejectView("${doc.id}")'>❌ AUTO-REJECT</button>` : `<button class='btn btn-green' onclick='approveView("${doc.id}","${d.phone}",${d.amount})'>✅ APPROVE +${d.amount}</button><br><button class='btn btn-red' style='margin-top:4px' onclick='rejectView("${doc.id}")'>REJECT (Edited/Cropped)</button>`}
+        ${isOver63||isExpired? `<button class='btn btn-red' onclick='rejectView("${doc.id}")'>❌ AUTO-REJECT</button>` : `<button class='btn btn-green' onclick='approveView("${doc.id}","${d.phone}",${d.amount})'>✅ APPROVE +${d.amount}</button><br><button class='btn btn-red' style='margin-top:4px' onclick='rejectView("${doc.id}")'>REJECT</button>`}
       </td>
     </tr>`;
   });
   document.getElementById('pendingViewsTable').innerHTML=html;
 }
 async function approveView(id, phone, amount){
-  if(!confirm(`Approve ${phone} KES ${amount}? 3 KES per view. This will ADD to his balance.`)) return;
+  if(!confirm(`Approve ${phone} KES ${amount}? 3 KES per view.`)) return;
   await db.collection('users').doc(phone).update({balance: firebase.firestore.FieldValue.increment(amount)});
   await db.collection('pending_views').doc(id).update({status:'approved', approvedAt: new Date()});
   alert('Approved! KES '+amount+' added to '+phone);
   loadPendingViews();
 }
-async function rejectView(id){ if(!confirm('Reject this view? Reason: Edited/Cropped/Expired/Over limit?')) return; await db.collection('pending_views').doc(id).update({status:'rejected', rejectedAt: new Date()}); loadPendingViews(); }
+async function rejectView(id){ if(!confirm('Reject this view?')) return; await db.collection('pending_views').doc(id).update({status:'rejected', rejectedAt: new Date()}); loadPendingViews(); }
 async function loadWithdraws(){
   const snap = await db.collection('pending_withdrawals').where('status','==','pending').orderBy('time','desc').get().catch(async()=> await db.collection('pending_withdrawals').where('status','==','pending').get());
   let html=''; if(snap.empty) html='<tr><td colspan=5>No pending</td></tr>';
-  snap.forEach(doc=>{const d=doc.data(); html+=`<tr><td>${d.phone}</td><td>${d.mpesaPhone||d.phone}</td><td style='color:#ffcc00;font-weight:900'>KES ${d.amount}</td><td>⏳ WAITING</td><td><button class='btn btn-green' onclick='approveNewWithdraw("${doc.id}","${d.phone}",${d.amount})'>APPROVE - Deduct</button> <button class='btn btn-red' onclick='rejectNewWithdraw("${doc.id}")'>REJECT</button></td></tr>`;});
+  snap.forEach(doc=>{
+    const d=doc.data(); 
+    const fee = d.fee || 7;
+    const receive = d.receive || (d.amount - fee);
+    html+=`<tr>
+      <td>${d.phone}</td>
+      <td>${d.mpesaPhone||d.phone}</td>
+      <td style='color:#ffcc00;font-weight:900'>Ombi: KES ${d.amount}<br><span style="color:#ff6600">Fee: KES ${fee}</span><br><span style="color:#00ff88">Tuma: KES ${receive}</span></td>
+      <td>⏳ WAITING</td>
+      <td>
+        <button class='btn btn-green' onclick='approveNewWithdraw("${doc.id}","${d.phone}",${d.amount},${receive})'>APPROVE KES ${receive}</button><br>
+        <button class='btn btn-red' style="margin-top:4px" onclick='rejectNewWithdraw("${doc.id}")'>REJECT</button>
+      </td>
+    </tr>`;
+  });
   document.getElementById('withdrawTable').innerHTML=html;
 }
-async function approveNewWithdraw(id, phone, amount){
-  if(!confirm(`Have you SENT KES ${amount} to ${phone} via M-Pesa? If you click APPROVE his balance will be deducted and become 0 if he withdrew all.`)) return;
+async function approveNewWithdraw(id, phone, amount, receive){
+  if(!confirm(`Have you SENT KES ${receive||amount-7} to ${phone} via M-Pesa? (Ombi ${amount} - Fee 7 = Tuma ${receive||amount-7})\nIf YES, his balance will deduct ${amount}`)) return;
   await db.collection('users').doc(phone).update({balance: firebase.firestore.FieldValue.increment(-amount)});
   await db.collection('pending_withdrawals').doc(id).update({status:'approved', approvedAt: new Date()});
-  alert('Approved! Balance deducted -'+amount);
+  alert(`Approved! Deducted ${amount}, Sent ${receive||amount-7} to ${phone}`);
   loadWithdraws();
 }
 async function rejectNewWithdraw(id){ if(!confirm('Reject?')) return; await db.collection('pending_withdrawals').doc(id).update({status:'rejected'}); loadWithdraws(); }
@@ -214,4 +236,4 @@ async function deleteOffer(id){if(!confirm('Delete?'))return;await db.collection
 if(localStorage.getItem('mt_admin')==='yes'){showDash();}
 </script>
 </body>
-</html>
+                                                                                  </html>
