@@ -55,6 +55,12 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;backgr
 </div>
 
 <div id="adminDash" style="display:none">
+
+<div style="margin:16px;display:flex;gap:10px">
+<button id="maintBtn" onclick="toggleMaintenance()" style="flex:1;padding:14px;background:linear-gradient(90deg,#ff0033,#ff6600);color:#fff;border:0;border-radius:12px;font-weight:900;font-size:12px;cursor:pointer">🔧 ACTIVATE MAINTENANCE MODE</button>
+<div id="maintStatus" style="flex:1;background:#000;border:2px solid #00ff88;padding:12px;border-radius:12px;text-align:center;font-size:11px;font-weight:900;color:#00ff88;display:flex;align-items:center;justify-content:center">🟢 SITE LIVE</div>
+</div>
+
 <div class="till-box">
 <div style="font-size:11px;color:#ffcc00;letter-spacing:2px;font-weight:900">🔥 ACTIVE TILL • 3624692 • VERIFIED 🔥</div>
 <div class="till-num">3624692</div>
@@ -83,27 +89,18 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;backgr
 </div>
 
 <div id="sec-advert" class="box" style="display:none;border:2px solid gold">
-<h3 style="color:gold">📢 HANDMADE ADVERT + QR AUTO MERGE</h3>
-<p style="font-size:10px;color:#aaa">Upload advert yako hapa, system ita-auto bandika QR ya leo na border gold, na itaenda direct kwa website.</p>
-
-<div id="advertCurrent" class="advert-preview" style="display:none">
-<img id="currentAdvertImg" style="width:100%">
-<div style="position:absolute;bottom:8px;right:8px;background:#000;border:2px solid gold;border-radius:10px;padding:4px;text-align:center">
-<img id="currentAdvertQR" style="width:70px;height:70px;background:#fff;border-radius:6px">
-<div style="font-size:7px;color:gold;font-weight:900">SCAN VERIFY</div>
-</div>
-</div>
-
+<h3 style="color:gold">📢 HANDMADE ADVERT + QR AUTO MERGE - FIXED 1MB</h3>
+<p style="font-size:10px;color:#aaa">Upload advert yako hapa, system ita-auto compress hadi 720px na JPEG 0.55 ndio iingie Firestore.</p>
+<div id="advertCurrent" class="advert-preview" style="display:none"><img id="currentAdvertImg" style="width:100%"></div>
 <div style="margin-top:12px;background:#0f172a;padding:12px;border-radius:12px">
 <h4 style="color:gold;font-size:11px">UPLOAD HANDMADE ADVERT YAKO</h4>
 <input type="file" id="advertFile" accept="image/*">
-<p style="font-size:9px;color:#aaa;margin-top:4px">Chagua picha ya BETIKA / 1XBET / etc</p>
-<button class="btn-yellow" onclick="mergeAndUploadAdvert()">🔥 MERGE QR + BORDER + UPLOAD TO SITE</button>
+<p style="font-size:9px;color:#aaa;margin-top:4px">Chagua picha yako - ita-compress auto</p>
+<button class="btn-yellow" onclick="mergeAndUploadAdvert()">🔥 MERGE + COMPRESS + UPLOAD TO SITE</button>
 <p id="advertMsg" style="font-size:11px;color:#00ff88;margin-top:6px"></p>
 </div>
-
 <div style="margin-top:10px;background:#000;border:1px dashed gold;padding:10px;border-radius:10px">
-<p style="font-size:9px;color:gold">PREVIEW BAADA YA MERGE:</p>
+<p style="font-size:9px;color:gold">PREVIEW BAADA YA MERGE (JPEG 0.55):</p>
 <canvas id="mergeCanvas" style="width:100%;border-radius:12px;display:none"></canvas>
 <img id="mergedPreview" style="width:100%;border-radius:12px;display:none;border:3px solid gold">
 </div>
@@ -150,6 +147,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const ADMIN_PASSWORDS = ["Mtaani2024!", "mtaani2024!", "MTAANI2024!", "1234"];
 let CURRENT_QR = "MTAANI ORIGINAL | CODE: XT9-2026 | VERIFIED";
+let MAINT_MODE = false;
 
 function viewWebsite(){window.open('index.html','_blank');}
 function adminLogin(){
@@ -157,7 +155,7 @@ function adminLogin(){
   if(ADMIN_PASSWORDS.includes(p)){ localStorage.setItem('mt_admin','yes'); showDash(); }
   else { document.getElementById('adminMsg').innerText='Wrong!'; }
 }
-function showDash(){document.getElementById('loginAdmin').style.display='none';document.getElementById('adminDash').style.display='block';loadData();loadQRAdmin();loadCurrentAdvert();}
+function showDash(){document.getElementById('loginAdmin').style.display='none';document.getElementById('adminDash').style.display='block';loadData();loadQRAdmin();loadCurrentAdvert();loadMaintStatus();}
 function showSection(s){
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   document.getElementById('tab-'+s).classList.add('active');
@@ -170,6 +168,43 @@ function showSection(s){
   if(s==='withdraw') loadWithdraws();
   if(s==='payments') loadPayments();
   if(s==='users') loadUsersOnly();
+}
+
+// --- MAINTENANCE MODE - NEW ---
+async function loadMaintStatus(){
+  try{
+    const doc = await db.collection('config').doc('site_status').get();
+    if(doc.exists){ MAINT_MODE = doc.data().maintenance || false; }
+    updateMaintUI();
+  }catch(e){ updateMaintUI(); }
+}
+function updateMaintUI(){
+  const btn = document.getElementById('maintBtn');
+  const stat = document.getElementById('maintStatus');
+  if(MAINT_MODE){
+    btn.innerHTML = "✅ DEACTIVATE - RUDISHA SITE LIVE";
+    btn.style.background = "linear-gradient(90deg,#00ff88,#00cc6a)";
+    btn.style.color = "#000";
+    stat.innerHTML = "🔴 UNDER MAINTENANCE";
+    stat.style.borderColor = "#ff0033";
+    stat.style.color = "#ff0033";
+  } else {
+    btn.innerHTML = "🔧 ACTIVATE MAINTENANCE - FUNGA SITE";
+    btn.style.background = "linear-gradient(90deg,#ff0033,#ff6600)";
+    btn.style.color = "#fff";
+    stat.innerHTML = "🟢 SITE LIVE - WATU WANAONA";
+    stat.style.borderColor = "#00ff88";
+    stat.style.color = "#00ff88";
+  }
+}
+async function toggleMaintenance(){
+  const newMode = !MAINT_MODE;
+  const confirmMsg = newMode ? "FUNGA SITE YOTE? Client wataona UNDER MAINTENANCE?" : "RUDISHA SITE LIVE? Client wataiona tena?";
+  if(!confirm(confirmMsg)) return;
+  await db.collection('config').doc('site_status').set({ maintenance: newMode, updatedAt: new Date(), updatedBy: 'CEO Vincent' }, {merge:true});
+  MAINT_MODE = newMode;
+  updateMaintUI();
+  alert(newMode ? "🔴 SITE IMEFUNGWA! Iko Under Maintenance" : "🟢 SITE IMERUDI LIVE!");
 }
 
 async function loadQRAdmin(){
@@ -190,82 +225,48 @@ async function updateQRCodeAdmin(){
   document.getElementById('qrAdminMsg').innerText = '✅ UPDATED! '+newText;
   loadQRAdmin();
 }
-
-// --- ADVERT + QR AUTO MERGE ---
 async function loadCurrentAdvert(){
   try{
     const doc = await db.collection('config').doc('today_advert').get();
     if(doc.exists && doc.data().mergedImage){
       document.getElementById('advertCurrent').style.display='block';
       document.getElementById('currentAdvertImg').src = doc.data().mergedImage;
-      document.getElementById('currentAdvertQR').src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+encodeURIComponent(doc.data().qrText||CURRENT_QR);
     }
   }catch(e){}
 }
-
 async function mergeAndUploadAdvert(){
   const file = document.getElementById('advertFile').files[0];
   if(!file){ alert('Chagua advert kwanza'); return; }
   const msgEl = document.getElementById('advertMsg');
-  msgEl.innerText = '⏳ Ina-merge advert na QR na gold border...';
-
+  msgEl.innerText = '⏳ Ina-compress 720px + JPEG 0.55...';
   const advertImg = new Image();
-  const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="+encodeURIComponent(CURRENT_QR);
-  const qrImg = new Image();
-  qrImg.crossOrigin = "anonymous";
-
+  const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data="+encodeURIComponent(CURRENT_QR);
+  const qrImg = new Image(); qrImg.crossOrigin = "anonymous";
   advertImg.onload = ()=>{
     qrImg.onload = async ()=>{
-      const canvas = document.getElementById('mergeCanvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = advertImg.width;
-      canvas.height = advertImg.height;
-      // draw advert
-      ctx.drawImage(advertImg,0,0);
-      // gold border outer
-      ctx.strokeStyle = 'gold';
-      ctx.lineWidth = Math.max(6, canvas.width*0.012);
-      ctx.strokeRect(0,0,canvas.width,canvas.height);
-      // QR position bottom right
-      const qrSize = canvas.width*0.26;
-      const pad = canvas.width*0.025;
-      const x = canvas.width - qrSize - pad;
-      const y = canvas.height - qrSize - pad - 30;
-      // white bg for QR
-      ctx.fillStyle = 'white';
-      ctx.fillRect(x-6, y-6, qrSize+12, qrSize+26);
-      // gold border for QR
-      ctx.strokeStyle = 'gold';
-      ctx.lineWidth = 6;
-      ctx.strokeRect(x-6, y-6, qrSize+12, qrSize+26);
+      const canvas = document.getElementById('mergeCanvas'); const ctx = canvas.getContext('2d');
+      let w = advertImg.width; let h = advertImg.height; const MAX = 720;
+      if(w > MAX){ h = Math.round(h * (MAX / w)); w = MAX; }
+      canvas.width = w; canvas.height = h;
+      ctx.drawImage(advertImg,0,0,w,h);
+      ctx.strokeStyle = 'gold'; ctx.lineWidth = 6; ctx.strokeRect(0,0,w,h);
+      const qrSize = w*0.28; const pad = w*0.02; const x = w - qrSize - pad; const y = h - qrSize - pad - 20;
+      ctx.fillStyle = 'white'; ctx.fillRect(x-5, y-5, qrSize+10, qrSize+20);
+      ctx.strokeStyle = 'gold'; ctx.lineWidth = 4; ctx.strokeRect(x-5, y-5, qrSize+10, qrSize+20);
       ctx.drawImage(qrImg, x, y, qrSize, qrSize);
-      // text SCAN VERIFY
-      ctx.fillStyle = 'black';
-      ctx.font = `bold ${qrSize*0.12}px Inter`;
-      ctx.textAlign = 'center';
-      ctx.fillText('SCAN VERIFY', x+qrSize/2, y+qrSize+14);
-
-      const mergedBase64 = canvas.toDataURL('image/png');
-      document.getElementById('mergedPreview').src = mergedBase64;
-      document.getElementById('mergedPreview').style.display='block';
-
+      ctx.fillStyle = 'black'; ctx.font = `bold ${Math.round(qrSize*0.11)}px Inter`; ctx.textAlign = 'center';
+      ctx.fillText('SCAN VERIFY', x+qrSize/2, y+qrSize+13);
+      const mergedBase64 = canvas.toDataURL('image/jpeg', 0.55);
+      const sizeKB = Math.round(mergedBase64.length * 0.75 / 1024);
+      document.getElementById('mergedPreview').src = mergedBase64; document.getElementById('mergedPreview').style.display='block';
+      if(sizeKB > 900){ msgEl.innerHTML = `<span style="color:red">❌ Bado kubwa ${sizeKB}KB</span>`; return; }
       try{
-        await db.collection('config').doc('today_advert').set({
-          mergedImage: mergedBase64,
-          qrText: CURRENT_QR,
-          updatedAt: new Date(),
-          updatedBy: 'CEO'
-        });
-        await db.collection('config').doc('qr_code').set({text:CURRENT_QR, updatedAt:new Date()}, {merge:true});
-        msgEl.innerText = '✅ Advert + QR Imeingia Site! Client anaiona sasa kwa index.html';
-        loadCurrentAdvert();
-      }catch(e){ msgEl.innerText = '❌ Error: '+e.message; }
-    };
-    qrImg.src = qrUrl;
-  };
-  advertImg.src = URL.createObjectURL(file);
+        await db.collection('config').doc('today_advert').set({ mergedImage: mergedBase64, qrText: CURRENT_QR, updatedAt: new Date(), sizeKB: sizeKB }, {merge:true});
+        msgEl.innerHTML = `<span style="color:#00ff88">✅ SUCCESS! ${sizeKB}KB - Imeingia Site!</span>`; loadCurrentAdvert();
+      }catch(e){ msgEl.innerHTML = `<span style="color:red">❌ ${e.message}</span>`; }
+    }; qrImg.src = qrUrl;
+  }; advertImg.src = URL.createObjectURL(file);
 }
-
 async function loadData(){
   const usersSnap = await db.collection('users').get();
   let paid=0; usersSnap.forEach(doc=>{if(doc.data().state==='paid') paid++;});
@@ -315,10 +316,7 @@ async function approveNewWithdraw(id, phone, amount){
   loadWithdraws();
 }
 async function loadPayments(){ const snap = await db.collection('payments').orderBy('date','desc').limit(30).get(); let html=''; snap.forEach(doc=>{const d=doc.data(); html+=`<tr><td>${d.phone}</td><td>${d.mpesaCode}</td><td>${d.amount}</td><td>${d.date?.toDate?.()?.toLocaleString()||''}</td></tr>`;}); document.getElementById('paymentsTable').innerHTML=html; }
-
-(function(){
-  if(localStorage.getItem('mt_admin')==='yes'){showDash();}
-})();
+(function(){ if(localStorage.getItem('mt_admin')==='yes'){showDash();} })();
 </script>
 </body>
 </html>
