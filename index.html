@@ -6,6 +6,7 @@
 <title>MTAANI EARN - Earn Daily</title>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Orbitron:wght@700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -71,14 +72,14 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 <div class="rule-box">
 <b style="color:#ffcc00">📌 OFFICIAL RULES:</b><br>
 1. Rate: <b>3 KES per view</b><br>
-2. Max Limit: <b>53 views</b> only<br>
-3. 54-63 views = <b>LIMIT EXCEEDED</b> - Must resubmit with 53<br>
-4. 64+ views = <b style="color:red">AUTOMATIC CANCELLED</b><br>
-5. WhatsApp Status expires in <b>24hrs</b> - You must submit within <b>23 hours</b><br>
-6. Screenshot must be <b>FULL SCREEN</b> - Must show time posted at top. Cropped screenshots will be REJECTED<br>
-7. No edited screenshots - If edited detected, AUTOMATIC CANCELLED<br>
+2. Max Limit: <b>53 views ONLY</b> - 54+ = AUTOMATIC CANCELLED<br>
+3. Screenshot must be <b>FULL SCREEN</b> - Must show time posted at top<br>
+4. No edited screenshots - Auto-detected = CANCELLED<br>
+5. WhatsApp Status expires in <b>24hrs</b> - Submit within <b>23 hours</b><br>
+6. Typed views must match views in screenshot<br>
+7. Same screenshot cannot be reused<br>
 8. After 2 view submissions OR 2 shares, dashboard locks - Pay 80 to unlock all<br>
-9. Free 2x is ONLY for direct users - Referred users PAY 80 directly, no free
+9. Free 2x is ONLY for direct users - Referred users PAY 80 directly
 </div>
 <div class="countdown">
 <p style="font-size:10px;color:#aaa">WHATSAPP STATUS EXPIRES IN</p>
@@ -282,52 +283,150 @@ async function render(){
 async function updateBalance(inc){ await db.collection('users').doc(currentPhone).update({balance: firebase.firestore.FieldValue.increment(inc)}); currentData.balance+=inc; document.getElementById('topBal').innerText='KES '+currentData.balance; document.getElementById('balMain').innerText='KES '+currentData.balance; document.getElementById('balLock').innerText='KES '+currentData.balance; }
 async function doCheckin(){ try{ const sc = currentData.shareCount||0; const vc = currentData.viewCount||0; if(currentData.state!=='paid' && (sc>=2 || vc>=2)){document.getElementById('unlockBox').style.display='block';return;} await updateBalance(10); alert('Checked In +10'); }catch(e){alert(e.message)} }
 let timeLeft = 23 * 60 * 60; setInterval(()=>{ timeLeft--; if(timeLeft < 0) timeLeft = 23*60*60; const h = Math.floor(timeLeft/3600); const m = Math.floor((timeLeft%3600)/60); const s = timeLeft%60; const el = document.getElementById('countdown23'); if(el) el.innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; },1000);
+
+// --- NEW SECURITY FUNCTIONS - ANTI-EDIT, ANTI-FAKE ---
+async function getImageHash(file){
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  return Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function isImageEdited(file){
+  try{
+    const buffer = await file.slice(0, 10000).arrayBuffer();
+    const text = new TextDecoder('utf-8', {fatal:false}).decode(buffer);
+    const editors = ["Photoshop","PicsArt","Canva","Snapseed","Lightroom","Picsart","Adobe","Meitu","Facetune","AI"];
+    for(let ed of editors){
+      if(text.toLowerCase().includes(ed.toLowerCase())){
+        return {edited:true, reason: ed};
+      }
+    }
+    return {edited:false};
+  }catch(e){ return {edited:false}; }
+}
+
 async function submitViews(){
-  const views = parseInt(document.getElementById('viewsCount').value);
+  const typedViews = parseInt(document.getElementById('viewsCount').value);
   const fileInput = document.getElementById('fileFree');
-  const file = fileInput.value;
+  const file = fileInput.files[0];
   const postedTimeStr = document.getElementById('postedTime').value;
   const notEdited = document.getElementById('notEdited').checked;
   const fullScreen = document.getElementById('fullScreen').checked;
+  const btn = document.getElementById('viewBtn');
+
   if(!file){ alert('❌ Upload FULL screenshot! Must show time at top.'); return; }
   if(!postedTimeStr){ alert('❌ Enter when you posted the status!'); return; }
-  if(!views || views <=0){ alert('❌ Enter valid views'); return; }
+  if(!typedViews || typedViews <=0){ alert('❌ Enter valid views'); return; }
   if(!notEdited){ alert('❌ Confirm: Screenshot is NOT edited'); return; }
   if(!fullScreen){ alert('❌ Confirm: Full screenshot with time visible'); return; }
+
   const postedTime = new Date(postedTimeStr);
   const now = new Date();
   const diffHours = (now - postedTime) / (1000*60*60);
   if(diffHours > 23){
     alert('❌ EXPIRED! Posted '+Math.floor(diffHours)+' hours ago.');
     document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ EXPIRED - Posted ${Math.floor(diffHours)}hrs ago. AUTOMATIC CANCELLED</div>`;
-    try{ await db.collection('pending_views').add({phone: currentPhone, views: views, amount: 0, status: 'rejected', reason: 'expired_23hrs', postedAt: postedTime, time: new Date(), name: currentData.phone}); await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)}); currentData.viewCount = (currentData.viewCount||0)+1; }catch(e){}
+    try{ await db.collection('pending_views').add({phone: currentPhone, views: typedViews, amount: 0, status: 'rejected', reason: 'expired_23hrs', postedAt: postedTime, time: new Date(), name: currentData.phone}); await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)}); currentData.viewCount = (currentData.viewCount||0)+1; }catch(e){}
     render(); return;
   }
-  if(views > 63){
-    alert('❌ AUTOMATIC CANCELLED! Max 53');
-    document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ AUTOMATIC CANCELLED - ${views} views! Max is 53.</div>`;
-    try{ await db.collection('pending_views').add({ phone: currentPhone, views: views, amount: 0, status: 'rejected', reason: 'auto_cancelled_over_63', postedAt: postedTime, time: new Date(), name: currentData.phone }); await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)}); currentData.viewCount = (currentData.viewCount||0)+1; }catch(e){}
-    render(); return;
-  }
-  if(views > 53){ alert('⚠️ LIMIT IS 53 VIEWS ONLY!'); document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⚠️ LIMIT EXCEEDED - Max is 53</div>`; return; }
-  const amount = views * 3;
-  try{
-    await db.collection('pending_views').add({ phone: currentPhone, views: views, amount: amount, rate: 3, status: 'pending', postedAt: postedTime, expiresAt: new Date(postedTime.getTime() + 23*60*60*1000), isFullScreenshot: fullScreen, isNotEdited: notEdited, time: new Date(), name: currentData.phone });
+
+  btn.innerText = "⏳ VERIFYING IMAGE...";
+  btn.disabled = true;
+
+  try {
+    // LAYER 1: Check if edited
+    const editCheck = await isImageEdited(file);
+    if(editCheck.edited){
+      alert(`❌ THIS IMAGE IS EDITED! Detected: ${editCheck.reason}. Send ORIGINAL WhatsApp screenshot! No Photoshop/PicsArt/AI!`);
+      document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ EDITED IMAGE DETECTED - ${editCheck.reason} - AUTOMATIC CANCELLED</div>`;
+      btn.innerText = "SUBMIT VIEWS (3 KES each)";
+      btn.disabled = false;
+      try{
+        await db.collection('pending_views').add({phone: currentPhone, views: typedViews, amount: 0, status: 'rejected', reason: 'edited_'+editCheck.reason, time: new Date(), name: currentData.phone});
+      }catch(e){}
+      return;
+    }
+
+    // LAYER 2: Duplicate check via hash
+    const imgHash = await getImageHash(file);
+    const dupCheck = await db.collection('pending_views').where('imageHash','==',imgHash).limit(1).get();
+    if(!dupCheck.empty){
+      alert(`❌ THIS SCREENSHOT ALREADY USED! You cannot reuse same image.`);
+      document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ DUPLICATE SCREENSHOT - Already used before</div>`;
+      btn.innerText = "SUBMIT VIEWS (3 KES each)";
+      btn.disabled = false;
+      return;
+    }
+
+    // LAYER 3: OCR - Read views from image itself
+    btn.innerText = "⏳ READING VIEWS FROM IMAGE...";
+    const { data: { text } } = await Tesseract.recognize(file, 'eng');
+    console.log("OCR Text:", text);
+    const numbers = text.match(/\d+/g);
+    let viewsInPic = 0;
+    if(numbers){
+      // Filter reasonable view numbers (1-500)
+      const validNums = numbers.map(n=>parseInt(n)).filter(n=>n>=1 && n<=1000);
+      if(validNums.length>0) viewsInPic = Math.max(...validNums);
+    }
+
+    if(viewsInPic === 0){
+      alert(`❌ Could not read views from image. Make sure screenshot is clear and shows views number. Try again.`);
+      btn.innerText = "SUBMIT VIEWS (3 KES each)";
+      btn.disabled = false;
+      return;
+    }
+
+    // LAYER 4: YOUR MAIN RULE - ONLY 53 DOWNWARDS ALLOWED - OVER 53 = AUTO CANCELLED
+    if(viewsInPic > 53){
+      alert(`❌ AUTOMATIC CANCELLED! Detected ${viewsInPic} views in screenshot. We ONLY accept 53 and below (10,20,43,53). 54,70,108 NOT ALLOWED!`);
+      document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ AUTOMATIC CANCELLED - ${viewsInPic} views! Max is 53 DOWNWARDS only. 54+ REJECTED</div>`;
+      try{
+        await db.collection('pending_views').add({ phone: currentPhone, views: viewsInPic, typedViews: typedViews, amount: 0, status: 'rejected', reason: 'auto_cancelled_over_53_detected_'+viewsInPic, imageHash: imgHash, postedAt: postedTime, time: new Date(), name: currentData.phone, ocrText: text.substring(0,200) });
+        await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)});
+        currentData.viewCount = (currentData.viewCount||0)+1;
+      }catch(e){ console.log(e); }
+      btn.innerText = "SUBMIT VIEWS (3 KES each)";
+      btn.disabled = false;
+      render();
+      return;
+    }
+
+    // LAYER 5: Catch liars - typed vs image mismatch
+    if(typedViews!== viewsInPic){
+      alert(`❌ YOU LIED! In picture I see ${viewsInPic} views but you typed ${typedViews}. System caught you! Type the real number.`);
+      document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">❌ MISMATCH - In image: ${viewsInPic} | You typed: ${typedViews}</div>`;
+      btn.innerText = "SUBMIT VIEWS (3 KES each)";
+      btn.disabled = false;
+      return;
+    }
+
+    // SUCCESS - 53 downwards and verified
+    const amount = viewsInPic * 3;
+    await db.collection('pending_views').add({ phone: currentPhone, views: viewsInPic, amount: amount, rate: 3, status: 'pending', imageHash: imgHash, verifiedViews: viewsInPic, typedViews: typedViews, autoVerified: true, postedAt: postedTime, expiresAt: new Date(postedTime.getTime() + 23*60*60*1000), isFullScreenshot: fullScreen, isNotEdited: notEdited, time: new Date(), name: currentData.phone, ocrText: text.substring(0,200) });
     await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)});
     currentData.viewCount = (currentData.viewCount||0)+1; currentData.freeDone = (currentData.freeDone||0)+1;
-    document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING FOR APPROVAL - ${views} x 3 = KES ${amount}</div>`;
-    alert('Submitted! '+views+' x 3 = KES '+amount+' - WAITING');
+    document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING FOR APPROVAL - ✅ VERIFIED ${viewsInPic} views x 3 = KES ${amount}</div>`;
+    alert('✅ VERIFIED! Submitted! '+viewsInPic+' x 3 = KES '+amount+' - WAITING ADMIN');
+    btn.innerText = "SUBMIT VIEWS (3 KES each)";
+    btn.disabled = false;
     render();
-  }catch(e){alert(e.message)}
+
+  } catch(e){
+    console.log(e);
+    alert('Error reading image: '+e.message+' - Try clearer screenshot');
+    btn.innerText = "SUBMIT VIEWS (3 KES each)";
+    btn.disabled = false;
+  }
 }
 async function loadMyViewsStatus(){
   try{
     const snap = await db.collection('pending_views').where('phone','==',currentPhone).orderBy('time','desc').limit(1).get();
     if(!snap.empty){
       const d = snap.docs[0].data();
-      if(d.status==='pending'){ document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING - ${d.views} x 3 = KES ${d.amount}</div>`; }
+      if(d.status==='pending'){ document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING - ${d.views} x 3 = KES ${d.amount} ${d.autoVerified?'✅ VERIFIED':''}</div>`; }
       else if(d.status==='approved'){ document.getElementById('myViewsStatus').innerHTML = `<div style="background:green;color:white;padding:10px;border-radius:8px;">✅ APPROVED - KES ${d.amount}</div>`; }
-      else if(d.status==='rejected'){ const reason = d.reason==='expired_23hrs'? 'EXPIRED (23hrs)' : d.reason==='auto_cancelled_over_63'? 'AUTO-CANCELLED >63' : 'REJECTED'; document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ ${reason}</div>`; }
+      else if(d.status==='rejected'){ const reason = d.reason==='expired_23hrs'? 'EXPIRED (23hrs)' : d.reason.includes('over_53')? 'AUTO-CANCELLED >53' : d.reason.includes('edited')? 'EDITED IMAGE' : 'REJECTED'; document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ ${reason}</div>`; }
     }
   }catch(e){}
 }
