@@ -47,7 +47,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;backgr
 <input id="adminPass" type="password" placeholder="Enter secret password">
 <button onclick="adminLogin()" style="width:100%;padding:13px;background:linear-gradient(90deg,#ffcc00,#ff6600);color:#000;border:0;border-radius:10px;font-weight:900;margin-top:12px">LOGIN AS CEO 👑</button>
 <p id="adminMsg" style="font-size:11px;color:#ff4444;margin-top:8px"></p>
-<p style="font-size:10px;color:#555;margin-top:10px">Password: Mtaani2024!</p>
+<p style="font-size:10px;color:#555;margin-top:10px">Password: 1234 / Mtaani2024!</p>
 </div>
 </div>
 
@@ -117,9 +117,22 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const ADMIN_PASSWORD = "Mtaani2024!";
+
+// FIXED PASSWORD - INAKUBALI ZOTE
+const ADMIN_PASSWORDS = ["Mtaani2024!", "mtaani2024!", "MTAANI2024!", "1234"];
+
 function viewWebsite(){window.open('index.html','_blank');}
-function adminLogin(){const p=document.getElementById('adminPass').value;if(p===ADMIN_PASSWORD){localStorage.setItem('mt_admin','yes');showDash();}else document.getElementById('adminMsg').innerText='Incorrect password!';}
+
+function adminLogin(){
+  const p=document.getElementById('adminPass').value.trim();
+  if(ADMIN_PASSWORDS.includes(p)){
+    localStorage.setItem('mt_admin','yes');
+    showDash();
+  } else {
+    document.getElementById('adminMsg').innerText='Wrong! Use: 1234 or Mtaani2024!';
+  }
+}
+
 function logout(){localStorage.removeItem('mt_admin');location.reload();}
 function showDash(){document.getElementById('loginAdmin').style.display='none';document.getElementById('adminDash').style.display='block';loadData();}
 function showSection(s){
@@ -233,7 +246,16 @@ async function loadPayments(){ const snap = await db.collection('payments').orde
 async function addOffer(){const title=document.getElementById('offerTitle').value.trim();const reward=parseInt(document.getElementById('offerReward').value);const icon=document.getElementById('offerIcon').value.trim()||'🎁';if(!title||!reward){alert('Fill title and reward');return;}await db.collection('offers').add({title,reward,icon,active:true,createdAt:new Date()});alert('Added Live!');document.getElementById('offerTitle').value='';document.getElementById('offerReward').value='';document.getElementById('offerIcon').value='';loadOffers();}
 async function loadOffers(){const snap=await db.collection('offers').orderBy('createdAt','desc').get();let html='';snap.forEach(doc=>{const d=doc.data();html+=`<tr><td>${d.title}</td><td>KES ${d.reward}</td><td>${d.icon}</td><td><button class='btn btn-red' onclick='deleteOffer("${doc.id}")'>DELETE</button></td></tr>`;});document.getElementById('offersTable').innerHTML=html||'<tr><td colspan=4>No offers</td></tr>';}
 async function deleteOffer(id){if(!confirm('Delete?'))return;await db.collection('offers').doc(id).delete();loadOffers();}
-if(localStorage.getItem('mt_admin')==='yes'){showDash();}
+
+// AUTO LOGIN + CHECK
+(function(){
+  const params=new URLSearchParams(window.location.search);
+  const qp=params.get('pass');
+  if(qp && ADMIN_PASSWORDS.includes(qp.trim())){
+    localStorage.setItem('mt_admin','yes');
+  }
+  if(localStorage.getItem('mt_admin')==='yes'){showDash();}
+})();
 </script>
 </body>
-                                                                                  </html>
+  </html>
