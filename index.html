@@ -70,10 +70,8 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 <div class="box" style="margin:0;text-align:center;opacity:0.7"><p style="font-size:11px;font-weight:700">SPIN & WIN <span class="tag tag-soon">SOON</span></p><div class="spin" style="border-color:#555" onclick="showComingSoon('Spin & Win')">SOON</div><p style="font-size:11px;color:#aaa">Coming Soon</p></div>
 </div>
 
-<!-- MTAANI ADVERTS / VIEWS WITH NEW RULES -->
 <div class="box" id="freeTasks" style="border:2px solid #ffcc00">
 <h4>Mtaani Adverts / Feeds <span class="tag tag-free">OPEN</span> <span class="tag tag-new">3 BOB/VIEW</span></h4>
-
 <div class="rule-box">
 <b style="color:#ffcc00">📌 OFFICIAL RULES:</b><br>
 1. Rate: <b>3 KES per view</b><br>
@@ -82,35 +80,30 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 4. 64+ views = <b style="color:red">AUTOMATIC CANCELLED</b><br>
 5. WhatsApp Status expires in <b>24hrs</b> - You must submit within <b>23 hours</b><br>
 6. Screenshot must be <b>FULL SCREEN</b> - Must show time posted at top. Cropped screenshots will be REJECTED<br>
-7. No edited screenshots - If edited detected, AUTOMATIC CANCELLED
+7. No edited screenshots - If edited detected, AUTOMATIC CANCELLED<br>
+8. After 2 view submissions, dashboard locks - Pay 80 to unlock all
 </div>
-
 <div class="countdown">
 <p style="font-size:10px;color:#aaa">WHATSAPP STATUS EXPIRES IN</p>
 <h2 id="countdown23" style="color:#ffcc00;font-family:Orbitron">23:00:00</h2>
 <p style="font-size:9px;color:#ff6600">Submit before expiry!</p>
 </div>
-
 <div class="task"><span>1. Full Screenshot of WhatsApp Status</span><span class="tag tag-free">REQUIRED</span></div>
 <p style="font-size:10px;color:#aaa;margin:4px 0">Must show entire screen with time at top. Do not crop.</p>
 <input type="file" id="fileFree" accept="image/*">
-
 <div class="task"><span>2. When did you post? (Date & Time)</span></div>
 <input id="postedTime" type="datetime-local">
-
 <div class="task"><span>3. How many views?</span></div>
 <input id="viewsCount" type="number" placeholder="Enter views - Max 53">
-
 <div style="margin-top:10px;background:#0f172a;padding:10px;border-radius:8px">
 <label style="font-size:11px;display:flex;align-items:center;gap:8px"><input type="checkbox" id="notEdited" style="width:auto"> I confirm this screenshot is NOT edited/cropped and shows full screen with time</label>
 <label style="font-size:11px;display:flex;align-items:center;gap:8px;margin-top:6px"><input type="checkbox" id="fullScreen" style="width:auto"> This is FULL screenshot - Time is visible at top</label>
 </div>
-
-<button class="btn btn-yellow" onclick="submitViews()">SUBMIT VIEWS (3 KES each)</button>
+<button class="btn btn-yellow" onclick="submitViews()" id="viewBtn">SUBMIT VIEWS (3 KES each)</button>
 <div id="myViewsStatus" style="margin-top:8px"></div>
+<p id="viewCountInfo" style="font-size:10px;color:#aaa;margin-top:6px"></p>
 </div>
 
-<!-- QUIZ - COMING SOON -->
 <div class="box" style="opacity:0.7">
 <h4>Daily Quiz <span class="tag tag-soon">COMING SOON</span></h4>
 <div class="task"><span>❓ What is capital of Kenya?</span><span class="tag tag-soon">SOON</span></div>
@@ -119,10 +112,10 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 </div>
 
 <div class="box" id="unlockBox" style="background:#ffcc00;color:#000;text-align:center;display:none">
-<h3>🔒 DASHBOARD LOCKED!</h3><p>Balance <b id="balLock">KES 0</b> locked.</p><p style="font-size:12px">Pay <b>KES 80 ONLY</b> to TILL 3624692</p>
+<h3>🔒 DASHBOARD LOCKED!</h3><p>Balance <b id="balLock">KES 0</b> locked.</p><p style="font-size:12px">You shared 2x and submitted views 2x. Pay <b>KES 80 ONLY</b> to unlock ALL!</p>
 <div style="background:#000;color:#ffcc00;padding:12px;border-radius:8px;margin:10px 0;font-weight:900">TILL: 3624692 | Amount: 80</div>
-<input id="mpesaCode" placeholder="Mpesa Code e.g QGH7X..."><button class="btn btn-dark" onclick="unlockNow()">UNLOCK NOW</button>
-<p style="font-size:10px;margin-top:6px;color:#333">*First user FREE</p>
+<input id="mpesaCode" placeholder="Mpesa Code e.g QGH7X..."><button class="btn btn-dark" onclick="unlockNow()">UNLOCK ALL FOR 80</button>
+<p style="font-size:10px;margin-top:6px;color:#333">*Unlocks both Share Link and Views</p>
 </div>
 
 <div id="paidArea">
@@ -132,12 +125,13 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 <button class="btn btn-dark" onclick="showComingSoon('Investment')">COMING SOON</button>
 </div></div>
 
-<div class="box"><h4>Referral - Earn 40 <span class="tag tag-new">OPEN</span></h4><div id="refLink" style="background:#000;padding:10px;border-radius:8px;margin-top:10px;font-size:12px;color:#00ff88;word-break:break-all">Unlock to get link</div><div class="task"><span>Total Referrals</span><b id="refCount">0</b></div><button class="btn btn-yellow" onclick="copyReferral()">COPY REFERRAL LINK</button>
-<p style="font-size:10px;color:#aaa;margin-top:6px">KES 40 REAL per referral</p>
+<div class="box"><h4>Referral - Earn 40 <span class="tag tag-new">OPEN</span></h4><div id="refLink" style="background:#000;padding:10px;border-radius:8px;margin-top:10px;font-size:12px;color:#00ff88;word-break:break-all">Unlock to get link</div><div class="task"><span>Total Referrals</span><b id="refCount">0</b></div><button class="btn btn-yellow" onclick="copyReferral()" id="shareBtn">COPY REFERRAL LINK</button>
+<p style="font-size:10px;color:#aaa;margin-top:6px">KES 40 per referral | After 2 shares, locks and needs 80 to unlock both</p>
+<p id="shareCountInfo" style="font-size:10px;color:#aaa;margin-top:4px"></p>
 </div>
 
 <div class="box"><h4>Withdraw - Manual <span class="tag tag-new">REAL</span></h4>
-<p style="font-size:12px;color:#aaa">Min: KES 200 - Manual Approval 10-20 mins</p>
+<p style="font-size:12px;color:#aaa">Min: KES 100 - Works even if locked! Manual Approval 10-20 mins</p>
 <input id="withdrawPhone" placeholder="M-Pesa Number">
 <input id="withdrawAmt" type="number" placeholder="Amount to withdraw">
 <button class="btn btn-green" onclick="requestWithdraw()">WITHDRAW REQUEST</button>
@@ -162,26 +156,41 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 let currentPhone = localStorage.getItem('mt_current_phone') || '';
 let currentData = null;
-
+function normalizePhone(phone){
+  if(!phone) return '';
+  let p = phone.trim().replace(/\s+/g, '');
+  if(p.startsWith('+254')) p = '0' + p.slice(4);
+  if(p.startsWith('254')) p = '0' + p.slice(3);
+  return p;
+}
+function getDeviceId(){
+  let id = localStorage.getItem('mt_device_id');
+  if(!id){
+    id = 'dev_' + Math.random().toString(36).substring(2,9) + Date.now().toString(36);
+    localStorage.setItem('mt_device_id', id);
+  }
+  return id;
+}
 function showComingSoon(name){ alert('🚧 Coming Soon! - '+name+' Coming Soon'); }
 function showLogin(){document.getElementById('loginBox').style.display='block';}
 function showRegister(){document.getElementById('loginBox').style.display='none';}
-
 async function registerUser(){
-  const p=document.getElementById('phoneInput').value.trim();
+  const rawP=document.getElementById('phoneInput').value;
+  const p=normalizePhone(rawP);
   const g=document.getElementById('gmailInput').value.trim();
   const pass=document.getElementById('passInput').value.trim();
   const confirm=document.getElementById('passConfirm').value.trim();
-  const ref=document.getElementById('refInput').value.trim() || new URLSearchParams(window.location.search).get('ref') || '';
+  const rawRef=document.getElementById('refInput').value.trim() || new URLSearchParams(window.location.search).get('ref') || '';
+  const ref = rawRef? normalizePhone(rawRef) : '';
   const msg=document.getElementById('guestMsg');
-  if(p.length<10){msg.innerText='Enter valid phone';return;}
+  if(p.length<10){msg.innerText='Enter valid phone starting with 07';return;}
   if(pass.length<4){msg.innerText='Password min 4 chars';return;}
   if(pass!==confirm){msg.innerText='Passwords do not match!';return;}
   msg.innerText='Registering...';
   try{
     const docRef=db.collection('users').doc(p);
     const exists=await docRef.get();
-    if(exists.exists){msg.innerText='Line '+p+' already registered! Please login.';showLogin();return;}
+    if(exists.exists){msg.innerText='Phone '+p+' already registered! Please login.';showLogin();return;}
     const allUsers = await db.collection('users').limit(1).get();
     const isFirst = allUsers.empty;
     let state = isFirst? 'paid' : 'registered';
@@ -194,15 +203,16 @@ async function registerUser(){
         await db.collection('users').doc(ref).update({balance: firebase.firestore.FieldValue.increment(40),referralCount: firebase.firestore.FieldValue.increment(1)});
       }
     }
-    await docRef.set({phone:p,gmail:g,password:pass,balance:0,state:state,freeDone:0,referralCount:0,referredBy:referredBy,expiryTime:expiryTime,createdAt:new Date()});
+    const deviceId = getDeviceId();
+    await docRef.set({phone:p,gmail:g,password:pass,balance:0,state:state,freeDone:0,shareCount:0,viewCount:0,referralCount:0,referredBy:referredBy,expiryTime:expiryTime,deviceId:deviceId,createdAt:new Date()});
     localStorage.setItem('mt_current_phone',p);
     msg.innerText = isFirst? 'You are FIRST - FREE ACCESS!' : 'Registered! Login now';
     setTimeout(()=>location.reload(),800);
   }catch(e){ msg.innerText='Error: '+e.message; }
 }
-
 async function loginUser(){
-  const p=document.getElementById('loginPhone').value.trim();
+  const rawP=document.getElementById('loginPhone').value;
+  const p=normalizePhone(rawP);
   const pass=document.getElementById('loginPass').value.trim();
   const msg=document.getElementById('loginMsg');
   const btn=document.getElementById('loginBtn');
@@ -212,7 +222,17 @@ async function loginUser(){
     msg.innerText='Checking...';
     const doc=await db.collection('users').doc(p).get();
     if(!doc.exists){msg.innerText='User not found - Register'; btn.innerText='LOGIN NOW'; btn.disabled=false; return;}
-    if(doc.data().password!==pass){msg.innerText='Wrong password!'; btn.innerText='LOGIN NOW'; btn.disabled=false; return;}
+    const data = doc.data();
+    if(data.password!==pass){msg.innerText='Wrong password!'; btn.innerText='LOGIN NOW'; btn.disabled=false; return;}
+    const currentDeviceId = getDeviceId();
+    if(data.deviceId && data.deviceId!== currentDeviceId){
+      msg.innerText='❌ This account is already active on another phone! One Phone = One Account. Contact support.';
+      btn.innerText='LOGIN NOW'; btn.disabled=false;
+      return;
+    }
+    if(!data.deviceId){
+      await db.collection('users').doc(p).update({deviceId: currentDeviceId});
+    }
     localStorage.setItem('mt_current_phone',p);
     msg.innerText='Success! Loading...';
     location.reload();
@@ -228,13 +248,19 @@ async function loadUser(){
     const doc=await db.collection('users').doc(currentPhone).get();
     if(!doc.exists){logout();return false;}
     currentData=doc.data();
+    const curDev = getDeviceId();
+    if(currentData.deviceId && currentData.deviceId!== curDev){
+      alert('❌ Account locked to another device! One Phone = One Account.');
+      logout();
+      return false;
+    }
     const now=Date.now();
     if(currentData.expiryTime && now>currentData.expiryTime && currentData.state==='paid'){
        const firstSnap = await db.collection('users').orderBy('createdAt').limit(1).get();
        const firstPhone = firstSnap.empty? null : firstSnap.docs[0].id;
        if(currentPhone!== firstPhone){
-         await db.collection('users').doc(currentPhone).update({state:'registered',freeDone:2});
-         currentData.state='registered';currentData.freeDone=2;
+         await db.collection('users').doc(currentPhone).update({state:'registered'});
+         currentData.state='registered';
        }
     }
     return true;
@@ -251,6 +277,11 @@ async function render(){
   document.getElementById('balMain').innerText='KES '+currentData.balance;
   document.getElementById('refCount').innerText=currentData.referralCount||0;
   document.getElementById('balLock').innerText='KES '+currentData.balance;
+  document.getElementById('shareCountInfo').innerText = `Shares: ${currentData.shareCount||0}/2`;
+  document.getElementById('viewCountInfo').innerText = `Views submitted: ${currentData.viewCount||0}/2`;
+  const shareCount = currentData.shareCount || 0;
+  const viewCount = currentData.viewCount || 0;
+  const isLockedByCounts = shareCount >=2 && viewCount >=2;
   if(currentData.state==='paid'){
     document.getElementById('paidArea').style.opacity='1';
     document.getElementById('paidArea').style.pointerEvents='auto';
@@ -262,14 +293,18 @@ async function render(){
     }
     document.getElementById('refLink').innerText=window.location.origin+window.location.pathname+'?ref='+currentData.phone;
   } else {
-    if((currentData.freeDone||0)>=2){
+    if(isLockedByCounts || (currentData.freeDone||0)>=2){
       document.getElementById('unlockBox').style.display='block';
+      document.getElementById('statusText').innerText='LOCKED 🔒 - Pay 80';
       document.getElementById('paidArea').style.opacity='0.45';
       document.getElementById('paidArea').style.pointerEvents='none';
-      document.getElementById('statusText').innerText='LOCKED 🔒';
+      const withdrawBox = document.getElementById('paidArea').querySelectorAll('.box')[2];
+      if(withdrawBox){ withdrawBox.style.opacity='1'; withdrawBox.style.pointerEvents='auto'; }
     } else {
       document.getElementById('paidArea').style.opacity='0.45';
       document.getElementById('paidArea').style.pointerEvents='none';
+      const withdrawBox = document.getElementById('paidArea').querySelectorAll('.box')[2];
+      if(withdrawBox){ withdrawBox.style.opacity='1'; withdrawBox.style.pointerEvents='auto'; }
       document.getElementById('unlockBox').style.display='none';
       document.getElementById('statusText').innerText='ACTIVE - FREE';
     }
@@ -292,13 +327,13 @@ async function updateBalance(inc){
 }
 async function doCheckin(){
   try{
-    if(currentData.state!=='paid' && (currentData.freeDone||0)>=2){document.getElementById('unlockBox').style.display='block';return;}
+    const sc = currentData.shareCount||0;
+    const vc = currentData.viewCount||0;
+    if(currentData.state!=='paid' && sc>=2 && vc>=2){document.getElementById('unlockBox').style.display='block';return;}
     await updateBalance(10);
     alert('Checked In +10');
   }catch(e){alert(e.message)}
 }
-
-// COUNTDOWN 23 HOURS
 let timeLeft = 23 * 60 * 60;
 setInterval(()=>{
   timeLeft--;
@@ -309,8 +344,6 @@ setInterval(()=>{
   const el = document.getElementById('countdown23');
   if(el) el.innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 },1000);
-
-// SUBMIT VIEWS WITH ALL RULES
 async function submitViews(){
   const views = parseInt(document.getElementById('viewsCount').value);
   const fileInput = document.getElementById('fileFree');
@@ -318,90 +351,60 @@ async function submitViews(){
   const postedTimeStr = document.getElementById('postedTime').value;
   const notEdited = document.getElementById('notEdited').checked;
   const fullScreen = document.getElementById('fullScreen').checked;
-
-  // Rule: File required
   if(!file){ alert('❌ Upload FULL screenshot! Must show time at top.'); return; }
   if(!postedTimeStr){ alert('❌ Enter when you posted the status!'); return; }
   if(!views || views <=0){ alert('❌ Enter valid views'); return; }
   if(!notEdited){ alert('❌ Confirm: Screenshot is NOT edited'); return; }
   if(!fullScreen){ alert('❌ Confirm: Full screenshot with time visible'); return; }
-
-  // Rule: Check 23 hours expiry
   const postedTime = new Date(postedTimeStr);
   const now = new Date();
   const diffHours = (now - postedTime) / (1000*60*60);
   if(diffHours > 23){
     alert('❌ EXPIRED! Posted '+Math.floor(diffHours)+' hours ago. WhatsApp Status expires in 24hrs. Must submit within 23hrs.');
     document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ EXPIRED - Posted ${Math.floor(diffHours)}hrs ago. Limit is 23hrs. AUTOMATIC CANCELLED</div>`;
-    // Save as expired
     try{
-      await db.collection('pending_views').add({
-        phone: currentPhone,
-        views: views,
-        amount: 0,
-        status: 'rejected',
-        reason: 'expired_23hrs',
-        postedAt: postedTime,
-        time: new Date(),
-        name: currentData.phone
-      });
+      await db.collection('pending_views').add({phone: currentPhone, views: views, amount: 0, status: 'rejected', reason: 'expired_23hrs', postedAt: postedTime, time: new Date(), name: currentData.phone});
+      await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)});
+      currentData.viewCount = (currentData.viewCount||0)+1;
     }catch(e){}
-    return;
+    render(); return;
   }
-
-  // Rule: >63 = AUTOMATIC CANCELLED
   if(views > 63){
     alert('❌ AUTOMATIC CANCELLED! You entered '+views+' views. Max allowed is 53. You exceeded too much!');
-    document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ AUTOMATIC CANCELLED - ${views} views! Max is 53. Too high - cheating detected.</div>`;
+    document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ AUTOMATIC CANCELLED - ${views} views! Max is 53.</div>`;
     try{
-      await db.collection('pending_views').add({
-        phone: currentPhone,
-        views: views,
-        amount: 0,
-        status: 'rejected',
-        reason: 'auto_cancelled_over_63',
-        postedAt: postedTime,
-        time: new Date(),
-        name: currentData.phone
-      });
+      await db.collection('pending_views').add({ phone: currentPhone, views: views, amount: 0, status: 'rejected', reason: 'auto_cancelled_over_63', postedAt: postedTime, time: new Date(), name: currentData.phone });
+      await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)});
+      currentData.viewCount = (currentData.viewCount||0)+1;
     }catch(e){}
-    return;
+    render(); return;
   }
-
-  // Rule: >53 = LIMIT EXCEEDED
   if(views > 53){
     alert('⚠️ LIMIT IS 53 VIEWS ONLY! You entered '+views+'. Please enter 53 or less.');
     document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⚠️ LIMIT EXCEEDED - You entered ${views}, Max is 53 views only!</div>`;
     return;
   }
-
-  const amount = views * 3; // 3 BOB
+  const amount = views * 3;
   try{
     await db.collection('pending_views').add({
-      phone: currentPhone,
-      views: views,
-      amount: amount,
-      rate: 3,
-      status: 'pending',
-      postedAt: postedTime,
-      expiresAt: new Date(postedTime.getTime() + 23*60*60*1000),
-      isFullScreenshot: fullScreen,
-      isNotEdited: notEdited,
-      time: new Date(),
-      name: currentData.phone
+      phone: currentPhone, views: views, amount: amount, rate: 3, status: 'pending', postedAt: postedTime,
+      expiresAt: new Date(postedTime.getTime() + 23*60*60*1000), isFullScreenshot: fullScreen, isNotEdited: notEdited, time: new Date(), name: currentData.phone
     });
-    document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING FOR APPROVAL - ${views} views x 3 KES = KES ${amount}<br><span style="font-size:10px">Posted: ${postedTime.toLocaleString()} | Expires in 23hrs | Full screenshot: ${fullScreen?'YES':'NO'}</span></div>`;
+    await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)});
+    currentData.viewCount = (currentData.viewCount||0)+1;
+    currentData.freeDone = (currentData.freeDone||0)+1;
+    document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING FOR APPROVAL - ${views} views x 3 KES = KES ${amount}<br><span style="font-size:10px">Posted: ${postedTime.toLocaleString()} | Expires in 23hrs</span></div>`;
     alert('Submitted! '+views+' x 3 = KES '+amount+' - WAITING FOR APPROVAL');
+    render();
   }catch(e){alert(e.message)}
 }
-
 async function loadMyViewsStatus(){
   try{
     const snap = await db.collection('pending_views').where('phone','==',currentPhone).orderBy('time','desc').limit(1).get();
     if(!snap.empty){
       const d = snap.docs[0].data();
       if(d.status==='pending'){
-         document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING FOR APPROVAL - ${d.views} views x 3 = KES ${d.amount}<br><span style="font-size:10px">23hrs expiry check pending</span></div>`;
+         document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING FOR APPROVAL - ${d.views} views x 3 = KES ${d.amount}</div>`;
       } else if(d.status==='approved'){
          document.getElementById('myViewsStatus').innerHTML = `<div style="background:green;color:white;padding:10px;border-radius:8px;">✅ APPROVED - KES ${d.amount} added! (${d.views} x 3 KES)</div>`;
       } else if(d.status==='rejected'){
@@ -411,21 +414,21 @@ async function loadMyViewsStatus(){
     }
   }catch(e){}
 }
-
 async function unlockNow(){
   const code=document.getElementById('mpesaCode').value.trim();
   if(code.length<5){alert('Enter Mpesa Code from TILL 3624692');return;}
   const expiry=Date.now()+(7*24*60*60*1000);
-  await db.collection('users').doc(currentPhone).update({state:'paid',expiryTime:expiry});
+  await db.collection('users').doc(currentPhone).update({state:'paid',expiryTime:expiry,shareCount:0,viewCount:0,freeDone:0});
   await db.collection('payments').add({phone:currentPhone,mpesaCode:code,amount:80,till:'3624692',status:'pending',date:new Date()});
-  alert('Unlocked for 7 Days!');
+  alert('Unlocked for 7 Days! Both Share and Views unlocked!');
   location.reload();
 }
 async function requestWithdraw(){
-  const phone=document.getElementById('withdrawPhone').value.trim()||currentData.phone;
+  const rawPhone=document.getElementById('withdrawPhone').value.trim()||currentData.phone;
+  const phone=normalizePhone(rawPhone);
   const amt=parseInt(document.getElementById('withdrawAmt').value);
   const msg=document.getElementById('withdrawMsg');
-  if(!amt||amt<200){msg.innerText='Min 200';return;}
+  if(!amt||amt<100){msg.innerText='Min 100 KES - Even if locked you can withdraw!';return;}
   if(amt>currentData.balance){msg.innerText='Insufficient balance - KES '+currentData.balance;return;}
   msg.innerText='Sending request...';
   try{
@@ -447,7 +450,18 @@ async function loadMyWithdrawStatus(){
     }
   }catch(e){}
 }
-function copyReferral(){const link=document.getElementById('refLink').innerText;if(link.includes('Unlock')){alert('Unlock first - first user is FREE');return;}navigator.clipboard.writeText(link);alert('Copied: '+link);}
+async function copyReferral(){
+  const link=document.getElementById('refLink').innerText;
+  if(link.includes('Unlock')){alert('Unlock first - first user is FREE');return;}
+  try{
+    await db.collection('users').doc(currentPhone).update({shareCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)});
+    currentData.shareCount = (currentData.shareCount||0)+1;
+    currentData.freeDone = (currentData.freeDone||0)+1;
+    render();
+  }catch(e){}
+  navigator.clipboard.writeText(link);
+  alert('Copied: '+link+' | Share count: '+(currentData.shareCount||1)+'/2');
+}
 const urlRef=new URLSearchParams(window.location.search).get('ref');if(urlRef){document.getElementById('refInput').value=urlRef;}
 (async()=>{if(currentPhone){const ok=await loadUser();if(ok) await render();else {document.getElementById('guestView').style.display='block';}} else {document.getElementById('guestView').style.display='block';}})();
 </script>
