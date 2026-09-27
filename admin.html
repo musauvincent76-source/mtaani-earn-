@@ -1,60 +1,107 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MTAANI ADMIN - Control Panel</title>
+<title>MTAANI EARN - CEO VIP DASHBOARD</title>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#050a18;color:#fff;font-family:Inter,sans-serif;padding:12px}
-.box{background:#101828;padding:14px;border-radius:12px;border:1px solid #1f2937;margin-bottom:12px}
-.btn{padding:8px 14px;border:0;border-radius:8px;font-weight:800;cursor:pointer;margin:3px}
-.btn-green{background:#00ff88;color:#000}
-.btn-red{background:#ff0033;color:#fff}
-.btn-yellow{background:#ffcc00;color:#000}
-.btn-blue{background:#3b82f6;color:#fff}
-input{width:100%;padding:10px;border-radius:8px;border:1px solid #2d3748;background:#1a2332;color:#fff;margin-top:6px}
-.tab{display:inline-block;padding:10px 16px;background:#1a2332;border-radius:20px;margin:4px;cursor:pointer;font-size:12px;font-weight:800}
+body{background:#05080f;color:#fff;font-family:Inter,sans-serif}
+.header{backdrop-filter:blur(20px);background:rgba(0,0,0,0.6);border:1px solid rgba(255,204,0,0.2);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+.logo{font-family:Orbitron,sans-serif;font-weight:900;font-size:22px}
+.logo span{color:#ff6600}
+.badge{background:linear-gradient(90deg,#ff6600,#ffcc00);color:#000;padding:4px 12px;border-radius:20px;font-size:10px;font-weight:900}
+.till-box{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);border:2px solid #ffcc00;border-radius:16px;padding:20px;margin:16px;text-align:center}
+.till-num{font-family:Orbitron,sans-serif;font-size:42px;font-weight:900;color:#00ff88;text-shadow:0 0 20px #00ff88}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px}
+.stat-card{background:rgba(16,24,40,0.8);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px;text-align:center}
+.stat-card h3{font-family:Orbitron,sans-serif;font-size:20px;color:#ffcc00}
+.box{background:rgba(16,24,40,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;margin:12px 16px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th,td{padding:10px 6px;border-bottom:1px solid rgba(255,255,255,0.06);text-align:left}
+th{color:#ffcc00;font-size:9px}
+.btn{padding:7px 12px;border:0;border-radius:8px;font-weight:900;font-size:10px;cursor:pointer}
+.btn-green{background:linear-gradient(90deg,#00ff88,#00cc6a);color:#000}
+.btn-red{background:linear-gradient(90deg,#ff0033,#cc0029);color:#fff}
+.btn-website{background:linear-gradient(90deg,#3b82f6,#60a5fa);color:#fff;padding:10px 18px;border-radius:30px;font-weight:900;font-size:11px;border:0;cursor:pointer}
+input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;background:#0f172a;color:#fff;margin-top:8px}
+.tab{display:inline-block;padding:8px 14px;background:#1a2332;border-radius:20px;margin:3px;cursor:pointer;font-size:10px;font-weight:800}
 .tab.active{background:#ffcc00;color:#000}
-.card{border:1px solid #2d3748;padding:12px;border-radius:10px;margin:8px 0;background:#0f172a}
-h2{color:#ffcc00;margin:10px 0}
 </style>
 </head>
 <body>
-<h1 style="text-align:center;color:#ff6600">MTAANI <span style="color:#fff">ADMIN</span> 🔐</h1>
-
-<div style="text-align:center;margin:10px">
-<span class="tab active" onclick="showTab('users')" id="tab-users">👥 Users</span>
-<span class="tab" onclick="showTab('views')" id="tab-views">👁️ Pending Views</span>
-<span class="tab" onclick="showTab('withdraw')" id="tab-withdraw">💸 Withdrawals</span>
-<span class="tab" onclick="showTab('payments')" id="tab-payments">💰 Payments 80</span>
+<div class="header">
+<div><div class="logo">MTAANI <span>EARN</span></div><div style="font-size:9px;color:#aaa;letter-spacing:2px">PREMIUM • CEO VIEW • SECURED • ENGLISH RULES</div></div>
+<div style="display:flex;gap:10px;align-items:center">
+<button class="btn-website" onclick="viewWebsite()">🌐 VIEW SITE</button>
+<div style="text-align:right"><div style="font-size:10px;color:#aaa">CEO • Vincent Musau 👑</div><div class="badge">VERIFIED BOSS</div></div>
+</div>
 </div>
 
-<div id="section-users" class="box">
-<h2>👥 All Users</h2>
-<p style="font-size:11px;color:#aaa">One Phone = One Account</p>
-<input id="searchUser" placeholder="Search phone..." onkeyup="loadUsers()">
-<div id="usersList">Loading...</div>
+<div id="loginAdmin" style="max-width:400px;margin:60px auto;padding:20px">
+<h2 style="color:#ffcc00;text-align:center">🔐 CEO LOGIN</h2>
+<div class="box" style="text-align:center;border:2px solid #ffcc00">
+<input id="adminPass" type="password" placeholder="Enter secret password">
+<button onclick="adminLogin()" style="width:100%;padding:13px;background:linear-gradient(90deg,#ffcc00,#ff6600);color:#000;border:0;border-radius:10px;font-weight:900;margin-top:12px">LOGIN AS CEO 👑</button>
+<p id="adminMsg" style="font-size:11px;color:#ff4444;margin-top:8px"></p>
+<p style="font-size:10px;color:#555;margin-top:10px">Password: Mtaani2024!</p>
+</div>
 </div>
 
-<div id="section-views" class="box" style="display:none">
-<h2>👁️ Pending Views - 5 bob per view</h2>
-<p style="font-size:11px;color:#aaa">Mtu akituma screenshot, usimwongezee hadi u-approve. Ukifinya APPROVE, pesa inaingia kwa balance yake juu.</p>
-<div id="pendingViewsList">Loading...</div>
+<div id="adminDash" style="display:none">
+<div class="till-box">
+<div style="font-size:11px;color:#ffcc00;letter-spacing:2px;font-weight:900">🔥 ACTIVE TILL • VERIFIED • M-PESA MERCHANT 🔥</div>
+<div class="till-num">3624692</div>
+<div style="font-size:11px;color:#aaa;margin-top:6px">Rules: 3 BOB/View | Max 53 | >63 = Auto Cancelled | 23hrs Expiry</div>
 </div>
 
-<div id="section-withdraw" class="box" style="display:none">
-<h2>💸 Pending Withdrawals - MANUAL REAL</h2>
-<p style="font-size:11px;color:#aaa">Akirequest, kwake inasema WAITING. Ukifinya APPROVE, balance yake inashuka na kwake inakuwa APPROVED 10-20 mins.</p>
-<div id="pendingWithdrawsList">Loading...</div>
+<div class="stats">
+<div class="stat-card"><div>💰</div><div style="font-size:10px;color:#aaa">TOTAL USERS</div><h3 id="totalUsers">0</h3></div>
+<div class="stat-card"><div>👑</div><div style="font-size:10px;color:#aaa">PAID VIP</div><h3 id="totalPaid">0</h3></div>
+<div class="stat-card"><div>👁️</div><div style="font-size:10px;color:#aaa">PENDING VIEWS</div><h3 id="totalViews">0</h3></div>
+<div class="stat-card"><div>💸</div><div style="font-size:10px;color:#aaa">PENDING WITHDRAW</div><h3 id="totalWithdraw">0</h3></div>
 </div>
 
-<div id="section-payments" class="box" style="display:none">
-<h2>💰 Payments TILL 3624692 - 80</h2>
-<div id="paymentsList">Loading...</div>
+<div style="text-align:center">
+<span class="tab active" onclick="showSection('views')" id="tab-views">👁️ VIEWS (3 BOB / 53 MAX)</span>
+<span class="tab" onclick="showSection('withdraw')" id="tab-withdraw">💸 WITHDRAWALS</span>
+<span class="tab" onclick="showSection('offers')" id="tab-offers">🎁 OFFERS</span>
+<span class="tab" onclick="showSection('payments')" id="tab-payments">💰 PAYMENTS 80</span>
+<span class="tab" onclick="showSection('users')" id="tab-users">👥 USERS</span>
+</div>
+
+<div id="sec-views" class="box" style="border:2px solid #ffcc00">
+<h3 style="color:#ffcc00">👁️ PENDING VIEWS - RULES ENFORCED</h3>
+<p style="font-size:10px;color:#aaa">Rate 3 KES | Max 53 | 54-63 = Limit Warning | 64+ = Auto Cancelled | Must be within 23hrs | Full screenshot with time required | Edited/Cropped = Reject</p>
+<table><thead><tr><th>PHONE</th><th>VIEWS x 3</th><th>POSTED TIME / EXPIRY</th><th>CHECKS</th><th>ACTION</th></tr></thead><tbody id="pendingViewsTable"></tbody></table>
+</div>
+
+<div id="sec-withdraw" class="box" style="display:none;border:2px solid #00ff88">
+<h3 style="color:#00ff88">💰 WITHDRAWAL REQUESTS - MANUAL REAL</h3>
+<table><thead><tr><th>USER</th><th>M-PESA NO</th><th>AMOUNT</th><th>STATUS</th><th>ACTION</th></tr></thead><tbody id="withdrawTable"></tbody></table>
+</div>
+
+<div id="sec-offers" class="box" style="display:none">
+<h3 style="color:#00ff88">🎁 OFFERS MANAGER</h3>
+<input id="offerTitle" placeholder="Offer Title e.g Follow TikTok Page">
+<input id="offerReward" type="number" placeholder="Reward e.g 30">
+<input id="offerIcon" placeholder="Icon e.g 📱">
+<button onclick="addOffer()" style="width:100%;padding:12px;background:linear-gradient(90deg,#00ff88,#00cc6a);color:#000;border:0;border-radius:10px;font-weight:900;margin-top:10px">➕ ADD NEW OFFER</button>
+<table style="margin-top:15px"><thead><tr><th>TITLE</th><th>REWARD</th><th>ICON</th><th>ACTION</th></tr></thead><tbody id="offersTable"></tbody></table>
+</div>
+
+<div id="sec-payments" class="box" style="display:none">
+<h3 style="color:#00ff88">📱 PAYMENTS - TILL 3624692</h3>
+<table><thead><tr><th>PHONE</th><th>M-PESA CODE</th><th>AMOUNT</th><th>DATE</th></tr></thead><tbody id="paymentsTable"></tbody></table>
+</div>
+
+<div id="sec-users" class="box" style="display:none">
+<h3 style="color:#aaa">👥 ALL USERS</h3>
+<table><thead><tr><th>PHONE</th><th>BALANCE</th><th>STATUS</th><th>REF</th><th>EXPIRY</th></tr></thead><tbody id="usersTable"></tbody></table>
+</div>
 </div>
 
 <script>
@@ -68,110 +115,103 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-
-function showTab(t){
+const ADMIN_PASSWORD = "Mtaani2024!";
+function viewWebsite(){window.open('index.html','_blank');}
+function adminLogin(){const p=document.getElementById('adminPass').value;if(p===ADMIN_PASSWORD){localStorage.setItem('mt_admin','yes');showDash();}else document.getElementById('adminMsg').innerText='Incorrect password!';}
+function logout(){localStorage.removeItem('mt_admin');location.reload();}
+function showDash(){document.getElementById('loginAdmin').style.display='none';document.getElementById('adminDash').style.display='block';loadData();}
+function showSection(s){
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-  document.getElementById('tab-'+t).classList.add('active');
-  document.getElementById('section-users').style.display = t==='users'?'block':'none';
-  document.getElementById('section-views').style.display = t==='views'?'block':'none';
-  document.getElementById('section-withdraw').style.display = t==='withdraw'?'block':'none';
-  document.getElementById('section-payments').style.display = t==='payments'?'block':'none';
-  if(t==='users') loadUsers();
-  if(t==='views') loadPendingViews();
-  if(t==='withdraw') loadPendingWithdraws();
-  if(t==='payments') loadPayments();
-}
-
-// USERS
-async function loadUsers(){
-  const q = document.getElementById('searchUser').value.trim();
-  let snap;
-  if(q){ snap = await db.collection('users').where('phone','>=',q).where('phone','<=',q+'\uf8ff').get(); }
-  else { snap = await db.collection('users').orderBy('createdAt','desc').limit(100).get(); }
-  let html = `<p style="font-size:11px">Total: ${snap.size}</p>`;
-  snap.forEach(doc=>{
-    const d=doc.data();
-    html+=`<div class="card">
-      <b>${d.phone}</b> ${d.state==='paid'?'✅ PAID':'🔒 '+d.state} <br>
-      <span style="font-size:11px">Balance: <b style="color:#ffcc00">KES ${d.balance}</b> | Ref: ${d.referralCount||0} | Gmail: ${d.gmail||'-'}<br>
-      Expiry: ${d.expiryTime? new Date(d.expiryTime).toLocaleDateString() : 'N/A'} | ReferredBy: ${d.referredBy||'None'}</span><br>
-      <button class="btn btn-green" onclick="addBal('${doc.id}',50)">+50</button>
-      <button class="btn btn-red" onclick="addBal('${doc.id}',-50)">-50</button>
-      <button class="btn btn-blue" onclick="makePaid('${doc.id}')">Make PAID 7d</button>
-    </div>`;
+  document.getElementById('tab-'+s).classList.add('active');
+  ['views','withdraw','offers','payments','users'].forEach(k=>{
+    document.getElementById('sec-'+k).style.display = (k===s?'block':'none');
   });
-  document.getElementById('usersList').innerHTML = html || 'No users';
+  if(s==='views') loadPendingViews();
+  if(s==='withdraw') loadWithdraws();
+  if(s==='offers') loadOffers();
+  if(s==='payments') loadPayments();
+  if(s==='users') loadUsersOnly();
 }
-async function addBal(phone, amt){ await db.collection('users').doc(phone).update({balance: firebase.firestore.FieldValue.increment(amt)}); alert('Updated'); loadUsers(); }
-async function makePaid(phone){ const exp=Date.now()+(7*24*60*60*1000); await db.collection('users').doc(phone).update({state:'paid',expiryTime:exp}); alert('Made PAID'); loadUsers(); }
-
-// PENDING VIEWS
+async function loadData(){
+  const usersSnap = await db.collection('users').get();
+  let paid=0; usersSnap.forEach(doc=>{if(doc.data().state==='paid') paid++;});
+  document.getElementById('totalUsers').innerText=usersSnap.size;
+  document.getElementById('totalPaid').innerText=paid;
+  const viewsSnap = await db.collection('pending_views').where('status','==','pending').get();
+  document.getElementById('totalViews').innerText = viewsSnap.size;
+  const wSnap = await db.collection('pending_withdrawals').where('status','==','pending').get();
+  document.getElementById('totalWithdraw').innerText = wSnap.size;
+  loadPendingViews(); loadWithdraws(); loadOffers(); loadPayments(); loadUsersOnly();
+}
+async function loadUsersOnly(){
+  const usersSnap = await db.collection('users').orderBy('createdAt','desc').limit(100).get();
+  let html=''; usersSnap.forEach(doc=>{const d=doc.data(); const expiry = d.expiryTime ? new Date(d.expiryTime).toLocaleDateString() : '-'; html+=`<tr><td>${d.phone}</td><td style='color:#ffcc00'>KES ${d.balance}</td><td>${d.state==='paid'?'✅':'🔒'}</td><td>${d.referralCount||0}</td><td>${expiry}</td></tr>`;});
+  document.getElementById('usersTable').innerHTML=html;
+}
 async function loadPendingViews(){
-  document.getElementById('pendingViewsList').innerHTML='Loading...';
-  const snap = await db.collection('pending_views').where('status','==','pending').orderBy('time','desc').get();
+  const snap = await db.collection('pending_views').where('status','==','pending').orderBy('time','desc').get().catch(async()=> await db.collection('pending_views').where('status','==','pending').get());
   let html='';
-  if(snap.empty) html='Hakuna pending views ✅';
+  if(snap.empty) html='<tr><td colspan=5>No pending views ✅</td></tr>';
   snap.forEach(doc=>{
     const d=doc.data();
-    html+=`<div class="card" style="border-left:4px solid orange">
-      <b>${d.phone}</b> - ${d.name||''}<br>
-      Views: <b>${d.views}</b> x 5 = <b style="color:#00ff88">KES ${d.amount}</b><br>
-      <span style="font-size:10px">${d.time?.toDate().toLocaleString()}</span><br>
-      <button class="btn btn-green" onclick="approveView('${doc.id}','${d.phone}',${d.amount},${d.views})">✅ APPROVE +${d.amount}</button>
-      <button class="btn btn-red" onclick="rejectView('${doc.id}')">❌ REJECT</button>
-    </div>`;
+    const posted = d.postedAt?.toDate ? d.postedAt.toDate().toLocaleString() : (d.postedAt ? new Date(d.postedAt.seconds*1000).toLocaleString() : 'No time');
+    const expires = d.expiresAt?.toDate ? d.expiresAt.toDate().toLocaleString() : '23hrs from posted';
+    const now = new Date();
+    const isExpired = d.expiresAt?.toDate ? now > d.expiresAt.toDate() : false;
+    const isOver63 = d.views > 63;
+    const isOver53 = d.views > 53;
+    
+    let statusBadge = '';
+    if(isOver63) statusBadge = '<span style="background:red;color:#fff;padding:2px 6px;border-radius:10px">AUTO-CANCELLED >63</span>';
+    else if(isOver53) statusBadge = '<span style="background:orange;color:#fff;padding:2px 6px;border-radius:10px">LIMIT 53 EXCEEDED</span>';
+    else if(isExpired) statusBadge = '<span style="background:red;color:#fff;padding:2px 6px;border-radius:10px">EXPIRED >23HRS</span>';
+    else statusBadge = '<span style="background:green;color:#fff;padding:2px 6px;border-radius:10px">OK TO APPROVE</span>';
+
+    let checks = `
+      Full: ${d.isFullScreenshot?'✅ YES':'❌ NO'}<br>
+      Not Edited: ${d.isNotEdited?'✅ YES':'❌ NO'}<br>
+      Rate: ${d.rate||3} KES
+    `;
+
+    html+=`<tr style="${isOver63||isExpired?'background:rgba(255,0,0,0.15)':''}">
+      <td>${d.phone}<br>${statusBadge}</td>
+      <td>${d.views} views<br><b style='color:#00ff88'>KES ${d.amount} (${d.views}x3)</b></td>
+      <td style='font-size:9px'>Posted: ${posted}<br>Expires: ${expires}<br>${isExpired?'<b style="color:red">EXPIRED!</b>':'Within 23hrs'}</td>
+      <td style='font-size:9px'>${checks}</td>
+      <td>
+        ${isOver63||isExpired? `<button class='btn btn-red' onclick='rejectView("${doc.id}")'>❌ AUTO-REJECT</button>` : `<button class='btn btn-green' onclick='approveView("${doc.id}","${d.phone}",${d.amount})'>✅ APPROVE +${d.amount}</button><br><button class='btn btn-red' style='margin-top:4px' onclick='rejectView("${doc.id}")'>REJECT (Edited/Cropped)</button>`}
+      </td>
+    </tr>`;
   });
-  document.getElementById('pendingViewsList').innerHTML=html;
+  document.getElementById('pendingViewsTable').innerHTML=html;
 }
-async function approveView(docId, phone, amount, views){
-  if(!confirm(`Approve ${phone} - ${views} views = KES ${amount} ? Pesa itaingia kwa balance yake juu.`)) return;
+async function approveView(id, phone, amount){
+  if(!confirm(`Approve ${phone} KES ${amount}? 3 KES per view. This will ADD to his balance.`)) return;
   await db.collection('users').doc(phone).update({balance: firebase.firestore.FieldValue.increment(amount)});
-  await db.collection('pending_views').doc(docId).update({status:'approved', approvedAt: new Date()});
-  alert('Approved! KES '+amount+' imeingia kwa '+phone);
+  await db.collection('pending_views').doc(id).update({status:'approved', approvedAt: new Date()});
+  alert('Approved! KES '+amount+' added to '+phone);
   loadPendingViews();
 }
-async function rejectView(docId){ if(!confirm('Reject?')) return; await db.collection('pending_views').doc(docId).update({status:'rejected'}); loadPendingViews(); }
-
-// PENDING WITHDRAWALS
-async function loadPendingWithdraws(){
-  document.getElementById('pendingWithdrawsList').innerHTML='Loading...';
-  const snap = await db.collection('pending_withdrawals').where('status','==','pending').orderBy('time','desc').get();
-  let html='';
-  if(snap.empty) html='Hakuna pending withdrawals ✅';
-  snap.forEach(doc=>{
-    const d=doc.data();
-    html+=`<div class="card" style="border-left:4px solid red">
-      <b>${d.phone}</b> (M-Pesa: ${d.mpesaPhone||d.phone})<br>
-      Anataka: <b style="color:#ffcc00">KES ${d.amount}</b><br>
-      <span style="font-size:10px">${d.time?.toDate().toLocaleString()} | Name: ${d.name||''}</span><br>
-      <button class="btn btn-green" onclick="approveWithdraw('${doc.id}','${d.phone}',${d.amount})">✅ APPROVE - Kata Balance</button>
-      <button class="btn btn-red" onclick="rejectWithdraw('${doc.id}')">❌ REJECT</button>
-    </div>`;
-  });
-  document.getElementById('pendingWithdrawsList').innerHTML=html;
+async function rejectView(id){ if(!confirm('Reject this view? Reason: Edited/Cropped/Expired/Over limit?')) return; await db.collection('pending_views').doc(id).update({status:'rejected', rejectedAt: new Date()}); loadPendingViews(); }
+async function loadWithdraws(){
+  const snap = await db.collection('pending_withdrawals').where('status','==','pending').orderBy('time','desc').get().catch(async()=> await db.collection('pending_withdrawals').where('status','==','pending').get());
+  let html=''; if(snap.empty) html='<tr><td colspan=5>No pending</td></tr>';
+  snap.forEach(doc=>{const d=doc.data(); html+=`<tr><td>${d.phone}</td><td>${d.mpesaPhone||d.phone}</td><td style='color:#ffcc00;font-weight:900'>KES ${d.amount}</td><td>⏳ WAITING</td><td><button class='btn btn-green' onclick='approveNewWithdraw("${doc.id}","${d.phone}",${d.amount})'>APPROVE - Deduct</button> <button class='btn btn-red' onclick='rejectNewWithdraw("${doc.id}")'>REJECT</button></td></tr>`;});
+  document.getElementById('withdrawTable').innerHTML=html;
 }
-async function approveWithdraw(docId, phone, amount){
-  if(!confirm(`UMEMTUMIA ${phone} KES ${amount} kwa M-Pesa? Ukifinya APPROVE balance yake itashuka na kuwa 0 kama alitoa zote.`)) return;
-  // Kata balance yake - REAL DEDUCTION
+async function approveNewWithdraw(id, phone, amount){
+  if(!confirm(`Have you SENT KES ${amount} to ${phone} via M-Pesa? If you click APPROVE his balance will be deducted and become 0 if he withdrew all.`)) return;
   await db.collection('users').doc(phone).update({balance: firebase.firestore.FieldValue.increment(-amount)});
-  await db.collection('pending_withdrawals').doc(docId).update({status:'approved', approvedAt: new Date()});
-  alert('Approved! Balance ya '+phone+' imeshuka na KES '+amount+' - Sasa iko 0 kama alitoa zote.');
-  loadPendingWithdraws(); loadUsers();
+  await db.collection('pending_withdrawals').doc(id).update({status:'approved', approvedAt: new Date()});
+  alert('Approved! Balance deducted -'+amount);
+  loadWithdraws();
 }
-async function rejectWithdraw(docId){ if(!confirm('Reject?')) return; await db.collection('pending_withdrawals').doc(docId).update({status:'rejected'}); loadPendingWithdraws(); }
-
-// PAYMENTS 80
-async function loadPayments(){
-  const snap = await db.collection('payments').orderBy('date','desc').limit(100).get();
-  let html='';
-  snap.forEach(doc=>{
-    const d=doc.data();
-    html+=`<div class="card"><b>${d.phone}</b> - Code: ${d.mpesaCode} - ${d.amount} - ${d.status}<br><span style="font-size:10px">${d.date?.toDate().toLocaleString()}</span></div>`;
-  });
-  document.getElementById('paymentsList').innerHTML = html || 'No payments';
-}
-
-loadUsers();
+async function rejectNewWithdraw(id){ if(!confirm('Reject?')) return; await db.collection('pending_withdrawals').doc(id).update({status:'rejected'}); loadWithdraws(); }
+async function loadPayments(){ const snap = await db.collection('payments').orderBy('date','desc').limit(50).get(); let html=''; snap.forEach(doc=>{const d=doc.data(); const ds = d.date?.toDate ? d.date.toDate().toLocaleString() : ''; html+=`<tr><td>${d.phone}</td><td style='color:#00ff88'>${d.mpesaCode}</td><td>KES ${d.amount}</td><td>${ds}</td></tr>`;}); document.getElementById('paymentsTable').innerHTML=html||'<tr><td colspan=4>No payments</td></tr>'; }
+async function addOffer(){const title=document.getElementById('offerTitle').value.trim();const reward=parseInt(document.getElementById('offerReward').value);const icon=document.getElementById('offerIcon').value.trim()||'🎁';if(!title||!reward){alert('Fill title and reward');return;}await db.collection('offers').add({title,reward,icon,active:true,createdAt:new Date()});alert('Added Live!');document.getElementById('offerTitle').value='';document.getElementById('offerReward').value='';document.getElementById('offerIcon').value='';loadOffers();}
+async function loadOffers(){const snap=await db.collection('offers').orderBy('createdAt','desc').get();let html='';snap.forEach(doc=>{const d=doc.data();html+=`<tr><td>${d.title}</td><td>KES ${d.reward}</td><td>${d.icon}</td><td><button class='btn btn-red' onclick='deleteOffer("${doc.id}")'>DELETE</button></td></tr>`;});document.getElementById('offersTable').innerHTML=html||'<tr><td colspan=4>No offers</td></tr>';}
+async function deleteOffer(id){if(!confirm('Delete?'))return;await db.collection('offers').doc(id).delete();loadOffers();}
+if(localStorage.getItem('mt_admin')==='yes'){showDash();}
 </script>
 </body>
 </html>
