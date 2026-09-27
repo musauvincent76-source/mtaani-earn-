@@ -25,6 +25,7 @@ header{background:#001a4d;padding:14px 16px;display:flex;justify-content:space-b
 .tag{font-size:10px;padding:4px 8px;border-radius:20px;font-weight:800}
 .tag-free{background:#00ff88;color:#000}
 .tag-new{background:#ff6600;color:#fff}
+.tag-soon{background:#555;color:#fff}
 .spin{width:90px;height:90px;border-radius:50%;border:5px dashed #ffcc00;display:flex;align-items:center;justify-content:center;margin:12px auto;font-weight:900;cursor:pointer;background:#1a2332}
 input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin-top:8px;background:#1a2332;color:#fff;outline:none}
 .link{color:#ffcc00;font-size:11px;cursor:pointer;text-decoration:underline;margin-top:8px;display:inline-block}
@@ -33,6 +34,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 <body>
 <div class="container">
 <header><b style="font-family:Orbitron,sans-serif">MTAANI <span style="color:#ff6600">EARN</span></b><span id="topBal" style="background:#ffcc00;color:#000;padding:6px 14px;border-radius:20px;font-weight:900;font-size:13px">KES 0</span></header>
+
 <div id="guestView">
 <div class="box" style="text-align:center;border:2px solid #ffcc00">
 <h2>Welcome to Mtaani Earn 💰</h2>
@@ -50,38 +52,73 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 <h3>Login 🔐</h3>
 <input id="loginPhone" placeholder="Phone Number">
 <input id="loginPass" type="password" placeholder="Your Password">
-<button class="btn btn-green" onclick="loginUser()">LOGIN NOW</button>
+<button class="btn btn-green" id="loginBtn" onclick="loginUser()">LOGIN NOW</button>
 <span class="link" onclick="showRegister()">No account? REGISTER</span>
 <p id="loginMsg" style="font-size:11px;color:#ffcc00;margin-top:6px"></p>
 </div>
 </div>
+
 <div id="dashView" style="display:none">
 <div class="box" style="border:2px solid #00ff88">
 <h3 id="userPhone">071...</h3><p id="userGmail" style="font-size:11px;color:#aaa"></p>
 <div style="display:flex;gap:24px;margin-top:14px"><div><p style="font-size:11px;color:#aaa">BALANCE</p><h2 id="balMain" style="color:#ffcc00">KES 0</h2></div><div><p style="font-size:11px;color:#aaa">STATUS</p><b id="statusText">ACTIVE</b><p id="expiryText" style="font-size:10px;color:#aaa"></p></div></div>
 <button class="btn btn-dark" style="padding:8px;font-size:11px;margin-top:12px" onclick="logout()">LOGOUT</button>
 </div>
+
 <div class="grid">
 <div class="box" style="margin:0;text-align:center"><p style="font-size:11px;font-weight:700">DAILY CHECK-IN</p><div class="spin" onclick="doCheckin()">CHECK IN</div><p style="font-size:11px;color:#00ff88">+10 per day</p></div>
-<div class="box" style="margin:0;text-align:center"><p style="font-size:11px;font-weight:700">SPIN & WIN</p><div class="spin" style="border-color:#00ff88" onclick="doSpin()">SPIN</div><p style="font-size:11px;color:#ffcc00">Win 5-50</p></div>
+<div class="box" style="margin:0;text-align:center;opacity:0.7"><p style="font-size:11px;font-weight:700">SPIN & WIN <span class="tag tag-soon">SOON</span></p><div class="spin" style="border-color:#555" onclick="showComingSoon('Spin & Win')">SOON</div><p style="font-size:11px;color:#aaa">Coming Soon</p></div>
 </div>
+
+<!-- FREE TASKS - Mtaani Screenshot stays OPEN -->
 <div class="box" id="freeTasks">
-<h4>Free Tasks <span class="tag tag-free">2 FREE</span></h4>
-<div class="task"><span>1. What is capital of Kenya?</span></div><input id="ans1" placeholder="Your answer..."><button class="btn btn-yellow" onclick="doFreeTask(20,'quiz')">SUBMIT +20</button>
-<div class="task" style="margin-top:14px"><span>2. Upload WhatsApp Status Screenshot</span><span class="tag tag-free">FREE</span></div><input type="file" id="fileFree"><button class="btn btn-yellow" onclick="doFreeTask(30,'wa')">UPLOAD +30</button>
+<h4>Mtaani Adverts / Feeds <span class="tag tag-free">OPEN</span></h4>
+<p style="font-size:11px;color:#aaa;margin:6px 0">Post our ad on WhatsApp Status / Feeds, upload screenshot. 1 View = KES 5. Needs Approval.</p>
+<div class="task"><span>Upload WhatsApp Status / Feeds Screenshot</span><span class="tag tag-free">FREE</span></div>
+<input type="file" id="fileFree" accept="image/*">
+<input id="viewsCount" type="number" placeholder="Views ulipata e.g 100">
+<button class="btn btn-yellow" onclick="submitViews()">SUBMIT VIEWS (5 bob per view)</button>
+<div id="myViewsStatus" style="margin-top:8px"></div>
 </div>
+
+<!-- QUIZ - LOCKED COMING SOON -->
+<div class="box" style="opacity:0.7">
+<h4>Daily Quiz <span class="tag tag-soon">COMING SOON</span></h4>
+<div class="task"><span>❓ What is capital of Kenya?</span><span class="tag tag-soon">SOON</span></div>
+<input id="ans1" placeholder="Coming Soon..." disabled>
+<button class="btn btn-dark" onclick="showComingSoon('Daily Quiz')">COMING SOON 🚧</button>
+</div>
+
 <div class="box" id="unlockBox" style="background:#ffcc00;color:#000;text-align:center;display:none">
 <h3>🔒 DASHBOARD LOCKED!</h3><p>Balance <b id="balLock">KES 0</b> locked.</p><p style="font-size:12px">Pay <b>KES 80 ONLY</b> to TILL 3624692</p>
 <div style="background:#000;color:#ffcc00;padding:12px;border-radius:8px;margin:10px 0;font-weight:900">TILL: 3624692 | Amount: 80</div>
 <input id="mpesaCode" placeholder="Mpesa Code e.g QGH7X..."><button class="btn btn-dark" onclick="unlockNow()">UNLOCK NOW</button>
+<p style="font-size:10px;margin-top:6px;color:#333">*Mtu wa kwanza FREE - wengine ndio watalipa</p>
 </div>
-<div id="paidArea" class="locked">
-<div class="box"><h4>Daily Tasks <span class="tag tag-new">LIVE</span></h4><div id="dynamicOffers">Loading...</div></div>
-<div class="box"><h4>Referral - Earn 40</h4><div id="refLink" style="background:#000;padding:10px;border-radius:8px;margin-top:10px;font-size:12px;color:#00ff88;word-break:break-all">Unlock to get link</div><div class="task"><span>Total Referrals</span><b id="refCount">0</b></div><button class="btn btn-yellow" onclick="copyReferral()">COPY REFERRAL LINK</button></div>
-<div class="box"><h4>Withdraw</h4><p style="font-size:12px;color:#aaa">Min: KES 100</p><input id="withdrawPhone" placeholder="M-Pesa Number"><input id="withdrawAmt" type="number" placeholder="Amount"><button class="btn btn-green" onclick="withdraw()">WITHDRAW TO M-PESA</button><p id="withdrawMsg" style="font-size:11px;color:#aaa;margin-top:6px"></p></div>
+
+<div id="paidArea">
+<div class="box"><h4>Investment Plan <span class="tag tag-soon">COMING SOON</span></h4>
+<div style="background:#1a2332;padding:12px;border-radius:8px;margin-top:10px;text-align:center">
+<p style="font-size:12px">🚧 Coming Soon! Unavailable - Investment Coming Soon</p>
+<button class="btn btn-dark" onclick="showComingSoon('Investment')">COMING SOON</button>
+</div></div>
+
+<div class="box"><h4>Referral - Earn 40 <span class="tag tag-new">OPEN</span></h4><div id="refLink" style="background:#000;padding:10px;border-radius:8px;margin-top:10px;font-size:12px;color:#00ff88;word-break:break-all">Unlock to get link</div><div class="task"><span>Total Referrals</span><b id="refCount">0</b></div><button class="btn btn-yellow" onclick="copyReferral()">COPY REFERRAL LINK</button>
+<p style="font-size:10px;color:#aaa;margin-top:6px">KES 40 REAL ina-count juu direct mtu akilipa 80</p>
+</div>
+
+<div class="box"><h4>Withdraw - Manual <span class="tag tag-new">REAL</span></h4>
+<p style="font-size:12px;color:#aaa">Min: KES 200 - Manual Approval 10-20 mins</p>
+<input id="withdrawPhone" placeholder="M-Pesa Number">
+<input id="withdrawAmt" type="number" placeholder="Amount to withdraw">
+<button class="btn btn-green" onclick="requestWithdraw()">WITHDRAW REQUEST</button>
+<div id="withdrawStatus" style="margin-top:10px"></div>
+<p id="withdrawMsg" style="font-size:11px;color:#aaa;margin-top:6px"></p>
 </div>
 </div>
 </div>
+</div>
+
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyBh3Zv2N2WVsXEkMzGgpmldZ9qamUAhGSo",
@@ -96,8 +133,11 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 let currentPhone = localStorage.getItem('mt_current_phone') || '';
 let currentData = null;
+
+function showComingSoon(name){ alert('🚧 Coming Soon! Unavailable - '+name+' Coming Soon'); }
 function showLogin(){document.getElementById('loginBox').style.display='block';}
 function showRegister(){document.getElementById('loginBox').style.display='none';}
+
 async function registerUser(){
   const p=document.getElementById('phoneInput').value.trim();
   const g=document.getElementById('gmailInput').value.trim();
@@ -109,49 +149,82 @@ async function registerUser(){
   if(pass.length<4){msg.innerText='Password min 4 chars';return;}
   if(pass!==confirm){msg.innerText='Passwords do not match!';return;}
   msg.innerText='Registering...';
-  const docRef=db.collection('users').doc(p);
-  const exists=await docRef.get();
-  if(exists.exists){msg.innerText='Line '+p+' already registered! Please login.';showLogin();return;}
-  let referredBy=null;
-  if(ref){
-    const refDoc=await db.collection('users').doc(ref).get();
-    if(refDoc.exists){
-      referredBy=ref;
-      await db.collection('users').doc(ref).update({balance: firebase.firestore.FieldValue.increment(40),referralCount: firebase.firestore.FieldValue.increment(1)});
+  try{
+    const docRef=db.collection('users').doc(p);
+    const exists=await docRef.get();
+    if(exists.exists){msg.innerText='Line '+p+' already registered! Please login.';showLogin();return;}
+
+    // Check if first user = FREE
+    const allUsers = await db.collection('users').limit(1).get();
+    const isFirst = allUsers.empty;
+    let state = isFirst? 'paid' : 'registered';
+    let expiryTime = isFirst? Date.now() + (30*24*60*60*1000) : 0;
+
+    let referredBy=null;
+    if(ref){
+      const refDoc=await db.collection('users').doc(ref).get();
+      if(refDoc.exists){
+        referredBy=ref;
+        await db.collection('users').doc(ref).update({balance: firebase.firestore.FieldValue.increment(40),referralCount: firebase.firestore.FieldValue.increment(1)});
+      }
     }
-  }
-  await docRef.set({phone:p,gmail:g,password:pass,balance:0,state:'registered',freeDone:0,referralCount:0,referredBy:referredBy,expiryTime:0,createdAt:new Date()});
-  localStorage.setItem('mt_current_phone',p);
-  location.reload();
+    await docRef.set({phone:p,gmail:g,password:pass,balance:0,state:state,freeDone:0,referralCount:0,referredBy:referredBy,expiryTime:expiryTime,createdAt:new Date()});
+    localStorage.setItem('mt_current_phone',p);
+    msg.innerText = isFirst? 'You are FIRST - FREE ACCESS!' : 'Registered! Login now';
+    setTimeout(()=>location.reload(),800);
+  }catch(e){ msg.innerText='Error: '+e.message; }
 }
+
 async function loginUser(){
   const p=document.getElementById('loginPhone').value.trim();
   const pass=document.getElementById('loginPass').value.trim();
   const msg=document.getElementById('loginMsg');
-  msg.innerText='Checking...';
-  const doc=await db.collection('users').doc(p).get();
-  if(!doc.exists){msg.innerText='User not found';return;}
-  if(doc.data().password!==pass){msg.innerText='Wrong password!';return;}
-  localStorage.setItem('mt_current_phone',p);
-  location.reload();
+  const btn=document.getElementById('loginBtn');
+  if(!p||!pass){msg.innerText='Weka phone na password';return;}
+  try{
+    btn.innerText='Checking...'; btn.disabled=true;
+    msg.innerText='Checking...';
+    const doc=await db.collection('users').doc(p).get();
+    if(!doc.exists){msg.innerText='User not found - Register'; btn.innerText='LOGIN NOW'; btn.disabled=false; return;}
+    if(doc.data().password!==pass){msg.innerText='Wrong password!'; btn.innerText='LOGIN NOW'; btn.disabled=false; return;}
+    localStorage.setItem('mt_current_phone',p);
+    msg.innerText='Success! Loading...';
+    location.reload();
+  }catch(e){
+    msg.innerText='Error: '+e.message;
+    btn.innerText='LOGIN NOW'; btn.disabled=false;
+  }
 }
+
 function logout(){localStorage.removeItem('mt_current_phone');location.reload();}
+
 async function loadUser(){
   if(!currentPhone) return false;
-  const doc=await db.collection('users').doc(currentPhone).get();
-  if(!doc.exists){logout();return false;}
-  currentData=doc.data();
-  const now=Date.now();
-  if(currentData.expiryTime && now>currentData.expiryTime && currentData.state==='paid'){
-    await db.collection('users').doc(currentPhone).update({state:'registered',freeDone:2});
-    currentData.state='registered';currentData.freeDone=2;
-  }
-  return true;
+  try{
+    const doc=await db.collection('users').doc(currentPhone).get();
+    if(!doc.exists){logout();return false;}
+    currentData=doc.data();
+    const now=Date.now();
+    if(currentData.expiryTime && now>currentData.expiryTime && currentData.state==='paid' && currentData.phone!==(await db.collection('users').orderBy('createdAt').limit(1).get()).docs[0]?.id){
+      // don't auto-lock first user if needed - but general lock
+      // keep logic simple
+    }
+    if(currentData.expiryTime && now>currentData.expiryTime && currentData.state==='paid'){
+       const firstSnap = await db.collection('users').orderBy('createdAt').limit(1).get();
+       const firstPhone = firstSnap.empty? null : firstSnap.docs[0].id;
+       if(currentPhone!== firstPhone){
+         await db.collection('users').doc(currentPhone).update({state:'registered',freeDone:2});
+         currentData.state='registered';currentData.freeDone=2;
+       }
+    }
+    return true;
+  }catch(e){ console.log(e); return false; }
 }
+
 async function render(){
   const guestView=document.getElementById('guestView');
   const dashView=document.getElementById('dashView');
-  if(!currentPhone || !currentData){guestView.style.display='block';dashView.style.display='none';return;}
+  if(!currentPhone ||!currentData){guestView.style.display='block';dashView.style.display='none';return;}
   guestView.style.display='none';dashView.style.display='block';
   document.getElementById('userPhone').innerText=currentData.phone;
   document.getElementById('userGmail').innerText=currentData.gmail||'';
@@ -160,7 +233,8 @@ async function render(){
   document.getElementById('refCount').innerText=currentData.referralCount||0;
   document.getElementById('balLock').innerText='KES '+currentData.balance;
   if(currentData.state==='paid'){
-    document.getElementById('paidArea').classList.remove('locked');
+    document.getElementById('paidArea').style.opacity='1';
+    document.getElementById('paidArea').style.pointerEvents='auto';
     document.getElementById('unlockBox').style.display='none';
     document.getElementById('statusText').innerText='UNLOCKED ✅';
     if(currentData.expiryTime){
@@ -171,33 +245,27 @@ async function render(){
   } else {
     if((currentData.freeDone||0)>=2){
       document.getElementById('unlockBox').style.display='block';
-      document.getElementById('paidArea').classList.add('locked');
+      document.getElementById('paidArea').style.opacity='0.45';
+      document.getElementById('paidArea').style.pointerEvents='none';
       document.getElementById('statusText').innerText='LOCKED 🔒';
     } else {
-      document.getElementById('paidArea').classList.add('locked');
+      document.getElementById('paidArea').style.opacity='0.45';
+      document.getElementById('paidArea').style.pointerEvents='none';
       document.getElementById('unlockBox').style.display='none';
       document.getElementById('statusText').innerText='ACTIVE - FREE';
     }
-    document.getElementById('refLink').innerText='Unlock to get link';
-  }
-  loadLiveOffers();
-}
-async function loadLiveOffers(){
-  try{
-    const snap = await db.collection('offers').where('active','==',true).get();
-    let html='';
-    if(snap.empty){
-      html = `<div class="task"><span>📹 Watch Video</span><button class="btn btn-blue" style="width:auto;padding:6px 14px" onclick="doPaidTask(15)">+15</button></div>
-              <div class="task"><span>❓ Daily Quiz</span><button class="btn btn-blue" style="width:auto;padding:6px 14px" onclick="doPaidTask(20)">+20</button></div>
-              <div class="task"><span>📱 Post Ad on WhatsApp</span><button class="btn btn-blue" style="width:auto;padding:6px 14px" onclick="doPaidTask(50)">+50</button></div>`;
-    } else {
-      snap.forEach(doc=>{const d=doc.data(); html+=`<div class="task"><span>${d.icon||'🎁'} ${d.title}</span><button class="btn btn-blue" style="width:auto;padding:6px 14px" onclick="doPaidTask(${d.reward})">+${d.reward}</button></div>`;});
+    document.getElementById('refLink').innerText='Unlock to get link (First user FREE)';
+    if(currentData.referralCount>0 || (await db.collection('users').limit(1).get()).empty){
+        // allow first user ref link even if locked
+        document.getElementById('refLink').innerText=window.location.origin+window.location.pathname+'?ref='+currentData.phone;
+        document.getElementById('paidArea').querySelectorAll('.box')[1].style.opacity='1';
+        document.getElementById('paidArea').querySelectorAll('.box')[1].style.pointerEvents='auto';
     }
-    document.getElementById('dynamicOffers').innerHTML=html;
-  }catch(e){
-    document.getElementById('dynamicOffers').innerHTML=`<div class="task"><span>📹 Watch Video</span><button class="btn btn-blue" style="width:auto;padding:6px 14px" onclick="doPaidTask(15)">+15</button></div>`;
   }
+  loadMyWithdrawStatus();
+  loadMyViewsStatus();
 }
+
 async function updateBalance(inc){
   await db.collection('users').doc(currentPhone).update({balance: firebase.firestore.FieldValue.increment(inc)});
   currentData.balance+=inc;
@@ -205,18 +273,50 @@ async function updateBalance(inc){
   document.getElementById('balMain').innerText='KES '+currentData.balance;
   document.getElementById('balLock').innerText='KES '+currentData.balance;
 }
-async function doFreeTask(amount,type){
-  if((currentData.freeDone||0)>=2){document.getElementById('unlockBox').style.display='block';return;}
-  if(type==='quiz'){let a=document.getElementById('ans1').value.toLowerCase();if(!a.includes('nairobi')){alert('Wrong - Answer is Nairobi');return;}}
-  if(type==='wa'){if(!document.getElementById('fileFree').value){alert('Upload screenshot');return;}}
-  await db.collection('users').doc(currentPhone).update({balance: firebase.firestore.FieldValue.increment(amount),freeDone: firebase.firestore.FieldValue.increment(1)});
-  currentData.freeDone=(currentData.freeDone||0)+1;
-  await updateBalance(amount);
-  if(currentData.freeDone>=2) location.reload();
+
+async function doCheckin(){
+  try{
+    if(currentData.state!=='paid' && (currentData.freeDone||0)>=2){document.getElementById('unlockBox').style.display='block';return;}
+    await updateBalance(10);
+    alert('Checked In +10');
+  }catch(e){alert(e.message)}
 }
-async function doPaidTask(amount){if(currentData.state!=='paid'){alert('Pay 80 first to TILL 3624692');return;}await updateBalance(amount);}
-async function doCheckin(){if(currentData.state!=='paid' && (currentData.freeDone||0)>=2){alert('Pay 80');return;}await updateBalance(10);}
-async function doSpin(){if(currentData.state!=='paid' && (currentData.freeDone||0)>=2){alert('Pay 80');return;}const win=Math.floor(Math.random()*46)+5;await updateBalance(win);}
+
+// SUBMIT VIEWS - 5 per view with approval
+async function submitViews(){
+  const views = parseInt(document.getElementById('viewsCount').value);
+  const file = document.getElementById('fileFree').value;
+  if(!views || views<=0){alert('Weka views ulipata');return;}
+  if(!file){alert('Upload screenshot ya Feeds/Mtaani');return;}
+  const amount = views * 5;
+  try{
+    await db.collection('pending_views').add({
+      phone: currentPhone,
+      views: views,
+      amount: amount,
+      status: 'pending',
+      time: new Date(),
+      name: currentData.name || currentData.phone
+    });
+    document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING FOR APPROVAL - ${views} views = KES ${amount}</div>`;
+    alert('Submitted! KES '+amount+' - WAITING FOR APPROVAL');
+  }catch(e){alert(e.message)}
+}
+
+async function loadMyViewsStatus(){
+  try{
+    const snap = await db.collection('pending_views').where('phone','==',currentPhone).orderBy('time','desc').limit(1).get();
+    if(!snap.empty){
+      const d = snap.docs[0].data();
+      if(d.status==='pending'){
+         document.getElementById('myViewsStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING FOR APPROVAL - ${d.views} views = KES ${d.amount}</div>`;
+      } else if(d.status==='approved'){
+         document.getElementById('myViewsStatus').innerHTML = `<div style="background:green;color:white;padding:10px;border-radius:8px;">✅ APPROVED - KES ${d.amount} added!</div>`;
+      }
+    }
+  }catch(e){}
+}
+
 async function unlockNow(){
   const code=document.getElementById('mpesaCode').value.trim();
   if(code.length<5){alert('Enter Mpesa Code from TILL 3624692');return;}
@@ -226,21 +326,38 @@ async function unlockNow(){
   alert('Unlocked for 7 Days!');
   location.reload();
 }
-async function withdraw(){
-  if(currentData.state!=='paid'){alert('Pay 80 first');return;}
+
+// WITHDRAW - Manual Real
+async function requestWithdraw(){
   const phone=document.getElementById('withdrawPhone').value.trim()||currentData.phone;
   const amt=parseInt(document.getElementById('withdrawAmt').value);
   const msg=document.getElementById('withdrawMsg');
-  if(!amt||amt<100){msg.innerText='Min 100. Balance KES '+currentData.balance;return;}
-  if(amt>currentData.balance){msg.innerText='Insufficient balance';return;}
+  if(!amt||amt<200){msg.innerText='Min 200';return;}
+  if(amt>currentData.balance){msg.innerText='Balance haitoshi - KES '+currentData.balance;return;}
   msg.innerText='Sending request...';
-  await db.collection('withdrawals').add({username:currentData.phone,phone:phone,amount:amt,status:'pending',date:new Date()});
-  await db.collection('users').doc(currentPhone).update({balance: firebase.firestore.FieldValue.increment(-amt)});
-  currentData.balance-=amt;
-  msg.innerText='KES '+amt+' sent - pending approval';
-  render();
+  try{
+    await db.collection('pending_withdrawals').add({phone:currentPhone,mpesaPhone:phone,amount:amt,status:'pending',time:new Date(),name:currentData.phone});
+    msg.innerText='Request sent - WAITING FOR APPROVAL';
+    document.getElementById('withdrawStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING FOR APPROVAL - KES ${amt}</div>`;
+  }catch(e){msg.innerText=e.message}
 }
-function copyReferral(){const link=document.getElementById('refLink').innerText;if(link.includes('Unlock')){alert('Unlock first');return;}navigator.clipboard.writeText(link);alert('Copied: '+link);}
+
+async function loadMyWithdrawStatus(){
+  try{
+    const snap = await db.collection('pending_withdrawals').where('phone','==',currentPhone).orderBy('time','desc').limit(1).get();
+    if(!snap.empty){
+      const d = snap.docs[0].data();
+      if(d.status==='pending'){
+         document.getElementById('withdrawStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING FOR APPROVAL - KES ${d.amount}</div>`;
+      } else if(d.status==='approved'){
+         document.getElementById('withdrawStatus').innerHTML = `<div style="background:green;color:white;padding:10px;border-radius:8px;">✅ APPROVED - KES ${d.amount} - utapata in 10-20 mins!</div>`;
+      }
+    }
+  }catch(e){}
+}
+
+function copyReferral(){const link=document.getElementById('refLink').innerText;if(link.includes('Unlock')){alert('Unlock first - first user is FREE');return;}navigator.clipboard.writeText(link);alert('Copied: '+link);}
+
 const urlRef=new URLSearchParams(window.location.search).get('ref');if(urlRef){document.getElementById('refInput').value=urlRef;}
 (async()=>{if(currentPhone){const ok=await loadUser();if(ok) await render();else {document.getElementById('guestView').style.display='block';}} else {document.getElementById('guestView').style.display='block';}})();
 </script>
