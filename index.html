@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MTAANI EARN - Earn Daily in Kenya</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#060b18;color:#fff;font-family:Inter, system-ui, sans-serif;line-height:1.5}
@@ -33,39 +35,31 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 <b>MTAANI <span style="color:#ff6600">EARN</span></b>
 <span id="topBal" style="background:#ffcc00;color:#000;padding:6px 14px;border-radius:20px;font-weight:900;font-size:13px">KES 0</span>
 </header>
-
-<!-- GUEST VIEW: REGISTRATION -->
 <div id="guestView">
 <div class="box" style="text-align:center;border:2px solid #ffcc00">
 <h2>Welcome to Mtaani Earn 💰</h2>
-<p style="font-size:13px;color:#9ca3af;margin:10px 0">One Line = One Account. Create password to secure your account.</p>
+<p style="font-size:13px;color:#9ca3af;margin:10px 0">One Line = One Account. Secured by Server.</p>
 <input id="phoneInput" type="tel" placeholder="Phone e.g 0712345678">
 <input id="gmailInput" type="email" placeholder="Gmail for recovery">
 <input id="passInput" type="password" placeholder="Create Password (min 4)">
 <input id="passConfirm" type="password" placeholder="Confirm Password">
+<input id="refInput" type="text" placeholder="Referral Phone (Optional)">
 <button class="btn btn-yellow" onclick="registerUser()">REGISTER FREE</button>
-<span class="link" onclick="showLogin()">Already have account? LOGIN with password</span>
-<p style="font-size:11px;color:#6b7280;margin-top:10px">System detects duplicate lines automatically.</p>
+<span class="link" onclick="showLogin()">Already have account? LOGIN</span>
+<p id="guestMsg" style="font-size:11px;color:#9ca3af;text-align:center;margin-top:8px"></p>
 </div>
-
 <div class="box" style="text-align:center;display:none" id="loginBox">
 <h3>Login 🔐</h3>
 <input id="loginPhone" placeholder="Phone Number">
 <input id="loginPass" type="password" placeholder="Your Password">
 <button class="btn btn-green" onclick="loginUser()">LOGIN NOW</button>
 <span class="link" onclick="showRegister()">No account? REGISTER</span>
-</div>
-
-<div class="box">
-<h4>How It Works</h4>
-<p style="font-size:12px;color:#9ca3af;margin-top:8px">1. Register with Password<br>2. 2 FREE Tasks = KES 50<br>3. Pay 80 to TILL 3624692 for 7 Days<br>4. Unlock tasks + Referral 40<br>5. Withdraw Min 100 to M-Pesa</p>
+<p id="loginMsg" style="font-size:11px;color:#9ca3af;text-align:center;margin-top:8px"></p>
 </div>
 </div>
-
-<!-- DASHBOARD VIEW -->
 <div id="dashView" style="display:none">
 <div class="box" style="border:2px solid #00ff88">
-<p style="font-size:11px;color:#9ca3af;letter-spacing:1px">MY ACCOUNT</p>
+<p style="font-size:11px;color:#9ca3af;letter-spacing:1px">MY ACCOUNT - SECURED</p>
 <h3 id="userPhone">071...</h3>
 <p id="userGmail" style="font-size:11px;color:#aaa"></p>
 <div style="display:flex;gap:24px;margin-top:14px">
@@ -74,12 +68,10 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 </div>
 <button class="btn btn-dark" style="padding:8px;font-size:11px;margin-top:12px" onclick="logout()">LOGOUT</button>
 </div>
-
 <div class="grid">
 <div class="box" style="margin:0;text-align:center"><p style="font-size:11px;font-weight:700">DAILY CHECK-IN</p><div class="spin" onclick="doCheckin()">CHECK IN</div><p style="font-size:11px;color:#00ff88" id="checkinMsg">+10 per day</p></div>
 <div class="box" style="margin:0;text-align:center"><p style="font-size:11px;font-weight:700">SPIN & WIN</p><div class="spin" style="border-color:#00ff88" onclick="doSpin()">SPIN</div><p style="font-size:11px;color:#ffcc00" id="spinMsg">Win 5-50</p></div>
 </div>
-
 <div class="box" id="freeTasks">
 <h4>Free Tasks <span class="tag tag-free">2 FREE</span></h4>
 <div class="task"><span>1. What is capital of Kenya?</span></div>
@@ -89,7 +81,6 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 <input type="file" id="fileFree">
 <button class="btn btn-yellow" onclick="doFreeTask(30,'wa')">UPLOAD +30</button>
 </div>
-
 <div class="box" id="unlockBox" style="background:#ffcc00;color:#000;text-align:center;display:none">
 <h3>🔒 DASHBOARD LOCKED!</h3>
 <p style="font-size:13px;margin:8px 0">Balance <b id="balLock">KES 0</b> locked.</p>
@@ -97,176 +88,189 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 <div style="background:#000;color:#ffcc00;padding:12px;border-radius:8px;margin:10px 0;font-weight:900">TILL: 3624692 | Amount: 80</div>
 <input id="mpesaCode" placeholder="Mpesa Code e.g QGH7X...">
 <button class="btn btn-dark" onclick="unlockNow()">UNLOCK NOW</button>
+<p id="unlockMsg" style="font-size:11px;color:#000;text-align:center;margin-top:8px"></p>
 </div>
-
 <div id="paidArea" class="locked">
 <div class="box"><h4>Daily Tasks <span class="tag tag-new">UNLIMITED</span></h4>
 <div class="task"><span>📹 Watch Video</span><button class="btn btn-blue" style="width:auto;padding:6px 14px" onclick="doPaidTask(15)">+15</button></div>
 <div class="task"><span>❓ Daily Quiz</span><button class="btn btn-blue" style="width:auto;padding:6px 14px" onclick="doPaidTask(20)">+20</button></div>
 <div class="task"><span>📱 Post Ad on WhatsApp</span><button class="btn btn-blue" style="width:auto;padding:6px 14px" onclick="doPaidTask(50)">+50</button></div>
 </div>
-<div class="box"><h4>Referral - Earn 40 Per Line</h4><div id="refLink" style="background:#000;padding:10px;border-radius:8px;margin-top:10px;font-size:12px;color:#00ff88">Unlock to get link</div>
+<div class="box"><h4>Referral - Earn 40 Per Line</h4><div id="refLink" style="background:#000;padding:10px;border-radius:8px;margin-top:10px;font-size:12px;color:#00ff88;word-break:break-all">Unlock to get link</div>
 <div class="task"><span>Total Referrals</span><b id="refCount">0</b></div>
-<button class="btn btn-yellow" onclick="simulateReferral()">SIMULATE REFERRAL +40</button>
+<button class="btn btn-yellow" onclick="copyReferral()">COPY REFERRAL LINK</button>
 </div>
-<div class="box"><h4>Withdraw</h4><p style="font-size:12px;color:#aaa">Min: KES 100</p><button class="btn btn-green" onclick="withdraw()">WITHDRAW TO M-PESA</button></div>
+<div class="box"><h4>Withdraw</h4><p style="font-size:12px;color:#aaa">Min: KES 100</p>
+<input id="withdrawPhone" placeholder="M-Pesa 07...">
+<input id="withdrawAmt" type="number" placeholder="Amount">
+<button class="btn btn-green" onclick="withdraw()">WITHDRAW TO M-PESA</button>
+<p id="withdrawMsg" style="font-size:11px;color:#9ca3af;text-align:center;margin-top:8px"></p>
 </div>
 </div>
 </div>
-
+</div>
 <script>
-let balance = parseInt(localStorage.getItem('mt_balance') || '0');
-let phone = localStorage.getItem('mt_phone') || '';
-let gmail = localStorage.getItem('mt_gmail') || '';
-let state = localStorage.getItem('mt_state') || 'guest';
-let freeDone = parseInt(localStorage.getItem('mt_freeDone') || '0');
-let referralCount = parseInt(localStorage.getItem('mt_refCount') || '0');
-
-function showLogin(){ document.getElementById('loginBox').style.display='block'; }
-function showRegister(){ document.getElementById('loginBox').style.display='none'; }
-
-function registerUser(){
-  let p = document.getElementById('phoneInput').value.trim();
-  let g = document.getElementById('gmailInput').value.trim();
-  let pass = document.getElementById('passInput').value.trim();
-  let confirm = document.getElementById('passConfirm').value.trim();
-  
-  if(p.length < 10){ alert('Enter valid phone'); return; }
-  if(pass.length < 4){ alert('Password must be at least 4 characters'); return; }
-  if(pass !== confirm){ alert('Passwords do not match!'); return; }
-  
-  let allUsers = JSON.parse(localStorage.getItem('mt_all_users') || '[]');
-  if(allUsers.find(u => u.phone === p)){
-    alert('This line ' + p + ' already registered! Please LOGIN with your password.');
-    showLogin();
-    return;
-  }
-  
-  allUsers.push({phone: p, gmail: g, password: pass});
-  localStorage.setItem('mt_all_users', JSON.stringify(allUsers));
-  localStorage.setItem('mt_phone', p);
-  localStorage.setItem('mt_gmail', g);
-  localStorage.setItem('mt_state', 'registered');
-  localStorage.setItem('mt_balance', '0');
-  localStorage.setItem('mt_freeDone', '0');
-  alert('Account created for ' + p + ' with password!');
-  location.reload();
-}
-
-function loginUser(){
-  let p = document.getElementById('loginPhone').value.trim();
-  let pass = document.getElementById('loginPass').value.trim();
-  let allUsers = JSON.parse(localStorage.getItem('mt_all_users') || '[]');
-  let found = allUsers.find(u => u.phone === p && u.password === pass);
-  if(found){
-    localStorage.setItem('mt_phone', found.phone);
-    localStorage.setItem('mt_gmail', found.gmail || '');
-    // Restore previous state if was paid and not expired
-    let savedState = localStorage.getItem('mt_state_' + p) || 'registered';
-    localStorage.setItem('mt_state', savedState);
-    alert('Welcome back ' + p);
-    location.reload();
-  } else {
-    alert('Wrong phone or password!');
-  }
-}
-
-function logout(){
-  localStorage.setItem('mt_state', 'guest');
-  localStorage.removeItem('mt_phone');
-  location.reload();
-}
-
-function checkExpiry(){
-  let expiry = parseInt(localStorage.getItem('mt_expiry_time') || '0');
-  let now = new Date().getTime();
-  if(expiry > 0 && now > expiry && state === 'paid'){
-    localStorage.setItem('mt_state', 'registered');
-    localStorage.setItem('mt_freeDone', '2');
-    alert('⏰ 7 DAYS EXPIRED! Locked again. Pay 80 to continue.');
-    location.reload();
-    return true;
-  }
-  return false;
-}
-
-function render(){
-  if(state === 'guest'){
-    document.getElementById('guestView').style.display = 'block';
-    document.getElementById('dashView').style.display = 'none';
-    return;
-  }
-  document.getElementById('guestView').style.display = 'none';
-  document.getElementById('dashView').style.display = 'block';
-  document.getElementById('userPhone').innerText = phone;
-  document.getElementById('userGmail').innerText = gmail;
-  document.getElementById('topBal').innerText = 'KES ' + balance;
-  document.getElementById('balMain').innerText = 'KES ' + balance;
-  document.getElementById('refCount').innerText = referralCount;
-  
-  if(state === 'paid'){
-    document.getElementById('paidArea').classList.remove('locked');
-    document.getElementById('unlockBox').style.display = 'none';
-    document.getElementById('statusText').innerText = 'UNLOCKED ✅';
-    let expiry = parseInt(localStorage.getItem('mt_expiry_time')||'0');
-    if(expiry){
-      let daysLeft = Math.ceil((expiry - new Date().getTime())/(1000*60*60*24));
-      document.getElementById('expiryText').innerText = 'Expires in ' + daysLeft + ' days';
+const firebaseConfig = {
+  apiKey: "AIzaSyBh3Zv2N2WVsXEI1mX2vX_example_REPLACE_WITH_YOURS",
+  authDomain: "mtaani-earn.firebaseapp.com",
+  projectId: "mtaani-earn",
+  storageBucket: "mtaani-earn.firebasestorage.app",
+  messagingSenderId: "104845000000",
+  appId: "1:104845000000:web:abc123example",
+  measurementId: "G-TL5DYR9K6H"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+let currentPhone = localStorage.getItem('mt_current_phone') || '';
+let currentData = null;
+function showLogin(){document.getElementById('loginBox').style.display='block';}
+function showRegister(){document.getElementById('loginBox').style.display='none';}
+async function registerUser(){
+  const p=document.getElementById('phoneInput').value.trim();
+  const g=document.getElementById('gmailInput').value.trim();
+  const pass=document.getElementById('passInput').value.trim();
+  const confirm=document.getElementById('passConfirm').value.trim();
+  const ref=document.getElementById('refInput').value.trim() || new URLSearchParams(window.location.search).get('ref') || '';
+  const msg=document.getElementById('guestMsg');
+  if(p.length<10){msg.innerText='Enter valid phone';return;}
+  if(pass.length<4){msg.innerText='Password min 4';return;}
+  if(pass!==confirm){msg.innerText='Passwords do not match!';return;}
+  msg.innerText='Registering...';
+  const docRef=db.collection('users').doc(p);
+  const exists=await docRef.get();
+  if(exists.exists){msg.innerText='Line '+p+' already registered! Login.';showLogin();return;}
+  let referredBy=null;
+  if(ref){
+    const refDoc=await db.collection('users').doc(ref).get();
+    if(refDoc.exists){
+      referredBy=ref;
+      await db.collection('users').doc(ref).update({balance: firebase.firestore.FieldValue.increment(40),referralCount: firebase.firestore.FieldValue.increment(1)});
     }
-    document.getElementById('refLink').innerText = 'https://mtaani-earn.com/?ref=' + phone;
   }
-  if(freeDone >= 2 && state === 'registered'){
-    document.getElementById('unlockBox').style.display = 'block';
-    document.getElementById('balLock').innerText = 'KES ' + balance;
-    document.getElementById('paidArea').classList.add('locked');
-    document.getElementById('statusText').innerText = 'LOCKED 🔒';
+  const newUser={phone:p,gmail:g,password:pass,balance:0,state:'registered',freeDone:0,referralCount:0,myRefCode:p,referredBy:referredBy,expiryTime:0,createdAt:new Date()};
+  await docRef.set(newUser);
+  localStorage.setItem('mt_current_phone',p);
+  msg.innerText='Account created!';
+  location.reload();
+}
+async function loginUser(){
+  const p=document.getElementById('loginPhone').value.trim();
+  const pass=document.getElementById('loginPass').value.trim();
+  const msg=document.getElementById('loginMsg');
+  msg.innerText='Checking...';
+  const doc=await db.collection('users').doc(p).get();
+  if(!doc.exists){msg.innerText='User haipo';return;}
+  if(doc.data().password!==pass){msg.innerText='Wrong password!';return;}
+  localStorage.setItem('mt_current_phone',p);
+  location.reload();
+}
+function logout(){localStorage.removeItem('mt_current_phone');location.reload();}
+async function loadUser(){
+  if(!currentPhone) return false;
+  const doc=await db.collection('users').doc(currentPhone).get();
+  if(!doc.exists){logout();return false;}
+  currentData=doc.data();
+  const now=Date.now();
+  if(currentData.expiryTime && now>currentData.expiryTime && currentData.state==='paid'){
+    await db.collection('users').doc(currentPhone).update({state:'registered',freeDone:2});
+    currentData.state='registered';currentData.freeDone=2;
+  }
+  return true;
+}
+async function render(){
+  const guestView=document.getElementById('guestView');
+  const dashView=document.getElementById('dashView');
+  if(!currentPhone || !currentData){guestView.style.display='block';dashView.style.display='none';return;}
+  guestView.style.display='none';dashView.style.display='block';
+  document.getElementById('userPhone').innerText=currentData.phone;
+  document.getElementById('userGmail').innerText=currentData.gmail||'';
+  document.getElementById('topBal').innerText='KES '+currentData.balance;
+  document.getElementById('balMain').innerText='KES '+currentData.balance;
+  document.getElementById('refCount').innerText=currentData.referralCount||0;
+  document.getElementById('balLock').innerText='KES '+currentData.balance;
+  if(currentData.state==='paid'){
+    document.getElementById('paidArea').classList.remove('locked');
+    document.getElementById('unlockBox').style.display='none';
+    document.getElementById('statusText').innerText='UNLOCKED ✅';
+    if(currentData.expiryTime){
+      const daysLeft=Math.ceil((currentData.expiryTime-Date.now())/(1000*60*60*24));
+      document.getElementById('expiryText').innerText='Expires in '+daysLeft+' days';
+    }
+    document.getElementById('refLink').innerText=window.location.origin+window.location.pathname+'?ref='+currentData.phone;
+  } else {
+    if((currentData.freeDone||0)>=2){
+      document.getElementById('unlockBox').style.display='block';
+      document.getElementById('paidArea').classList.add('locked');
+      document.getElementById('statusText').innerText='LOCKED 🔒';
+    } else {
+      document.getElementById('paidArea').classList.add('locked');
+      document.getElementById('unlockBox').style.display='none';
+      document.getElementById('statusText').innerText='ACTIVE - FREE';
+    }
+    document.getElementById('refLink').innerText='Unlock to get link';
   }
 }
-
-function save(){
-  localStorage.setItem('mt_balance', balance);
-  localStorage.setItem('mt_freeDone', freeDone);
-  localStorage.setItem('mt_refCount', referralCount);
-  if(phone){ localStorage.setItem('mt_state_' + phone, state); }
+async function updateBalance(inc){
+  await db.collection('users').doc(currentPhone).update({balance: firebase.firestore.FieldValue.increment(inc)});
+  currentData.balance+=inc;
+  document.getElementById('topBal').innerText='KES '+currentData.balance;
+  document.getElementById('balMain').innerText='KES '+currentData.balance;
+  document.getElementById('balLock').innerText='KES '+currentData.balance;
+}
+async function doFreeTask(amount,type){
+  if((currentData.freeDone||0)>=2){document.getElementById('unlockBox').style.display='block';return;}
+  if(type==='quiz'){let a=document.getElementById('ans1').value.toLowerCase();if(!a.includes('nairobi')){alert('Wrong - Answer is Nairobi');return;}}
+  if(type==='wa'){if(!document.getElementById('fileFree').value){alert('Upload screenshot');return;}}
+  await db.collection('users').doc(currentPhone).update({balance: firebase.firestore.FieldValue.increment(amount),freeDone: firebase.firestore.FieldValue.increment(1)});
+  currentData.freeDone=(currentData.freeDone||0)+1;
+  await updateBalance(amount);
+  if(currentData.freeDone>=2) location.reload();
+}
+async function doPaidTask(amount){
+  if(currentData.state!=='paid'){alert('Pay 80 first to TILL 3624692');return;}
+  await updateBalance(amount);
+}
+async function doCheckin(){if(currentData.state!=='paid' && (currentData.freeDone||0)>=2){alert('Pay 80');return;}await updateBalance(10);}
+async function doSpin(){if(currentData.state!=='paid' && (currentData.freeDone||0)>=2){alert('Pay 80');return;}const win=Math.floor(Math.random()*46)+5;await updateBalance(win);}
+async function unlockNow(){
+  const code=document.getElementById('mpesaCode').value.trim();
+  if(code.length<5){alert('Enter Mpesa Code from TILL 3624692');return;}
+  document.getElementById('unlockMsg').innerText='Verifying...';
+  const expiry=Date.now()+(7*24*60*60*1000);
+  await db.collection('users').doc(currentPhone).update({state:'paid',expiryTime:expiry});
+  await db.collection('payments').add({phone:currentPhone,mpesaCode:code,amount:80,till:'3624692',status:'pending',date:new Date()});
+  alert('Unlocked for 7 Days! Admin will verify code: '+code);
+  location.reload();
+}
+async function withdraw(){
+  if(currentData.state!=='paid'){alert('Pay 80 first');return;}
+  const phone=document.getElementById('withdrawPhone').value.trim()||currentData.phone;
+  const amt=parseInt(document.getElementById('withdrawAmt').value);
+  const msg=document.getElementById('withdrawMsg');
+  if(!amt||amt<100){msg.innerText='Min 100. Balance KES '+currentData.balance;return;}
+  if(amt>currentData.balance){msg.innerText='Balance haitoshi';return;}
+  msg.innerText='Sending request...';
+  await db.collection('withdrawals').add({username:currentData.phone,phone:phone,amount:amt,status:'pending',date:new Date()});
+  await db.collection('users').doc(currentPhone).update({balance: firebase.firestore.FieldValue.increment(-amt)});
+  currentData.balance-=amt;
+  msg.innerText='KES '+amt+' sent to '+phone+' - pending approval';
   render();
 }
-
-function doFreeTask(amount, type){
-  if(freeDone >= 2){ document.getElementById('unlockBox').style.display='block'; return; }
-  if(type==='quiz'){ let a=document.getElementById('ans1').value.toLowerCase(); if(!a.includes('nairobi')){alert('Wrong - Nairobi');return;} }
-  if(type==='wa'){ if(!document.getElementById('fileFree').value){alert('Upload screenshot');return;} }
-  balance += amount; freeDone++; save();
+function copyReferral(){
+  const link=document.getElementById('refLink').innerText;
+  if(link.includes('Unlock')){alert('Unlock first');return;}
+  navigator.clipboard.writeText(link);
+  alert('Copied: '+link);
 }
-
-function doPaidTask(amount){ if(state !== 'paid'){ alert('Pay 80 first'); return; } balance += amount; save(); }
-function doCheckin(){ if(state!=='paid' && freeDone>=2){alert('Pay 80');return;} balance+=10; save(); }
-function doSpin(){ if(state!=='paid' && freeDone>=2){alert('Pay 80');return;} let win=Math.floor(Math.random()*46)+5; balance+=win; save(); }
-
-function unlockNow(){
-  let code = document.getElementById('mpesaCode').value.trim();
-  if(code.length < 5){ alert('Enter Mpesa Code from TILL 3624692'); return; }
-  let expiry = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
-  localStorage.setItem('mt_expiry_time', expiry);
-  localStorage.setItem('mt_state', 'paid');
-  state = 'paid';
-  save();
-  location.reload();
-}
-
-function withdraw(){
-  if(state !== 'paid'){ alert('Pay 80'); return; }
-  if(balance < 100){ alert('Min 100. Balance KES ' + balance); return; }
-  alert('KES ' + balance + ' sent to ' + phone);
-  balance = 0; save();
-}
-
-function simulateReferral(){
-  if(state !== 'paid'){ alert('Unlock first'); return; }
-  balance += 40; referralCount++; save();
-}
-
-checkExpiry();
-render();
+const urlRef=new URLSearchParams(window.location.search).get('ref');
+if(urlRef){document.getElementById('refInput').value=urlRef;}
+(async()=>{
+  if(currentPhone){
+    const ok=await loadUser();
+    if(ok) await render();
+    else {document.getElementById('guestView').style.display='block';}
+  } else {document.getElementById('guestView').style.display='block';}
+})();
 </script>
 </body>
 </html>
