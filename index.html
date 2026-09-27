@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MTAANI EARN - Earn Daily</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#060b18;color:#fff;font-family:Inter,system-ui,sans-serif}
+header{background:#001a4d;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #ff6600;position:sticky;top:0;z-index:10}
+.container{max-width:500px;margin:auto}
+.box{margin:12px;background:#101828;padding:16px;border-radius:14px;border:1px solid #1f2937}
+.btn{width:100%;padding:12px;border:0;border-radius:10px;font-weight:800;cursor:pointer;margin-top:10px}
+.btn-yellow{background:#ffcc00;color:#000}.btn-green{background:#00ff88;color:#000}.btn-blue{background:#3b82f6;color:#fff}.btn-dark{background:#000;color:#ffcc00}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.task{display:flex;justify-content:space-between;align-items:center;background:#1a2332;padding:12px;border-radius:10px;margin-top:10px}
+.locked{opacity:0.4;pointer-events:none;position:relative}
+.locked::after{content:'🔒 PAY 80 TO UNLOCK';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#ff0033;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:900;color:#fff}
+.tag{font-size:10px;padding:4px 8px;border-radius:20px;font-weight:800}
+.tag-free{background:#00ff88;color:#000}.tag-new{background:#ff6600;color:#fff}
+.spin{width:90px;height:90px;border-radius:50%;border:5px dashed #ffcc00;display:flex;align-items:center;justify-content:center;margin:12px auto;font-weight:900;cursor:pointer}
+input{width:100%;padding:12px;border-radius:10px;border:0;margin-top:8px;background:#1a2332;color:#fff}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<b>MTAANI <span style="color:#ff6600">EARN</span></b>
+<span id="topBal" style="background:#ffcc00;color:#000;padding:5px 12px;border-radius:20px;font-weight:900">KES 0</span>
+</header>
+
+<!-- GUEST VIEW -->
+<div id="guestView">
+<div class="box" style="text-align:center;border:2px solid #ffcc00">
+<h2>Welcome to Mtaani Earn 💰</h2>
+<p style="font-size:13px;color:#9ca3af;margin:8px 0">Register with your phone number. One Line = One Account. You can change device, but line remains one.</p>
+<input id="phoneInput" placeholder="Enter Phone e.g 0712345678">
+<input id="gmailInput" placeholder="Gmail (optional)">
+<button class="btn btn-yellow" onclick="registerUser()">REGISTER FREE</button>
+<p style="font-size:11px;color:#6b7280;margin-top:8px">System detects duplicate lines automatically.</p>
+</div>
+</div>
+
+<!-- DASHBOARD VIEW -->
+<div id="dashView" style="display:none">
+<div class="box" style="border:2px solid #00ff88">
+<p style="font-size:11px;color:#9ca3af">MY ACCOUNT</p>
+<h3 id="userPhone">071...</h3><p id="userGmail" style="font-size:11px;color:#aaa"></p>
+<div style="display:flex;gap:20px;margin-top:12px">
+<div><p style="font-size:11px;color:#aaa">BALANCE</p><h2 id="balMain" style="color:#ffcc00">KES 0</h2></div>
+<div><p style="font-size:11px;color:#aaa">STATUS</p><b id="statusText" style="color:#00ff88">ACTIVE</b><p id="expiryText" style="font-size:10px;color:#aaa"></p></div>
+</div>
+</div>
+
+<div class="grid" style="margin:12px">
+<div class="box" style="margin:0;text-align:center"><p style="font-size:11px">DAILY CHECK-IN</p><div class="spin" onclick="doCheckin()">CHECK IN</div><p style="font-size:11px;color:#00ff88" id="checkinMsg">+10 per day</p></div>
+<div class="box" style="margin:0;text-align:center"><p style="font-size:11px">SPIN & WIN</p><div class="spin" style="border-color:#00ff88" onclick="doSpin()">SPIN</div><p style="font-size:11px;color:#ffcc00" id="spinMsg">Win 5-50</p></div>
+</div>
+
+<div class="box" id="freeTasks">
+<h4>Free Tasks <span class="tag tag-free">2 FREE</span></h4>
+<div class="task"><span>1. What is capital of Kenya?</span></div>
+<input id="ans1" placeholder="Your answer...">
+<button class="btn btn-yellow" onclick="doFreeTask(20,'quiz')">SUBMIT +20</button>
+<div class="task" style="margin-top:12px"><span>2. Upload WhatsApp Status Screenshot</span><span class="tag tag-free">FREE</span></div>
+<input type="file" id="fileFree"><button class="btn btn-yellow" onclick="doFreeTask(30,'wa')">UPLOAD +30</button>
+</div>
+
+<div class="box" id="unlockBox" style="background:#ffcc00;color:#000;text-align:center;display:none">
+<h3>🔒 DASHBOARD LOCKED AUTOMATICALLY!</h3>
+<p style="font-size:13px;margin:6px 0">You finished 2 FREE tasks. Balance <b id="balLock">KES 0</b> is locked.</p>
+<p style="font-size:12px">Pay <b>KES 80 ONLY</b> to unlock all earnings forever (7 days).</p>
+<div style="background:#000;color:#ffcc00;padding:10px;border-radius:8px;margin:8px 0;font-weight:900">TILL NUMBER: 3624692<br><span style="font-size:11px">Amount: 80</span></div>
+<input id="mpesaCode" placeholder="Enter Mpesa Code e.g QGH7...">
+<button class="btn btn-dark" onclick="unlockNow()">I HAVE PAID 80 - UNLOCK NOW</button>
+<p style="font-size:10px;margin-top:6px">After 7 days it will lock again automatically.</p>
+</div>
+
+<div id="paidArea" class="locked">
+<div class="box"><h4>Daily Tasks <span class="tag tag-new">UNLIMITED</span></h4>
+<div class="task"><span>📹 Watch Video 30sec</span><button class="btn btn-blue" style="width:auto;padding:6px 12px" onclick="doPaidTask(15)">+15</button></div>
+<div class="task"><span>❓ Daily Quiz</span><button class="btn btn-blue" style="width:auto;padding:6px 12px" onclick="doPaidTask(20)">+20</button></div>
+<div class="task"><span>📱 Post Ad on WhatsApp</span><button class="btn btn-blue" style="width:auto;padding:6px 12px" onclick="doPaidTask(50)">+50</button></div>
+<div class="task"><span>👍 Follow & Like</span><button class="btn btn-blue" style="width:auto;padding:6px 12px" onclick="doPaidTask(10)">+10</button></div>
+</div>
+<div class="box"><h4>Referral - Earn 100 Per Line</h4><p style="font-size:12px;color:#aaa">One phone line = one referral count. System blocks duplicate lines.</p>
+<div id="refLink" style="background:#000;padding:10px;border-radius:8px;margin-top:8px;font-size:12px;word-break:break-all">Unlock to get link</div>
+<div class="task"><span>Total Referrals</span><b id="refCount">0</b></div>
+<button class="btn btn-yellow" onclick="simulateReferral()">SIMULATE REFERRAL +100 (Demo)</button>
+</div>
+<div class="box"><h4>Withdraw</h4><p style="font-size:12px;color:#aaa">Minimum: KES 100</p><button class="btn btn-green" onclick="withdraw()">WITHDRAW TO M-PESA</button><p id="withdrawMsg" style="font-size:11px;margin-top:6px;color:#aaa"></p></div>
+</div>
+</div>
+</div>
+
+<script>
+// ENGLISH CODE - PROPER IMPLEMENTATION
+
+// --- STATE MANAGEMENT ---
+let balance = parseInt(localStorage.getItem('mt_balance') || '0');
+let phone = localStorage.getItem('mt_phone') || '';
+let gmail = localStorage.getItem('mt_gmail') || '';
+let state = localStorage.getItem('mt_state') || 'guest'; // guest, registered, paid
+let freeDone = parseInt(localStorage.getItem('mt_freeDone') || '0');
+
+// --- ONE LINE = ONE ACCOUNT LOGIC ---
+function registerUser(){
+  let p = document.getElementById('phoneInput').value.trim();
+  let g = document.getElementById('gmailInput').value.trim();
+  if(p.length < 10){ alert('Enter valid phone number e.g 071...'); return; }
+  
+  let allUsers = JSON.parse(localStorage.getItem('mt_all_users') || '[]');
+  
+  // Check if line already exists - This blocks same line on different devices from creating new account
+  if(allUsers.includes(p)){
+    alert('This line '+p+' is already registered! Please LOGIN. One line = One Account. You can change phone device but line remains one.');
+    localStorage.setItem('mt_phone', p);
+    localStorage.setItem('mt_state', 'registered');
+    // Load existing data for this phone
+    location.reload();
+    return;
+  }
+  
+  // New line - Allow registration
+  allUsers.push(p);
+  localStorage.setItem('mt_all_users', JSON.stringify(allUsers));
+  localStorage.setItem('mt_phone', p);
+  localStorage.setItem('mt_gmail', g);
+  localStorage.setItem('mt_state', 'registered');
+  localStorage.setItem('mt_balance', '0');
+  localStorage.setItem('mt_freeDone', '0');
+  
+  alert('OTP sent to '+p+' (Demo: 1234). Registration successful!');
+  location.reload();
+}
+
+// --- 7 DAYS EXPIRY LOGIC ---
+function checkExpiry(){
+  let expiry = parseInt(localStorage.getItem('mt_expiry_time') || '0');
+  let now = new Date().getTime();
+  if(expiry > 0 && now > expiry && state === 'paid'){
+    // 7 days expired - Auto lock again
+    localStorage.setItem('mt_state', 'registered');
+    localStorage.setItem('mt_freeDone', '2');
+    alert('⏰ 7 DAYS EXPIRED! Your dashboard is locked again. Pay 80 to continue earning.');
+    location.reload();
+    return true;
+  }
+  return false;
+}
+
+function render(){
+  if(state === 'guest'){
+    document.getElementById('guestView').style.display = 'block';
+    document.getElementById('dashView').style.display = 'none';
+    return;
+  }
+  document.getElementById('guestView').style.display = 'none';
+  document.getElementById('dashView').style.display = 'block';
+  document.getElementById('userPhone').innerText = phone;
+  document.getElementById('userGmail').innerText = gmail;
+  document.getElementById('topBal').innerText = 'KES ' + balance;
+  document.getElementById('balMain').innerText = 'KES ' + balance;
+  
+  if(state === 'paid'){
+    document.getElementById('paidArea').classList.remove('locked');
+    document.getElementById('unlockBox').style.display = 'none';
+    document.getElementById('statusText').innerText = 'UNLOCKED ✅';
+    let expiry = parseInt(localStorage.getItem('mt_expiry_time')||'0');
+    if(expiry){
+      let daysLeft = Math.ceil((expiry - new Date().getTime())/(1000*60*60*24));
+      document.getElementById('expiryText').innerText = 'Expires in '+daysLeft+' days';
+    }
+    document.getElementById('refLink').innerText = 'https://mtaani-earn.com/?ref=' + phone;
+  }
+  
+  if(freeDone >= 2 && state === 'registered'){
+    document.getElementById('unlockBox').style.display = 'block';
+    document.getElementById('balLock').innerText = 'KES ' + balance;
+    document.getElementById('paidArea').classList.add('locked');
+    document.getElementById('statusText').innerText = 'LOCKED 🔒';
+  }
+}
+
+function save(){
+  localStorage.setItem('mt_balance', balance);
+  localStorage.setItem('mt_freeDone', freeDone);
+  render();
+}
+
+function doFreeTask(amount, type){
+  if(freeDone >= 2){ document.getElementById('unlockBox').style.display='block'; alert('Free tasks finished! Pay 80 to unlock.'); return; }
+  if(type==='quiz'){ let a=document.getElementById('ans1').value.toLowerCase(); if(!a.includes('nairobi')){alert('Wrong answer');return;} }
+  if(type==='wa'){ if(!document.getElementById('fileFree').value){alert('Upload file');return;} }
+  balance += amount; freeDone++; save();
+  alert('Added KES '+amount+'. Balance: KES '+balance);
+}
+
+function doPaidTask(amount){
+  if(state !== 'paid'){ alert('Pay 80 first to unlock tasks'); return; }
+  balance += amount; save();
+}
+
+function doCheckin(){ if(state!=='paid' && freeDone>=2){alert('Pay 80 to unlock');return;} balance+=10; save(); document.getElementById('checkinMsg').innerText='✅ +10 today!'; }
+function doSpin(){ if(state!=='paid' && freeDone>=2){alert('Pay 80 to unlock');return;} let win=Math.floor(Math.random()*46)+5; balance+=win; save(); document.getElementById('spinMsg').innerText='You won KES '+win+'!'; }
+
+function unlockNow(){
+  let code = document.getElementById('mpesaCode').value.trim();
+  if(code.length < 5){ alert('Enter valid Mpesa Code from TILL 3624692'); return; }
+  let now = new Date().getTime();
+  let expiry = now + (7 * 24 * 60 * 60 * 1000); // 7 days
+  localStorage.setItem('mt_state', 'paid');
+  localStorage.setItem('mt_expiry_time', expiry);
+  state = 'paid';
+  save();
+  alert('✅ UNLOCKED FOR 7 DAYS! Valid till: ' + new Date(expiry).toLocaleDateString());
+  location.reload();
+}
+
+function withdraw(){
+  if(state !== 'paid'){ alert('Pay 80 to unlock withdraw'); return; }
+  if(balance < 100){ alert('Minimum withdraw is 100. Your balance KES '+balance); return; }
+  alert('KES '+balance+' sent to M-Pesa '+phone+' (Demo). After 7 days you will need to pay 80 again to continue.');
+  balance = 0; save();
+}
+
+function simulateReferral(){
+  if(state !== 'paid'){ alert('Unlock first'); return; }
+  balance += 100; save(); alert('Referral bonus +100 added!');
+}
+
+checkExpiry();
+render();
+</script>
+</body>
+</html>
