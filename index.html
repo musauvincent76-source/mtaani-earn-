@@ -4,7 +4,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Orbitron:wght@700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -26,8 +25,6 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 .link{color:#ffcc00;font-size:11px;cursor:pointer;text-decoration:underline;margin-top:8px;display:inline-block}
 .rule-box{background:#1a2332;border-left:3px solid #ffcc00;padding:10px;border-radius:8px;margin:8px 0;font-size:11px;line-height:1.5}
 .countdown{background:#000;border:1px solid #ffcc00;padding:8px;border-radius:8px;text-align:center;margin:8px 0}
-.qr-gold-box{border:3px solid gold;background:#000;padding:10px;border-radius:14px;text-align:center;margin:10px 0}
-.qr-gold-box img{width:110px;height:110px;border:4px solid #fff;border-radius:10px;background:#fff}
 #todayAdvertMergedImg{width:100%;max-height:420px;object-fit:contain;background:#000;display:block}
 .st{padding:10px;border-radius:8px;color:#fff}
 </style></head><body>
@@ -61,19 +58,15 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <div style="display:flex;gap:24px;margin-top:14px"><div><p style="font-size:11px;color:#aaa">BALANCE</p><h2 id="balMain" style="color:#ffcc00">KES 0</h2></div><div><p style="font-size:11px;color:#aaa">STATUS</p><b id="statusText">ACTIVE</b><p id="expiryText" style="font-size:10px;color:#aaa"></p></div></div>
 <button class="btn btn-dark" style="padding:8px;font-size:11px;margin-top:12px" onclick="logout()">LOGOUT</button>
 </div>
-<div id="ownerQRPanel" style="display:none" class="box qr-gold-box">
-<h3 style="color:gold">👑 OWNER ADMIN CONTROL</h3>
-<p style="font-size:11px;color:#aaa">Set Today's QR, Caption and Advert. Old QR becomes invalid.</p>
-<input id="newQrCodeInput" placeholder="QR Text e.g MTAANI ORIGINAL | CODE: XT9-2026 | VERIFIED">
+<div id="ownerQRPanel" style="display:none" class="box" style="border:2px solid gold">
+<h3 style="color:gold">👑 OWNER ADMIN CONTROL - DOT SECURED</h3>
+<p style="font-size:11px;color:#aaa">Upload Today's Advert - System will auto add 2 DOT security. No QR.</p>
 <textarea id="newCaptionInput" placeholder="Enter Today's Status Caption here..." style="min-height:90px"></textarea>
 <input id="newAdvertLinkInput" placeholder="Advert Image Link (Imgur / Postimages) - Optional">
-<button class="btn btn-yellow" onclick="updateQrAndCaption()">UPDATE TODAY'S ADVERT</button>
+<button class="btn btn-yellow" onclick="updateAdvertWithDot()">UPDATE TODAY'S ADVERT (WITH 2 DOT)</button>
 <p id="qrUpdateMsg" style="font-size:11px;color:#00ff88;margin-top:6px"></p>
 <h4 style="color:gold;margin-top:14px">💰 PENDING PAYMENTS (80)</h4><div id="pendingPayments"></div>
 <button class="btn btn-dark" style="font-size:11px;padding:8px" onclick="loadPendingPayments()">🔄 REFRESH</button>
-<div class="qr-gold-box" id="officialQRBox" style="display:none">
-<p style="font-size:10px;color:gold;font-weight:900">🔐 OFFICIAL QR</p><img id="qrTodayImg" src="" alt="QR">
-<p id="qrCodeText" style="font-size:9px;margin-top:6px;background:#1a2332;padding:4px;border-radius:6px"></p></div>
 </div>
 <div class="grid">
 <div class="box" style="margin:0;text-align:center"><p style="font-size:11px;font-weight:700">DAILY CHECK-IN</p><div class="spin" onclick="doCheckin()">CHECK IN</div><p style="font-size:11px;color:#00ff88">+10 per day</p></div>
@@ -85,8 +78,7 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <p style="background:linear-gradient(90deg,gold,#ffcc00);color:#000;text-align:center;font-weight:900;font-size:11px;padding:6px">🔥 TODAY'S OFFICIAL ADVERT - DOWNLOAD HERE 🔥</p>
 <img id="todayAdvertMergedImg" src="">
 <div style="padding:10px;background:#000;text-align:center">
-<button class="btn btn-yellow" style="margin-top:0" onclick="downloadTodayAdvert()">⬇️ DOWNLOAD TODAY'S ADVERT (with QR)</button>
-<p id="todayAdvertQRText" style="font-size:9px;color:gold;margin-top:6px"></p>
+<button class="btn btn-yellow" style="margin-top:0" onclick="downloadTodayAdvert()">⬇️ DOWNLOAD TODAY'S ADVERT (DOT SECURED)</button>
 <div style="margin-top:12px;background:#101828;border:1px dashed gold;padding:10px;border-radius:10px;text-align:left">
 <p style="font-size:10px;color:gold;font-weight:900">📝 STATUS CAPTION - COPY HERE:</p>
 <p id="todayCaptionText" style="font-size:12px;margin-top:6px;background:#000;padding:8px;border-radius:6px;line-height:1.4">🔥 ADVERTISE YOUR BUSINESS WITH MTAANI TV! 📺<br><br>Post this advert on your Status and earn 3 BOB per view! Min 1, Max 53 views.<br><br>📲 Whatsapp: 0703182307<br>#MtaaniEarn #MtaaniTV</p>
@@ -99,7 +91,7 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 4. After <b>2 submissions</b> dashboard LOCKS<br>
 5. Unlock: bring <b>3 paid referrals</b> OR pay <b>KES 80</b> = +2 submissions for 7 days<br>
 6. Referral cap <b>20</b> - then LOCK until 3 paid<br>
-7. FULL screenshot + time at top + <b style="color:gold">GOLD QR</b> - no edits<br>
+7. FULL screenshot + time at top + <b style="color:gold">2 DOT SECURED</b> - no edits<br>
 8. Submit within <b>23 hours</b> of posting<br>
 9. Typed views must match screenshot (OCR) - same screenshot not allowed</div>
 <div class="countdown"><h2 id="countdown23" style="color:#ffcc00;font-size:16px">Submit before 5 PM</h2></div>
@@ -111,7 +103,7 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <input id="viewsCount" type="number" placeholder="Enter views - Max 53">
 <div style="margin-top:10px;background:#0f172a;padding:10px;border-radius:8px">
 <label style="font-size:11px;display:flex;align-items:center;gap:8px"><input type="checkbox" id="notEdited" style="width:auto"> Screenshot is NOT edited/cropped</label>
-<label style="font-size:11px;display:flex;align-items:center;gap:8px;margin-top:6px"><input type="checkbox" id="fullScreen" style="width:auto"> FULL screen - time at top + GOLD QR visible</label>
+<label style="font-size:11px;display:flex;align-items:center;gap:8px;margin-top:6px"><input type="checkbox" id="fullScreen" style="width:auto"> FULL screen - time at top + DOT visible</label>
 </div>
 <button class="btn btn-yellow" onclick="submitViews()" id="viewBtn">SUBMIT VIEWS (3 KES each)</button>
 <div id="myViewsStatus" style="margin-top:8px"></div>
@@ -145,7 +137,7 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <script>
 firebase.initializeApp({apiKey:"AIzaSyBh3Zv2N2WVsXEkMzGgpmldZ9qamUAhGSo",authDomain:"mtaani-earn.firebaseapp.com",projectId:"mtaani-earn",storageBucket:"mtaani-earn.firebasestorage.app",messagingSenderId:"910785202691",appId:"1:910785202691:web:24b0273dda13fd78c41c36",measurementId:"G-TL5DYR9K6H"});
 const db=firebase.firestore(), $=id=>document.getElementById(id), inc=n=>firebase.firestore.FieldValue.increment(n);
-let currentPhone=localStorage.getItem('mt_current_phone')||'', currentData=null, CURRENT_QR_TEXT="MTAANI ORIGINAL | CODE: XT9-2026 | VERIFIED";
+let currentPhone=localStorage.getItem('mt_current_phone')||'', currentData=null;
 const DAY=86400000, RESET_UTC_MS=14*3600000; let clockOffset=0, lastCycle=null;
 const nowMs=()=>Date.now()+clockOffset;
 const cycleId=(t=nowMs())=>Math.floor((t-RESET_UTC_MS)/DAY);
@@ -160,64 +152,84 @@ function getDeviceId(){let i=localStorage.getItem('mt_device_id');if(!i){i='dev_
 function showComingSoon(n){alert('🚧 Coming Soon - '+n)}
 function showLogin(){$('loginBox').style.display='block'}
 function showRegister(){$('loginBox').style.display='none'}
-function downloadTodayAdvert(){const s=$('todayAdvertMergedImg').src;if(!s){alert('No advert loaded');return}const a=document.createElement('a');a.href=s;a.download='MTAANI_ADVERT_TODAY.png';document.body.appendChild(a);a.click();a.remove()}
+function downloadTodayAdvert(){const s=$('todayAdvertMergedImg').src;if(!s){alert('No advert loaded');return}const a=document.createElement('a');a.href=s;a.download='MTAANI_ADVERT_TODAY_DOT.png';document.body.appendChild(a);a.click();a.remove()}
 function copyCaption(){navigator.clipboard.writeText($('todayCaptionText').innerText);alert('✅ Caption Copied!')}
 async function checkMaintenance(){try{const d=await db.collection('config').doc('site_status').get();if(d.exists&&d.data().maintenance===true){document.body.innerHTML='<div style="min-height:100vh;background:#05080f;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Inter,sans-serif;text-align:center"><div style="max-width:400px;border:2px solid #ffcc00;border-radius:20px;padding:30px"><div style="font-size:60px">🔧</div><h1 style="color:#ffcc00;font-size:22px">UNDER MAINTENANCE</h1><p style="color:#aaa;font-size:13px;margin-top:10px">MTAANI EARN is being upgraded!</p></div></div>';return true}}catch(e){}return false}
-async function loadOfficialQR(){
+
+async function loadOfficialAdvert(){
   try{
-    const d=await db.collection('config').doc('qr_code').get(); if(d.exists)CURRENT_QR_TEXT=d.data().text;
-    $('qrCodeText').innerText=CURRENT_QR_TEXT; $('qrTodayImg').src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="+encodeURIComponent(CURRENT_QR_TEXT);
-    if(isOwner(currentPhone)){$('newQrCodeInput').value=CURRENT_QR_TEXT;$('officialQRBox').style.display='block'}
     const a=await db.collection('config').doc('today_advert').get();
-    if(a.exists&&a.data().mergedImage){$('todayAdvertMergedImg').src=a.data().mergedImage;$('todayAdvertQRText').innerText=a.data().qrText||CURRENT_QR_TEXT;if(a.data().caption)$('todayCaptionText').innerText=a.data().caption}
-    else $('todayAdvertMergedImg').src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data="+encodeURIComponent(CURRENT_QR_TEXT);
-  }catch(e){console.log('QR load',e)}
+    if(a.exists&&a.data().mergedImage){$('todayAdvertMergedImg').src=a.data().mergedImage;if(a.data().caption)$('todayCaptionText').innerText=a.data().caption}
+  }catch(e){console.log('advert load',e)}
 }
-async function updateQrAndCaption(){
-  const newText=$('newQrCodeInput').value.trim(),newCaption=$('newCaptionInput').value.trim(),link=$('newAdvertLinkInput').value.trim(),msg=$('qrUpdateMsg');
+
+async function updateAdvertWithDot(){
+  const newCaption=$('newCaptionInput').value.trim(),link=$('newAdvertLinkInput').value.trim(),msg=$('qrUpdateMsg');
   if(!isOwner(currentPhone)){alert('Owner only');return}
-  msg.innerText='⏳ Merging advert + QR...';
+  msg.innerText='⏳ Adding 2 DOT security + compressing...';
   try{
-    if(newText){await db.collection('config').doc('qr_code').set({text:newText,updatedAt:new Date(),updatedBy:currentPhone});CURRENT_QR_TEXT=newText}
     const load=src=>new Promise(r=>{const i=new Image();i.crossOrigin="anonymous";i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src});
     let merged=null;
     if(link){
-      const adv=await load(link), qr=await load("https://api.qrserver.com/v1/create-qr-code/?size=600x600&data="+encodeURIComponent(newText||CURRENT_QR_TEXT));
-      if(adv&&qr)try{
-        const c=document.createElement('canvas');c.width=1080;c.height=1920;const x2=c.getContext('2d');x2.drawImage(adv,0,0,1080,1920);
-        const q=300,w=18,g=6,T=q+w*2+g*2,x=1080-T-40,y=1920-T-120;
-        x2.fillStyle="#FFD700";x2.fillRect(x,y,T,T);x2.fillStyle="#FFF";x2.fillRect(x+g,y+g,T-g*2,T-g*2);x2.drawImage(qr,x+g+w,y+g+w,q,q);
-        x2.fillStyle="#FFD700";x2.font="bold 28px Inter";x2.textAlign="center";x2.fillText("SCAN VERIFY",x+T/2,y+T+35);
-        // === SIRI - TUDOTI 3 INVISIBLE ===
-        x2.fillStyle="rgba(255,255,0,0.07)";
-        x2.fillRect(1080-24,1920-16,3,3);
-        x2.fillRect(1080-16,1920-16,3,3);
-        x2.fillRect(1080-8,1920-16,3,3);
-        // === MWISHO WA SIRI ===
-        merged=c.toDataURL('image/png');
+      const adv=await load(link);
+      if(adv)try{
+        const c=document.createElement('canvas');let w=adv.width,h=adv.height;const MAX=720;if(w>MAX){h=Math.round(h*(MAX/w));w=MAX;}
+        c.width=w;c.height=h;const x2=c.getContext('2d');x2.drawImage(adv,0,0,w,h);
+        x2.strokeStyle='gold';x2.lineWidth=6;x2.strokeRect(0,0,w,h);
+        // === TWO DOT SECURITY - VISIBLE TO SYSTEM, INVISIBLE TO EYE ===
+        x2.fillStyle='rgba(255,215,0,0.35)';
+        x2.beginPath();x2.arc(w-18, h-18, 5, 0, Math.PI*2);x2.fill();
+        x2.beginPath();x2.arc(w-38, h-18, 5, 0, Math.PI*2);x2.fill();
+        // Extra backup dots
+        x2.fillStyle='rgba(255,215,0,0.25)';
+        x2.fillRect(w-28, h-28, 2, 2);
+        x2.fillRect(w-48, h-28, 2, 2);
+        merged=c.toDataURL('image/jpeg',0.55);
       }catch(e){console.log(e)}
     }
-    const u={updatedAt:new Date()};
-    if(newCaption)u.caption=newCaption; if(merged)u.mergedImage=merged; else if(link)u.mergedImage=link; if(newText)u.qrText=newText;
-    if(Object.keys(u).length>1)await db.collection('config').doc('today_advert').set(u,{merge:true});
-    msg.innerText='✅ SUCCESS! Old QR sasa ni FAKE';setTimeout(()=>location.reload(),1500);
+    const u={updatedAt:new Date(), dotSecured:true, hasQR:false};
+    if(newCaption)u.caption=newCaption; if(merged)u.mergedImage=merged; else if(link)u.mergedImage=link;
+    if(Object.keys(u).length>2)await db.collection('config').doc('today_advert').set(u,{merge:true});
+    msg.innerText='✅ SUCCESS! Advert with 2 DOT uploaded!';setTimeout(()=>location.reload(),1200);
   }catch(e){alert(e.message);msg.innerText='Error: '+e.message}
 }
-function readQRFromFile(file){
+
+// === TWO DOT DETECTION - CHECK IF SCREENSHOT IS ORIGINAL ===
+function checkTwoDots(file){
   return new Promise(res=>{
     const img=new Image();
     img.onload=()=>{
-      const W=img.width,H=img.height;
-      const tries=[[0,0,W,H,1],[0,0,W,H,2],[W*.4,H*.4,W*.6,H*.6,1],[W*.4,H*.4,W*.6,H*.6,2],[W*.4,H*.4,W*.6,H*.6,3],[W*.7,H*.7,W*.3,H*.3,4]];
-      for(const[sx,sy,sw,sh,k]of tries){
-        try{const c=document.createElement('canvas');c.width=sw*k;c.height=sh*k;const x=c.getContext('2d');x.drawImage(img,sx,sy,sw,sh,0,0,c.width,c.height);
-          const d=x.getImageData(0,0,c.width,c.height);const code=jsQR(d.data,c.width,c.height,{inversionAttempts:"attemptBoth"});if(code){res(code.data);return}}catch(e){}
-      }
-      res(null);
+      try{
+        const W=img.width,H=img.height;
+        if(W<400||H<400){res({ok:false, reason:"Image too small - send FULL screenshot"});return;}
+        const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+        const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0);
+        // Search bottom-right area where dots are placed
+        // Since screenshot is of WhatsApp status, advert is centered, dots will be in bottom-right of advert area
+        // We scan last 40% height to bottom, and middle to right
+        const searchXStart = Math.floor(W*0.3);
+        const searchYStart = Math.floor(H*0.3);
+        let goldPixels = 0;
+        const imageData = ctx.getImageData(searchXStart, searchYStart, W-searchXStart, H-searchYStart);
+        const data = imageData.data;
+        for(let i=0;i<data.length;i+=4){
+          const r=data[i],g=data[i+1],b=data[i+2];
+          // Gold detection: high R, high G, low B, and bright
+          if(r>200 && g>180 && b<100 && r+g>400){goldPixels++;}
+        }
+        // Also check for gold border
+        let borderFound = false;
+        // Quick border check - look for gold pixels near edges of advert
+        if(goldPixels>15){borderFound=true;}
+        if(!borderFound){res({ok:false, reason:"DOT security missing - this is not original advert or cropped. Upload FULL original screenshot with DOT visible"});return;}
+        res({ok:true, goldPixels});
+      }catch(e){res({ok:false, reason:"Cannot verify DOT - "+e.message});}
     };
-    img.onerror=()=>res(null);img.src=URL.createObjectURL(file);
+    img.onerror=()=>res({ok:false, reason:"Invalid image"});
+    img.src=URL.createObjectURL(file);
   });
 }
+
 async function registerUser(){
   const p=normalizePhone($('phoneInput').value),g=$('gmailInput').value.trim(),pass=$('passInput').value.trim(),conf=$('passConfirm').value.trim(),msg=$('guestMsg');
   const rawRef=$('refInput').value.trim()||new URLSearchParams(location.search).get('ref')||'',ref=rawRef?normalizePhone(rawRef):'';
@@ -317,7 +329,7 @@ function applyLockUI(){
   }else{box.style.display='none';$('statusText').innerText=currentData.state==='paid'?'UNLOCKED ✅':'ACTIVE ✅';area.style.opacity='1';area.style.pointerEvents='auto'}
 }
 async function render(){
-  if(await checkMaintenance())return;await loadOfficialQR();
+  if(await checkMaintenance())return;await loadOfficialAdvert();
   if(!currentPhone||!currentData){$('guestView').style.display='block';$('dashView').style.display='none';return}
   const owner=isOwner(currentPhone),d=currentData;
   $('guestView').style.display='none';$('dashView').style.display='block';$('ownerQRPanel').style.display=owner?'block':'none';
@@ -375,10 +387,15 @@ async function submitViews(){
   const stop=(m,html)=>{if(m)alert(m);if(html)$('myViewsStatus').innerHTML=`<div class="st" style="background:red">${html}</div>`;btn.innerText=LBL;btn.disabled=false};
   btn.disabled=true;
   try{
-    btn.innerText='⏳ CHECKING GOLD QR...';const qr=await readQRFromFile(file);
-    if(!qr)return stop("❌ FAKE! No GOLD QR found. Post today's advert with its QR.","❌ No QR found - post TODAY'S advert with the gold QR");
-    if(qr.trim()!==CURRENT_QR_TEXT.trim())return stop("❌ OLD/FAKE QR! Use today's advert QR only.");
-    // NEW: Check if cropped too much
+    // === NEW: TWO DOT CHECK ===
+    btn.innerText='⏳ CHECKING 2 DOT SECURITY...';
+    const dotCheck = await checkTwoDots(file);
+    if(!dotCheck.ok){
+      // AUTO REJECT - DOT MISSING = EDITED
+      await db.collection('pending_views').add({phone:currentPhone,views:typed,typedViews:typed,amount:0,status:'rejected',reason:'DOT_MISSING_EDITED_'+dotCheck.reason,time:new Date(),name:currentData.phone});
+      return stop("❌ AUTO REJECTED! "+dotCheck.reason+" - This screenshot is EDITED or cropped. Upload ORIGINAL FULL screenshot with gold border + 2 DOT","❌ AUTO REJECT - DOT missing - EDITED IMAGE - Upload ORIGINAL");
+    }
+    // Check if cropped too much
     const imgCheck = await new Promise(r=>{ const im=new Image(); im.onload=()=>r(im); im.onerror=()=>r({width:0}); im.src=URL.createObjectURL(file); });
     if(imgCheck.width < 500){ return stop("❌ Picha ndogo sana - tuma FULL screenshot bila ku-crop"); }
     const blob=await new Promise(r=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas'),h=i.height*.5;c.width=i.width;c.height=h;c.getContext('2d').drawImage(i,0,-(i.height-h),i.width,i.height);c.toBlob(r,'image/jpeg',.9)};i.src=URL.createObjectURL(file)});
@@ -394,9 +411,9 @@ async function submitViews(){
     const hash=await getImageHash(file);
     if(!owner&&!(await db.collection('pending_views').where('imageHash','==',hash).limit(1).get()).empty)return stop('❌ DUPLICATE SCREENSHOT!');
     const amount=v*3;
-    await db.collection('pending_views').add({phone:currentPhone,views:v,amount,status:'pending',imageHash:hash,time:new Date(),name:currentData.phone,qrVerified:qr,cycle:cycleId()});
+    await db.collection('pending_views').add({phone:currentPhone,views:v,amount,status:'pending',imageHash:hash,time:new Date(),name:currentData.phone,dotVerified:true,goldPixels:dotCheck.goldPixels,cycle:cycleId()});
     await recordSubmission();
-    alert(`✅ VERIFIED! ${v} x 3 = KES ${amount} - Pending approval (10 mins)`);btn.innerText=LBL;render();
+    alert(`✅ VERIFIED! ${v} x 3 = KES ${amount} - DOT OK + Pending approval (10 mins)`);btn.innerText=LBL;render();
   }catch(e){stop(e.message)}
 }
 async function loadMyViewsStatus(){
@@ -439,6 +456,6 @@ const urlRef=new URLSearchParams(location.search).get('ref');if(urlRef)$('refInp
   await syncClock();tickClock();
   if(await checkMaintenance())return;
   if(currentPhone&&await loadUser())await render();
-  else{$('guestView').style.display='block';await loadOfficialQR()}
+  else{$('guestView').style.display='block';await loadOfficialAdvert()}
 })();
 </script></body></html>
