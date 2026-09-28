@@ -28,11 +28,9 @@ th{color:#ffcc00;font-size:9px}
 .btn-red{background:linear-gradient(90deg,#ff0033,#cc0029);color:#fff}
 .btn-yellow{background:linear-gradient(90deg,#ffcc00,#ffb700);color:#000;padding:12px;border-radius:10px;width:100%;margin-top:8px;font-weight:900;border:0;cursor:pointer}
 .btn-website{background:linear-gradient(90deg,#3b82f6,#60a5fa);color:#fff;padding:10px 18px;border-radius:30px;font-weight:900;font-size:11px;border:0;cursor:pointer}
-input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;background:#0f172a;color:#fff;margin-top:8px}
+input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;background:#0f172a;color:#fff;margin-top:8px}
 .tab{display:inline-block;padding:8px 14px;background:#1a2332;border-radius:20px;margin:3px;cursor:pointer;font-size:10px;font-weight:800}
 .tab.active{background:#ffcc00;color:#000}
-.qr-gold-box{border:3px solid gold;background:#000;padding:12px;border-radius:16px;text-align:center}
-.qr-gold-box img{width:160px;height:160px;border:4px solid #fff;border-radius:12px;background:#fff}
 .advert-preview{border:3px solid gold;border-radius:16px;overflow:hidden;position:relative;background:#000;margin-top:10px}
 </style>
 </head>
@@ -64,7 +62,6 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;backgr
 <div class="till-box">
 <div style="font-size:11px;color:#ffcc00;letter-spacing:2px;font-weight:900">🔥 ACTIVE TILL • 3624692 • VERIFIED 🔥</div>
 <div class="till-num">3624692</div>
-<div id="currentQRPreviewMini" style="margin-top:12px"></div>
 </div>
 
 <div class="stats">
@@ -76,8 +73,7 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;backgr
 
 <div style="text-align:center">
 <span class="tab active" onclick="showSection('views')" id="tab-views">👁️ VIEWS</span>
-<span class="tab" onclick="showSection('advert')" id="tab-advert">📢 ADVERT + QR</span>
-<span class="tab" onclick="showSection('qr')" id="tab-qr">🔐 CLASSIC QR</span>
+<span class="tab" onclick="showSection('advert')" id="tab-advert">📢 ADVERT</span>
 <span class="tab" onclick="showSection('withdraw')" id="tab-withdraw">💸 WITHDRAW</span>
 <span class="tab" onclick="showSection('users')" id="tab-users">👥 USERS</span>
 <span class="tab" onclick="showSection('payments')" id="tab-payments">💰 PAYMENTS</span>
@@ -89,34 +85,20 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;backgr
 </div>
 
 <div id="sec-advert" class="box" style="display:none;border:2px solid gold">
-<h3 style="color:gold">📢 HANDMADE ADVERT + QR AUTO MERGE - FIXED 1MB</h3>
+<h3 style="color:gold">📢 HANDMADE ADVERT - FIXED 1MB</h3>
 <p style="font-size:10px;color:#aaa">Upload advert yako hapa, system ita-auto compress hadi 720px na JPEG 0.55 ndio iingie Firestore.</p>
 <div id="advertCurrent" class="advert-preview" style="display:none"><img id="currentAdvertImg" style="width:100%"></div>
 <div style="margin-top:12px;background:#0f172a;padding:12px;border-radius:12px">
 <h4 style="color:gold;font-size:11px">UPLOAD HANDMADE ADVERT YAKO</h4>
 <input type="file" id="advertFile" accept="image/*">
 <p style="font-size:9px;color:#aaa;margin-top:4px">Chagua picha yako - ita-compress auto</p>
-<button class="btn-yellow" onclick="mergeAndUploadAdvert()">🔥 MERGE + COMPRESS + UPLOAD TO SITE</button>
+<button class="btn-yellow" onclick="mergeAndUploadAdvert()">🔥 COMPRESS + UPLOAD TO SITE</button>
 <p id="advertMsg" style="font-size:11px;color:#00ff88;margin-top:6px"></p>
 </div>
 <div style="margin-top:10px;background:#000;border:1px dashed gold;padding:10px;border-radius:10px">
-<p style="font-size:9px;color:gold">PREVIEW BAADA YA MERGE (JPEG 0.55):</p>
+<p style="font-size:9px;color:gold">PREVIEW (JPEG 0.55):</p>
 <canvas id="mergeCanvas" style="width:100%;border-radius:12px;display:none"></canvas>
 <img id="mergedPreview" style="width:100%;border-radius:12px;display:none;border:3px solid gold">
-</div>
-</div>
-
-<div id="sec-qr" class="box" style="display:none;border:2px solid gold">
-<h3 style="color:gold">🔐 CLASSIC QR - NDANI YA MANENO</h3>
-<div class="qr-gold-box" style="margin-top:12px">
-<p style="font-size:10px;color:gold;font-weight:900">OFFICIAL QR YA LEO</p>
-<img id="qrAdminImg" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=MTAANI%20ORIGINAL%20CODE%20XT9-2026%20VERIFIED">
-<p id="qrAdminText" style="font-size:11px;color:#fff;margin-top:8px;background:#1a2332;padding:6px;border-radius:8px">MTAANI ORIGINAL | CODE: XT9-2026 | VERIFIED</p>
-</div>
-<div style="margin-top:16px;background:#0f172a;padding:12px;border-radius:12px">
-<input id="qrNewText" placeholder="MTAANI ORIGINAL | CODE: XT9-2027 | VERIFIED">
-<button class="btn-yellow" onclick="updateQRCodeAdmin()">🔄 UPDATE QR YA LEO</button>
-<p id="qrAdminMsg" style="font-size:11px;color:#00ff88;margin-top:6px"></p>
 </div>
 </div>
 
@@ -146,7 +128,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const ADMIN_PASSWORDS = ["Mtaani2024!", "mtaani2024!", "MTAANI2024!", "1234"];
-let CURRENT_QR = "MTAANI ORIGINAL | CODE: XT9-2026 | VERIFIED";
 let MAINT_MODE = false;
 
 function viewWebsite(){window.open('index.html','_blank');}
@@ -155,22 +136,20 @@ function adminLogin(){
   if(ADMIN_PASSWORDS.includes(p)){ localStorage.setItem('mt_admin','yes'); showDash(); }
   else { document.getElementById('adminMsg').innerText='Wrong!'; }
 }
-function showDash(){document.getElementById('loginAdmin').style.display='none';document.getElementById('adminDash').style.display='block';loadData();loadQRAdmin();loadCurrentAdvert();loadMaintStatus();}
+function showDash(){document.getElementById('loginAdmin').style.display='none';document.getElementById('adminDash').style.display='block';loadData();loadCurrentAdvert();loadMaintStatus();}
 function showSection(s){
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   document.getElementById('tab-'+s).classList.add('active');
-  ['views','advert','qr','withdraw','payments','users'].forEach(k=>{
+  ['views','advert','withdraw','payments','users'].forEach(k=>{
     const el=document.getElementById('sec-'+k); if(el) el.style.display = (k===s?'block':'none');
   });
   if(s==='views') loadPendingViews();
   if(s==='advert') loadCurrentAdvert();
-  if(s==='qr') loadQRAdmin();
   if(s==='withdraw') loadWithdraws();
   if(s==='payments') loadPayments();
   if(s==='users') loadUsersOnly();
 }
 
-// --- MAINTENANCE MODE - NEW ---
 async function loadMaintStatus(){
   try{
     const doc = await db.collection('config').doc('site_status').get();
@@ -198,33 +177,15 @@ function updateMaintUI(){
   }
 }
 async function toggleMaintenance(){
-  const newMode = !MAINT_MODE;
-  const confirmMsg = newMode ? "FUNGA SITE YOTE? Client wataona UNDER MAINTENANCE?" : "RUDISHA SITE LIVE? Client wataiona tena?";
+  const newMode =!MAINT_MODE;
+  const confirmMsg = newMode? "FUNGA SITE YOTE? Client wataona UNDER MAINTENANCE?" : "RUDISHA SITE LIVE? Client wataiona tena?";
   if(!confirm(confirmMsg)) return;
   await db.collection('config').doc('site_status').set({ maintenance: newMode, updatedAt: new Date(), updatedBy: 'CEO Vincent' }, {merge:true});
   MAINT_MODE = newMode;
   updateMaintUI();
-  alert(newMode ? "🔴 SITE IMEFUNGWA! Iko Under Maintenance" : "🟢 SITE IMERUDI LIVE!");
+  alert(newMode? "🔴 SITE IMEFUNGWA! Iko Under Maintenance" : "🟢 SITE IMERUDI LIVE!");
 }
 
-async function loadQRAdmin(){
-  try{
-    const doc = await db.collection('config').doc('qr_code').get();
-    if(doc.exists){ CURRENT_QR = doc.data().text || CURRENT_QR; }
-    document.getElementById('qrAdminText').innerText = CURRENT_QR;
-    document.getElementById('qrNewText').value = CURRENT_QR;
-    const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data="+encodeURIComponent(CURRENT_QR);
-    document.getElementById('qrAdminImg').src = qrUrl;
-    document.getElementById('currentQRPreviewMini').innerHTML = `<div style="display:inline-block;border:2px solid gold;padding:4px;border-radius:10px;background:#000"><img src="${qrUrl}" style="width:60px;height:60px;border-radius:6px"><div style="font-size:7px;color:gold">QR LEO</div></div>`;
-  }catch(e){}
-}
-async function updateQRCodeAdmin(){
-  const newText = document.getElementById('qrNewText').value.trim();
-  if(!newText) return;
-  await db.collection('config').doc('qr_code').set({text:newText, updatedAt:new Date()}, {merge:true});
-  document.getElementById('qrAdminMsg').innerText = '✅ UPDATED! '+newText;
-  loadQRAdmin();
-}
 async function loadCurrentAdvert(){
   try{
     const doc = await db.collection('config').doc('today_advert').get();
@@ -240,32 +201,23 @@ async function mergeAndUploadAdvert(){
   const msgEl = document.getElementById('advertMsg');
   msgEl.innerText = '⏳ Ina-compress 720px + JPEG 0.55...';
   const advertImg = new Image();
-  const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data="+encodeURIComponent(CURRENT_QR);
-  const qrImg = new Image(); qrImg.crossOrigin = "anonymous";
-  advertImg.onload = ()=>{
-    qrImg.onload = async ()=>{
+  advertImg.onload = async ()=>{
       const canvas = document.getElementById('mergeCanvas'); const ctx = canvas.getContext('2d');
       let w = advertImg.width; let h = advertImg.height; const MAX = 720;
       if(w > MAX){ h = Math.round(h * (MAX / w)); w = MAX; }
       canvas.width = w; canvas.height = h;
       ctx.drawImage(advertImg,0,0,w,h);
       ctx.strokeStyle = 'gold'; ctx.lineWidth = 6; ctx.strokeRect(0,0,w,h);
-      const qrSize = w*0.28; const pad = w*0.02; const x = w - qrSize - pad; const y = h - qrSize - pad - 20;
-      ctx.fillStyle = 'white'; ctx.fillRect(x-5, y-5, qrSize+10, qrSize+20);
-      ctx.strokeStyle = 'gold'; ctx.lineWidth = 4; ctx.strokeRect(x-5, y-5, qrSize+10, qrSize+20);
-      ctx.drawImage(qrImg, x, y, qrSize, qrSize);
-      ctx.fillStyle = 'black'; ctx.font = `bold ${Math.round(qrSize*0.11)}px Inter`; ctx.textAlign = 'center';
-      ctx.fillText('SCAN VERIFY', x+qrSize/2, y+qrSize+13);
       const mergedBase64 = canvas.toDataURL('image/jpeg', 0.55);
       const sizeKB = Math.round(mergedBase64.length * 0.75 / 1024);
       document.getElementById('mergedPreview').src = mergedBase64; document.getElementById('mergedPreview').style.display='block';
       if(sizeKB > 900){ msgEl.innerHTML = `<span style="color:red">❌ Bado kubwa ${sizeKB}KB</span>`; return; }
       try{
-        await db.collection('config').doc('today_advert').set({ mergedImage: mergedBase64, qrText: CURRENT_QR, updatedAt: new Date(), sizeKB: sizeKB }, {merge:true});
+        await db.collection('config').doc('today_advert').set({ mergedImage: mergedBase64, updatedAt: new Date(), sizeKB: sizeKB }, {merge:true});
         msgEl.innerHTML = `<span style="color:#00ff88">✅ SUCCESS! ${sizeKB}KB - Imeingia Site!</span>`; loadCurrentAdvert();
       }catch(e){ msgEl.innerHTML = `<span style="color:red">❌ ${e.message}</span>`; }
-    }; qrImg.src = qrUrl;
-  }; advertImg.src = URL.createObjectURL(file);
+  };
+  advertImg.src = URL.createObjectURL(file);
 }
 async function loadData(){
   const usersSnap = await db.collection('users').get();
@@ -291,7 +243,7 @@ async function loadPendingViews(){
   let html=''; if(snap.empty) html='<tr><td colspan=5>No pending</td></tr>';
   snap.forEach(doc=>{
     const d=doc.data();
-    html+=`<tr><td>${d.phone}</td><td>${d.views} x3 = KES ${d.amount}</td><td style='font-size:9px'>${d.qrVerified? 'QR:'+d.qrVerified.substring(0,10):''}</td><td style='font-size:9px'>${d.isFullScreenshot?'✅ Full':''} ${d.qrVerified===d.qrExpected?'✅ QR':''}</td><td><button class='btn btn-green' onclick='approveView("${doc.id}","${d.phone}",${d.amount})'>APPROVE</button> <button class='btn btn-red' onclick='rejectView("${doc.id}")'>REJECT</button></td></tr>`;
+    html+=`<tr><td>${d.phone}</td><td>${d.views} x3 = KES ${d.amount}</td><td style='font-size:9px'>${d.time?.toDate?.()?.toLocaleDateString()||''}</td><td style='font-size:9px'>${d.isFullScreenshot?'✅ Full':''}</td><td><button class='btn btn-green' onclick='approveView("${doc.id}","${d.phone}",${d.amount})'>APPROVE</button> <button class='btn btn-red' onclick='rejectView("${doc.id}")'>REJECT</button></td></tr>`;
   });
   document.getElementById('pendingViewsTable').innerHTML=html;
 }
@@ -311,7 +263,6 @@ async function loadWithdraws(){
   document.getElementById('withdrawTable').innerHTML=html||'<tr><td colspan=5>No pending</td></tr>';
 }
 async function approveNewWithdraw(id, phone, amount){
-  await db.collection('users').doc(phone).update({balance: firebase.firestore.FieldValue.increment(-amount)});
   await db.collection('pending_withdrawals').doc(id).update({status:'approved'});
   loadWithdraws();
 }
