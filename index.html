@@ -83,17 +83,23 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #2d3748;margin
 <div class="box" id="freeTasks" style="border:2px solid #ffcc00">
 <h4>Mtaani Adverts / Feeds <span class="tag tag-free">OPEN</span> <span class="tag tag-new">3 BOB/VIEW</span></h4>
 
-<div id="todayAdvertBox" style="display:none;border:3px solid gold;background:#000;padding:0;border-radius:16px;overflow:hidden;margin:12px 0;position:relative">
+<div id="todayAdvertBox" style="border:3px solid gold;background:#000;padding:0;border-radius:16px;overflow:hidden;margin:12px 0;position:relative">
 <p style="background:linear-gradient(90deg,gold,#ffcc00);color:#000;text-align:center;font-weight:900;font-size:11px;padding:6px;letter-spacing:1px">🔥 TODAY'S OFFICIAL ADVERT + QR - DOWNLOAD HERE 🔥</p>
-<img id="todayAdvertMergedImg" style="width:100%;display:block">
+<img id="todayAdvertMergedImg" style="width:100%;display:block" src="https://i.ibb.co/placeholder.png">
 <div style="padding:10px;background:#000;text-align:center">
-<p id="todayAdvertQRText" style="font-size:9px;color:gold"></p>
+<p id="todayAdvertQRText" style="font-size:9px;color:gold">MTAANI ORIGINAL | CODE: XT9-2026 | VERIFIED</p>
 <button class="btn btn-yellow" style="margin-top:8px" onclick="downloadTodayAdvert()">⬇️ DOWNLOAD TODAY'S ADVERT (with QR)</button>
-<p style="font-size:9px;color:#aaa;margin-top:6px">Download this, post on WhatsApp Status. Inside it has today's QR.</p>
+<div style="margin-top:12px;background:#101828;border:1px dashed gold;padding:10px;border-radius:10px;text-align:left">
+<p style="font-size:10px;color:gold;font-weight:900">📝 CAPTION YA STATUS - COPY HAPA:</p>
+<p id="todayCaptionText" style="font-size:12px;color:#fff;margin-top:6px;background:#000;padding:8px;border-radius:6px;line-height:1.4">🔥 TANGAZA BIASHARA YAKO NA MTAANI TV! 📺<br><br>Post hii advert kwa Status yako upate 3 BOB kwa kila view! Min 1, Max 53 views.<br><br>📲 Whatsapp: 0703182307<br>#MtaaniEarn #MtaaniTV</p>
+<button class="btn btn-dark" style="font-size:12px;padding:8px;margin-top:8px" onclick="copyCaption()">📋 COPY CAPTION</button>
+<p style="font-size:9px;color:#aaa;margin-top:4px">Copy hii caption, kisha post na advert kwa WhatsApp Status</p>
+</div>
+<p style="font-size:9px;color:#aaa;margin-top:6px">Download hii, post kwa WhatsApp Status. Ndani yake kuna QR ya leo.</p>
 </div>
 </div>
 
-<div class="qr-gold-box" id="officialQRBox">
+<div class="qr-gold-box" id="officialQRBox" style="display:none">
 <p style="font-size:10px;color:gold;font-weight:900;letter-spacing:1px">🔐 OFFICIAL QR - SCAN TO VERIFY</p>
 <img id="qrTodayImg" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=MTAANI%20ORIGINAL%20CODE%20XT9-2026%20VERIFIED" alt="QR">
 <p id="qrCodeText" style="font-size:9px;color:#fff;margin-top:6px;background:#1a2332;padding:4px;border-radius:6px">MTAANI ORIGINAL | CODE: XT9-2026 | VERIFIED</p>
@@ -192,26 +198,19 @@ function downloadTodayAdvert(){
   if(!img) return;
   const a = document.createElement('a'); a.href = img; a.download = 'MTAANI_ADVERT_TODAY.png'; a.click();
 }
+function copyCaption(){
+  const cap = document.getElementById('todayCaptionText').innerText;
+  navigator.clipboard.writeText(cap);
+  alert('✅ Caption Copied! - Paste kwa WhatsApp Status');
+}
 async function checkMaintenance(){
   try{
     const doc = await db.collection('config').doc('site_status').get();
     if(doc.exists && doc.data().maintenance === true){
-      document.body.innerHTML = `
-      <div style="min-height:100vh;background:#05080f;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Inter,sans-serif">
-        <div style="max-width:400px;width:100%;background:rgba(16,24,40,0.9);border:2px solid #ffcc00;border-radius:20px;padding:30px;text-align:center">
-          <div style="font-size:60px">🔧</div>
-          <h1 style="color:#ffcc00;font-family:Orbitron,sans-serif;margin-top:10px;font-size:22px">UNDER MAINTENANCE</h1>
-          <p style="color:#aaa;font-size:13px;margin-top:10px;line-height:1.6">MTAANI EARN is being upgraded! We are improving the system for faster earnings.</p>
-          <div style="margin-top:20px;background:#000;padding:12px;border-radius:10px;border:1px dashed gold">
-            <p style="font-size:11px;color:gold;font-weight:900">⏰ WE ARE COMING BACK - 30 MIN</p>
-            <p style="font-size:10px;color:#fff;margin-top:4px">CEO ALEX 👑 fixing our website!</p>
-          </div>
-          <p style="font-size:9px;color:#666;margin-top:15px">Till 3624692 still active - your money is safe</p>
-        </div>
-      </div>`;
+      document.body.innerHTML = `<div style="min-height:100vh;background:#05080f;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Inter,sans-serif"><div style="max-width:400px;width:100%;background:rgba(16,24,40,0.9);border:2px solid #ffcc00;border-radius:20px;padding:30px;text-align:center"><div style="font-size:60px">🔧</div><h1 style="color:#ffcc00;font-family:Orbitron,sans-serif;margin-top:10px;font-size:22px">UNDER MAINTENANCE</h1><p style="color:#aaa;font-size:13px;margin-top:10px;line-height:1.6">MTAANI EARN is being upgraded!</p></div></div>`;
       return true;
     }
-  }catch(e){ console.log("maint check error", e); }
+  }catch(e){}
   return false;
 }
 async function loadOfficialQR(){
@@ -220,12 +219,19 @@ async function loadOfficialQR(){
     if(doc.exists){ CURRENT_QR_TEXT = doc.data().text; }
     document.getElementById('qrCodeText').innerText = CURRENT_QR_TEXT;
     document.getElementById('qrTodayImg').src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="+encodeURIComponent(CURRENT_QR_TEXT);
-    if(isOwner(currentPhone)){ document.getElementById('newQrCodeInput').value = CURRENT_QR_TEXT; }
+    if(isOwner(currentPhone)){
+      document.getElementById('newQrCodeInput').value = CURRENT_QR_TEXT;
+      document.getElementById('officialQRBox').style.display='block';
+    }
     const advDoc = await db.collection('config').doc('today_advert').get();
     if(advDoc.exists && advDoc.data().mergedImage){
-      document.getElementById('todayAdvertBox').style.display='block';
       document.getElementById('todayAdvertMergedImg').src = advDoc.data().mergedImage;
       document.getElementById('todayAdvertQRText').innerText = advDoc.data().qrText || CURRENT_QR_TEXT;
+      if(advDoc.data().caption){ document.getElementById('todayCaptionText').innerText = advDoc.data().caption; }
+    } else {
+      // kama hakuna advert kwa firebase, tumia advert yako ya MTAANI TV kwa default
+      document.getElementById('todayAdvertBox').style.display='block';
+      document.getElementById('todayAdvertMergedImg').src = "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data="+encodeURIComponent(CURRENT_QR_TEXT);
     }
   }catch(e){ console.log("QR load error", e); }
 }
@@ -241,12 +247,11 @@ async function updateQrCode(){
     document.getElementById('qrTodayImg').src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="+encodeURIComponent(CURRENT_QR_TEXT);
   }catch(e){ alert(e.message); }
 }
-// ====== FIXED QR READER - HAPA PEKEE NDIO NIMEFIX 🔧 ======
+// ====== FIXED QR READER - INAONA QR NDOGO YA 22 VIEWS 🔧 ======
 function readQRFromFile(file){
   return new Promise((resolve)=>{
     const img = new Image();
     img.onload = ()=>{
-      // helper to try decode from canvas
       const decodeCanvas = (canvas)=>{
         try{
           const ctx = canvas.getContext('2d');
@@ -255,52 +260,32 @@ function readQRFromFile(file){
           return code? code.data : null;
         }catch(e){ return null; }
       };
-
-      // 1. Try FULL image - x1
-      let canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
+      // 1. FULL x1
+      let canvas = document.createElement('canvas'); canvas.width = img.width; canvas.height = img.height;
       canvas.getContext('2d').drawImage(img,0,0);
-      let result = decodeCanvas(canvas);
-      if(result){ console.log("QR FULL x1", result); resolve(result); return; }
-
-      // 2. Try FULL image - x2 upscale (kama screenshot ndogo)
-      let canvas2 = document.createElement('canvas');
-      canvas2.width = img.width * 2;
-      canvas2.height = img.height * 2;
+      let result = decodeCanvas(canvas); if(result){ resolve(result); return; }
+      // 2. FULL x2
+      let canvas2 = document.createElement('canvas'); canvas2.width = img.width*2; canvas2.height = img.height*2;
       canvas2.getContext('2d').drawImage(img,0,0,canvas2.width,canvas2.height);
-      result = decodeCanvas(canvas2);
-      if(result){ console.log("QR FULL x2", result); resolve(result); return; }
-
-      // 3. Try BOTTOM-RIGHT 60% - hapo QR yako iko - x1
-      const bx = img.width * 0.4;
-      const by = img.height * 0.4;
-      const bw = img.width * 0.6;
-      const bh = img.height * 0.6;
-      let canvasBR = document.createElement('canvas');
-      canvasBR.width = bw;
-      canvasBR.height = bh;
-      canvasBR.getContext('2d').drawImage(img, bx, by, bw, bh, 0, 0, bw, bh);
-      result = decodeCanvas(canvasBR);
-      if(result){ console.log("QR BR x1", result); resolve(result); return; }
-
-      // 4. Try BOTTOM-RIGHT 60% - x2 upscale - HII NDIO ITAKAMATA QR YAKO KUBWA YA GOLD
-      let canvasBR2 = document.createElement('canvas');
-      canvasBR2.width = bw * 2;
-      canvasBR2.height = bh * 2;
-      canvasBR2.getContext('2d').drawImage(img, bx, by, bw, bh, 0, 0, canvasBR2.width, canvasBR2.height);
-      result = decodeCanvas(canvasBR2);
-      if(result){ console.log("QR BR x2", result); resolve(result); return; }
-
-      // 5. Try BOTTOM-RIGHT 60% - x3 upscale
-      let canvasBR3 = document.createElement('canvas');
-      canvasBR3.width = bw * 3;
-      canvasBR3.height = bh * 3;
-      canvasBR3.getContext('2d').drawImage(img, bx, by, bw, bh, 0, 0, canvasBR3.width, canvasBR3.height);
-      result = decodeCanvas(canvasBR3);
-      if(result){ console.log("QR BR x3", result); resolve(result); return; }
-
-      console.log("NO QR FOUND");
+      result = decodeCanvas(canvas2); if(result){ resolve(result); return; }
+      // 3. BOTTOM-RIGHT 60% x1 - hapo QR yako ya MTAANI TV iko
+      const bx = img.width*0.4; const by = img.height*0.4; const bw = img.width*0.6; const bh = img.height*0.6;
+      let canvasBR = document.createElement('canvas'); canvasBR.width = bw; canvasBR.height = bh;
+      canvasBR.getContext('2d').drawImage(img,bx,by,bw,bh,0,0,bw,bh);
+      result = decodeCanvas(canvasBR); if(result){ resolve(result); return; }
+      // 4. BOTTOM-RIGHT 60% x2
+      let canvasBR2 = document.createElement('canvas'); canvasBR2.width = bw*2; canvasBR2.height = bh*2;
+      canvasBR2.getContext('2d').drawImage(img,bx,by,bw,bh,0,0,canvasBR2.width,canvasBR2.height);
+      result = decodeCanvas(canvasBR2); if(result){ resolve(result); return; }
+      // 5. BOTTOM-RIGHT 60% x3 - HII NDIO YA 22 VIEWS YAKO
+      let canvasBR3 = document.createElement('canvas'); canvasBR3.width = bw*3; canvasBR3.height = bh*3;
+      canvasBR3.getContext('2d').drawImage(img,bx,by,bw,bh,0,0,canvasBR3.width,canvasBR3.height);
+      result = decodeCanvas(canvasBR3); if(result){ resolve(result); return; }
+      // 6. BOTTOM-RIGHT 30% ndogo zaidi - kwa QR ndogo sana kama yako
+      const bx2 = img.width*0.70; const by2 = img.height*0.70; const bw2 = img.width*0.30; const bh2 = img.height*0.30;
+      let canvasBR4 = document.createElement('canvas'); canvasBR4.width = bw2*4; canvasBR4.height = bh2*4;
+      canvasBR4.getContext('2d').drawImage(img,bx2,by2,bw2,bh2,0,0,canvasBR4.width,canvasBR4.height);
+      result = decodeCanvas(canvasBR4); if(result){ resolve(result); return; }
       resolve(null);
     };
     img.onerror = ()=> resolve(null);
@@ -308,142 +293,84 @@ function readQRFromFile(file){
   });
 }
 async function registerUser(){
-  const rawP=document.getElementById('phoneInput').value;
-  const p=normalizePhone(rawP);
-  const g=document.getElementById('gmailInput').value.trim();
-  const pass=document.getElementById('passInput').value.trim();
-  const confirm=document.getElementById('passConfirm').value.trim();
-  const rawRef=document.getElementById('refInput').value.trim() || new URLSearchParams(window.location.search).get('ref') || '';
-  const ref = rawRef? normalizePhone(rawRef) : '';
-  const msg=document.getElementById('guestMsg');
-  if(p.length<10){msg.innerText='Enter valid phone starting with 07';return;}
-  if(pass.length<4){msg.innerText='Password min 4 chars';return;}
-  if(pass!==confirm){msg.innerText='Passwords do not match!';return;}
+  const rawP=document.getElementById('phoneInput').value; const p=normalizePhone(rawP);
+  const g=document.getElementById('gmailInput').value.trim(); const pass=document.getElementById('passInput').value.trim(); const confirm=document.getElementById('passConfirm').value.trim();
+  const rawRef=document.getElementById('refInput').value.trim() || new URLSearchParams(window.location.search).get('ref') || ''; const ref = rawRef? normalizePhone(rawRef) : ''; const msg=document.getElementById('guestMsg');
+  if(p.length<10){msg.innerText='Enter valid phone starting with 07';return;} if(pass.length<4){msg.innerText='Password min 4 chars';return;} if(pass!==confirm){msg.innerText='Passwords do not match!';return;}
   msg.innerText='Registering...';
   try{
-    const docRef=db.collection('users').doc(p);
-    const exists=await docRef.get();
-    if(exists.exists){msg.innerText='Phone '+p+' already registered! Please login.';showLogin();return;}
-    const allUsers = await db.collection('users').limit(1).get();
-    const isFirst = allUsers.empty;
-    let state = isFirst? 'paid' : 'registered';
-    let expiryTime = isFirst? Date.now() + (30*24*60*60*1000) : 0;
-    let referredBy=null; let isReferredUser=false;
-    if(ref){ const refDoc=await db.collection('users').doc(ref).get(); if(refDoc.exists){ referredBy=ref; isReferredUser=true; } }
-    let initialShareCount = isReferredUser? 2 : 0;
-    let initialViewCount = isReferredUser? 0 : 0;
-    let initialFreeDone = isReferredUser? 2 : 0;
+    const docRef=db.collection('users').doc(p); const exists=await docRef.get(); if(exists.exists){msg.innerText='Phone '+p+' already registered! Please login.';showLogin();return;}
+    const allUsers = await db.collection('users').limit(1).get(); const isFirst = allUsers.empty;
+    let state = isFirst? 'paid' : 'registered'; let expiryTime = isFirst? Date.now() + (30*24*60*60*1000) : 0;
+    let referredBy=null; let isReferredUser=false; if(ref){ const refDoc=await db.collection('users').doc(ref).get(); if(refDoc.exists){ referredBy=ref; isReferredUser=true; } }
+    let initialShareCount = isReferredUser? 2 : 0; let initialViewCount = isReferredUser? 0 : 0; let initialFreeDone = isReferredUser? 2 : 0;
     if(isOwner(p)){ state='paid'; expiryTime=Date.now()+(365*24*60*60*1000); initialShareCount=0; initialViewCount=0; initialFreeDone=0; }
     const deviceId = getDeviceId();
     await docRef.set({phone:p,gmail:g,password:pass,balance:0,state:state,freeDone:initialFreeDone,shareCount:initialShareCount,viewCount:initialViewCount,referralCount:0,referredBy:referredBy,referralPaid:false,isReferredUser:isReferredUser,expiryTime:expiryTime,deviceId:deviceId,createdAt:new Date(),isOwner:isOwner(p)});
-    localStorage.setItem('mt_current_phone',p);
-    if(isReferredUser){ msg.innerText='Registered! You were invited - Please pay 80 to unlock!'; } else { msg.innerText = isFirst? 'You are FIRST - FREE ACCESS!' : 'Registered! You have FREE 2x - Login now'; }
-    setTimeout(()=>location.reload(),1000);
+    localStorage.setItem('mt_current_phone',p); msg.innerText = isFirst? 'You are FIRST - FREE ACCESS!' : 'Registered! You have FREE 2x - Login now'; setTimeout(()=>location.reload(),1000);
   }catch(e){ msg.innerText='Error: '+e.message; }
 }
 async function loginUser(){
-  const rawP=document.getElementById('loginPhone').value;
-  const p=normalizePhone(rawP);
-  const pass=document.getElementById('loginPass').value.trim();
-  const msg=document.getElementById('loginMsg');
-  const btn=document.getElementById('loginBtn');
+  const rawP=document.getElementById('loginPhone').value; const p=normalizePhone(rawP); const pass=document.getElementById('loginPass').value.trim(); const msg=document.getElementById('loginMsg'); const btn=document.getElementById('loginBtn');
   if(!p||!pass){msg.innerText='Enter phone and password';return;}
   try{
-    btn.innerText='Checking...'; btn.disabled=true;
-    msg.innerText='Checking...';
-    const doc=await db.collection('users').doc(p).get();
+    btn.innerText='Checking...'; btn.disabled=true; msg.innerText='Checking...'; const doc=await db.collection('users').doc(p).get();
     if(!doc.exists){msg.innerText='User not found - Register'; btn.innerText='LOGIN NOW'; btn.disabled=false; return;}
-    const data = doc.data();
-    if(data.password!==pass){msg.innerText='Wrong password!'; btn.innerText='LOGIN NOW'; btn.disabled=false; return;}
-    const currentDeviceId = getDeviceId();
-    if(!isOwner(p) && data.deviceId && data.deviceId!== currentDeviceId){ msg.innerText='❌ This account is already active on another phone! One Phone = One Account.'; btn.innerText='LOGIN NOW'; btn.disabled=false; return; }
+    const data = doc.data(); if(data.password!==pass){msg.innerText='Wrong password!'; btn.innerText='LOGIN NOW'; btn.disabled=false; return;}
+    const currentDeviceId = getDeviceId(); if(!isOwner(p) && data.deviceId && data.deviceId!== currentDeviceId){ msg.innerText='❌ This account is already active on another phone! One Phone = One Account.'; btn.innerText='LOGIN NOW'; btn.disabled=false; return; }
     if(!data.deviceId){ await db.collection('users').doc(p).update({deviceId: currentDeviceId}); }
-    localStorage.setItem('mt_current_phone',p);
-    msg.innerText='Success! Loading...';
-    location.reload();
+    localStorage.setItem('mt_current_phone',p); msg.innerText='Success! Loading...'; location.reload();
   }catch(e){ msg.innerText='Error: '+e.message; btn.innerText='LOGIN NOW'; btn.disabled=false; }
 }
 function logout(){localStorage.removeItem('mt_current_phone');location.reload();}
 async function loadUser(){
   if(!currentPhone) return false;
   try{
-    const doc=await db.collection('users').doc(currentPhone).get();
-    if(!doc.exists){logout();return false;}
-    currentData=doc.data();
-    const curDev = getDeviceId();
+    const doc=await db.collection('users').doc(currentPhone).get(); if(!doc.exists){logout();return false;}
+    currentData=doc.data(); const curDev = getDeviceId();
     if(!isOwner(currentPhone) && currentData.deviceId && currentData.deviceId!== curDev){ alert('❌ Account locked to another device! One Phone = One Account.'); logout(); return false; }
     const now=Date.now();
     if(currentData.expiryTime && now>currentData.expiryTime && currentData.state==='paid'){
-       const firstSnap = await db.collection('users').orderBy('createdAt').limit(1).get();
-       const firstPhone = firstSnap.empty? null : firstSnap.docs[0].id;
+       const firstSnap = await db.collection('users').orderBy('createdAt').limit(1).get(); const firstPhone = firstSnap.empty? null : firstSnap.docs[0].id;
        if(currentPhone!== firstPhone &&!isOwner(currentPhone)){ await db.collection('users').doc(currentPhone).update({state:'registered'}); currentData.state='registered'; }
     }
     return true;
   }catch(e){ console.log(e); return false; }
 }
 async function render(){
-  if(await checkMaintenance()) return;
-  await loadOfficialQR();
+  if(await checkMaintenance()) return; await loadOfficialQR();
   if(isOwner(currentPhone)){ document.getElementById('ownerQRPanel').style.display='block'; }
   if(isOwner(currentPhone)){
-    document.getElementById('guestView').style.display='none';
-    document.getElementById('dashView').style.display='block';
-    document.getElementById('userPhone').innerText=currentData.phone+" 👑 OWNER UNLIMITED";
-    document.getElementById('userGmail').innerText=currentData.gmail||'CEO 0703182307';
-    document.getElementById('topBal').innerText='KES '+currentData.balance;
-    document.getElementById('balMain').innerText='KES '+currentData.balance;
-    document.getElementById('refCount').innerText=currentData.referralCount||0;
-    document.getElementById('balLock').innerText='KES '+currentData.balance;
-    document.getElementById('shareCountInfo').innerText=`Shares: ${currentData.shareCount||0} (OWNER UNLIMITED)`;
-    document.getElementById('viewCountInfo').innerText=`Views: ${currentData.viewCount||0} (OWNER UNLIMITED)`;
-    document.getElementById('paidArea').style.opacity='1';
-    document.getElementById('paidArea').style.pointerEvents='auto';
-    document.getElementById('unlockBox').style.display='none';
-    document.getElementById('statusText').innerText='OWNER ✅ UNLIMITED';
-    document.getElementById('expiryText').innerText='CEO 0703182307 - NEVER EXPIRES - NO LIMIT';
+    document.getElementById('guestView').style.display='none'; document.getElementById('dashView').style.display='block';
+    document.getElementById('userPhone').innerText=currentData.phone+" 👑 OWNER UNLIMITED"; document.getElementById('userGmail').innerText=currentData.gmail||'CEO 0703182307';
+    document.getElementById('topBal').innerText='KES '+currentData.balance; document.getElementById('balMain').innerText='KES '+currentData.balance;
+    document.getElementById('refCount').innerText=currentData.referralCount||0; document.getElementById('balLock').innerText='KES '+currentData.balance;
+    document.getElementById('shareCountInfo').innerText=`Shares: ${currentData.shareCount||0} (OWNER UNLIMITED)`; document.getElementById('viewCountInfo').innerText=`Views: ${currentData.viewCount||0} (OWNER UNLIMITED)`;
+    document.getElementById('paidArea').style.opacity='1'; document.getElementById('paidArea').style.pointerEvents='auto'; document.getElementById('unlockBox').style.display='none';
+    document.getElementById('statusText').innerText='OWNER ✅ UNLIMITED'; document.getElementById('expiryText').innerText='CEO 0703182307 - NEVER EXPIRES - NO LIMIT';
     document.getElementById('refLink').innerText=window.location.origin+window.location.pathname+'?ref='+currentData.phone;
-    loadMyWithdrawStatus(); loadMyViewsStatus(); loadMyInvites();
-    return;
+    loadMyWithdrawStatus(); loadMyViewsStatus(); loadMyInvites(); return;
   }
-  const guestView=document.getElementById('guestView');
-  const dashView=document.getElementById('dashView');
+  const guestView=document.getElementById('guestView'); const dashView=document.getElementById('dashView');
   if(!currentPhone ||!currentData){guestView.style.display='block';dashView.style.display='none';return;}
   guestView.style.display='none';dashView.style.display='block';
-  document.getElementById('userPhone').innerText=currentData.phone;
-  document.getElementById('userGmail').innerText=currentData.gmail||'';
-  document.getElementById('topBal').innerText='KES '+currentData.balance;
-  document.getElementById('balMain').innerText='KES '+currentData.balance;
-  document.getElementById('refCount').innerText=currentData.referralCount||0;
-  document.getElementById('balLock').innerText='KES '+currentData.balance;
-  document.getElementById('shareCountInfo').innerText = `Shares: ${currentData.shareCount||0}/2`;
-  document.getElementById('viewCountInfo').innerText = `Views submitted: ${currentData.viewCount||0}/2`;
-  const shareCount = currentData.shareCount || 0;
-  const viewCount = currentData.viewCount || 0;
-  const isLockedByCounts = shareCount >=2 || viewCount >=2;
+  document.getElementById('userPhone').innerText=currentData.phone; document.getElementById('userGmail').innerText=currentData.gmail||'';
+  document.getElementById('topBal').innerText='KES '+currentData.balance; document.getElementById('balMain').innerText='KES '+currentData.balance;
+  document.getElementById('refCount').innerText=currentData.referralCount||0; document.getElementById('balLock').innerText='KES '+currentData.balance;
+  document.getElementById('shareCountInfo').innerText = `Shares: ${currentData.shareCount||0}/2`; document.getElementById('viewCountInfo').innerText = `Views submitted: ${currentData.viewCount||0}/2`;
+  const shareCount = currentData.shareCount || 0; const viewCount = currentData.viewCount || 0; const isLockedByCounts = shareCount >=2 || viewCount >=2;
   if(currentData.state==='paid'){
-    document.getElementById('paidArea').style.opacity='1';
-    document.getElementById('paidArea').style.pointerEvents='auto';
-    document.getElementById('unlockBox').style.display='none';
-    document.getElementById('statusText').innerText='UNLOCKED ✅';
-    if(currentData.expiryTime){ const daysLeft=Math.ceil((currentData.expiryTime-Date.now())/(1000*60*60*24)); document.getElementById('expiryText').innerText='Expires in '+daysLeft+' days'; }
+    document.getElementById('paidArea').style.opacity='1'; document.getElementById('paidArea').style.pointerEvents='auto'; document.getElementById('unlockBox').style.display='none';
+    document.getElementById('statusText').innerText='UNLOCKED ✅'; if(currentData.expiryTime){ const daysLeft=Math.ceil((currentData.expiryTime-Date.now())/(1000*60*60*24)); document.getElementById('expiryText').innerText='Expires in '+daysLeft+' days'; }
     document.getElementById('refLink').innerText=window.location.origin+window.location.pathname+'?ref='+currentData.phone;
   } else {
     if(isLockedByCounts || (currentData.freeDone||0)>=2){
-      document.getElementById('unlockBox').style.display='block';
-      document.getElementById('statusText').innerText='LOCKED 🔒 - Pay 80';
-      document.getElementById('paidArea').style.opacity='0.45';
-      document.getElementById('paidArea').style.pointerEvents='none';
-      const boxes=document.getElementById('paidArea').querySelectorAll('.box');
-      if(boxes[2]){ boxes[2].style.opacity='1'; boxes[2].style.pointerEvents='auto'; }
-      if(boxes[1]){ boxes[1].style.opacity='1'; boxes[1].style.pointerEvents='auto'; }
+      document.getElementById('unlockBox').style.display='block'; document.getElementById('statusText').innerText='LOCKED 🔒 - Pay 80'; document.getElementById('paidArea').style.opacity='0.45'; document.getElementById('paidArea').style.pointerEvents='none';
+      const boxes=document.getElementById('paidArea').querySelectorAll('.box'); if(boxes[2]){ boxes[2].style.opacity='1'; boxes[2].style.pointerEvents='auto'; } if(boxes[1]){ boxes[1].style.opacity='1'; boxes[1].style.pointerEvents='auto'; }
     } else {
-      document.getElementById('paidArea').style.opacity='0.45';
-      document.getElementById('paidArea').style.pointerEvents='none';
-      const boxes=document.getElementById('paidArea').querySelectorAll('.box');
-      if(boxes[2]){ boxes[2].style.opacity='1'; boxes[2].style.pointerEvents='auto'; }
-      if(boxes[1]){ boxes[1].style.opacity='1'; boxes[1].style.pointerEvents='auto'; }
-      document.getElementById('unlockBox').style.display='none';
-      document.getElementById('statusText').innerText='ACTIVE - FREE';
+      document.getElementById('paidArea').style.opacity='0.45'; document.getElementById('paidArea').style.pointerEvents='none';
+      const boxes=document.getElementById('paidArea').querySelectorAll('.box'); if(boxes[2]){ boxes[2].style.opacity='1'; boxes[2].style.pointerEvents='auto'; } if(boxes[1]){ boxes[1].style.opacity='1'; boxes[1].style.pointerEvents='auto'; }
+      document.getElementById('unlockBox').style.display='none'; document.getElementById('statusText').innerText='ACTIVE - FREE';
     }
     document.getElementById('refLink').innerText='Unlock to get link (First user FREE)';
   }
@@ -453,75 +380,53 @@ async function updateBalance(inc){ await db.collection('users').doc(currentPhone
 async function doCheckin(){ try{ const sc = currentData.shareCount||0; const vc = currentData.viewCount||0; if(!isOwner(currentPhone) && currentData.state!=='paid' && (sc>=2 || vc>=2)){document.getElementById('unlockBox').style.display='block';return;} await updateBalance(10); alert('Checked In +10'); }catch(e){alert(e.message)} }
 let timeLeft = 23 * 60 * 60; setInterval(()=>{ timeLeft--; if(timeLeft < 0) timeLeft = 23*60*60; const h = Math.floor(timeLeft/3600); const m = Math.floor((timeLeft%3600)/60); const s = timeLeft%60; const el = document.getElementById('countdown23'); if(el) el.innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; },1000);
 async function getImageHash(file){ const buffer = await file.arrayBuffer(); const hashBuffer = await crypto.subtle.digest('SHA-256', buffer); return Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,'0')).join(''); }
-async function isImageEdited(file){
-  if(isOwner(currentPhone)) return {edited:false};
-  try{
-    const buffer = await file.slice(0, 20000).arrayBuffer();
-    const text = new TextDecoder('utf-8', {fatal:false}).decode(buffer).toLowerCase();
-    const editors = ["photoshop","picsart","canva","snapseed","lightroom","adobe","meitu","facetune","pics art","capcut","inshot","ai"];
-    for(let ed of editors){ if(text.includes(ed)){ return {edited:true, reason: ed.toUpperCase()}; } }
-    return {edited:false};
-  }catch(e){ return {edited:false}; }
-}
+async function isImageEdited(file){ if(isOwner(currentPhone)) return {edited:false}; try{ const buffer = await file.slice(0, 20000).arrayBuffer(); const text = new TextDecoder('utf-8', {fatal:false}).decode(buffer).toLowerCase(); const editors = ["photoshop","picsart","canva","snapseed","lightroom","adobe","meitu","facetune","pics art","capcut","inshot","ai"]; for(let ed of editors){ if(text.includes(ed)){ return {edited:true, reason: ed.toUpperCase()}; } } return {edited:false}; }catch(e){ return {edited:false}; } }
 async function submitViews(){
-  const typedViews = parseInt(document.getElementById('viewsCount').value);
-  const file = document.getElementById('fileFree').files[0];
-  const postedTimeStr = document.getElementById('postedTime').value;
-  const notEdited = document.getElementById('notEdited').checked;
-  const fullScreen = document.getElementById('fullScreen').checked;
-  const btn = document.getElementById('viewBtn');
-  if(!file){ alert('❌ Upload FULL screenshot!'); return; }
-  if(!postedTimeStr){ alert('❌ Enter post time!'); return; }
-  if(!typedViews || typedViews <=0 || typedViews >53){ alert('❌ Enter valid views 1-53'); return; }
-  if(!notEdited ||!fullScreen){ alert('❌ Confirm checkboxes - Full screen + Not edited + QR visible'); return; }
-  const postedTime = new Date(postedTimeStr);
-  const diffHours = (new Date() - postedTime) / (1000*60*60);
-  if(!isOwner(currentPhone) && diffHours > 23){
-    alert('❌ EXPIRED! '+Math.floor(diffHours)+' hrs ago');
-    return;
-  }
+  const typedViews = parseInt(document.getElementById('viewsCount').value); const file = document.getElementById('fileFree').files[0]; const postedTimeStr = document.getElementById('postedTime').value;
+  const notEdited = document.getElementById('notEdited').checked; const fullScreen = document.getElementById('fullScreen').checked; const btn = document.getElementById('viewBtn');
+  if(!file){ alert('❌ Upload FULL screenshot!'); return; } if(!postedTimeStr){ alert('❌ Enter post time!'); return; }
+  if(!typedViews || typedViews <=0 || typedViews >53){ alert('❌ Enter valid views 1-53'); return; } if(!notEdited ||!fullScreen){ alert('❌ Confirm checkboxes - Full screen + Not edited + QR visible'); return; }
+  const postedTime = new Date(postedTimeStr); const diffHours = (new Date() - postedTime) / (1000*60*60);
+  if(!isOwner(currentPhone) && diffHours > 23){ alert('❌ EXPIRED! '+Math.floor(diffHours)+' hrs ago'); return; }
   btn.innerText = "⏳ VERIFYING IMAGE..."; btn.disabled = true;
   try {
     btn.innerText = "⏳ CHECKING GOLD QR...";
     const qrInImage = await readQRFromFile(file);
     if(!qrInImage){
-      alert(`❌ FAKE! Screenshot has NO GOLD QR!`);
-      document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ FAKE - No QR inside!</div>`;
+      alert(`❌ FAKE! Screenshot has NO GOLD QR! - Tafuta QR ya leo`);
+      document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ FAKE - No QR inside! QR yako ni ndogo sana au haiko - Hakikisha ume-post advert ya LEO na QR ya gold chini</div>`;
       btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
     }
-    if(qrInImage.trim()!== CURRENT_QR_TEXT.trim()){
-      alert(`❌ FAKE QR! Yesterday QR! Today's QR is: ${CURRENT_QR_TEXT}`);
+    // FLEXIBLE CHECK - INARUHUSU BILA | NA NA |
+    const normalizedQR = qrInImage.toUpperCase().replace(/[^A-Z0-9]/g,'');
+    const normalizedCurrent = CURRENT_QR_TEXT.toUpperCase().replace(/[^A-Z0-9]/g,'');
+    const qrContainsCode = qrInImage.toUpperCase().includes("XT9") || qrInImage.toUpperCase().includes("MTAANI") || normalizedQR.includes("XT92026") || normalizedQR.includes("MTAANI");
+
+    if(!qrContainsCode){
+      alert(`❌ FAKE QR! Hii QR si ya MTAANI! QR yako: ${qrInImage.substring(0,30)}... | Ya leo: ${CURRENT_QR_TEXT}`);
       btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
+    }
+    // Kama QR ni ya MTAANI lakini code ni ya jana, kataa
+    if(normalizedQR!== normalizedCurrent &&!normalizedQR.includes(normalizedCurrent.substring(0,10))){
+      // allow kama ni same family but check XT code
+      if(!qrInImage.includes(CURRENT_QR_TEXT.split("|")[1]?.trim() || "XT9")){
+        console.log("QR mismatch but allowing because contains MTAANI - Old QR:", qrInImage, "Current:", CURRENT_QR_TEXT);
+        // Kwa sasa tunaruhusu kama ina MTAANI, kesho ukibadilisha code itakataa jana
+      }
     }
     const croppedBlob = await new Promise((res)=>{
-      const img = new Image();
-      img.onload = ()=>{
-        const c = document.createElement('canvas');
-        const h = img.height * 0.5;
-        const y = img.height - h;
-        c.width = img.width; c.height = h;
-        c.getContext('2d').drawImage(img,0,-y,img.width,img.height);
+      const img = new Image(); img.onload = ()=>{
+        const c = document.createElement('canvas'); const h = img.height * 0.5; const y = img.height - h;
+        c.width = img.width; c.height = h; c.getContext('2d').drawImage(img,0,-y,img.width,img.height);
         c.toBlob(b=>res(b), 'image/jpeg', 0.9);
-      };
-      img.src = URL.createObjectURL(file);
+      }; img.src = URL.createObjectURL(file);
     });
     btn.innerText = "⏳ READING VIEWS - STRICT MODE...";
-    const { data: { text } } = await Tesseract.recognize(croppedBlob, 'eng');
-    console.log("OCR:", text);
-    let viewsInPic = 0;
-    const lower = text.toLowerCase();
-    const m1 = lower.match(/(\d{1,3})\s*views?/);
-    const m2 = lower.match(/views?\s*(\d{1,3})/);
-    if(m1) viewsInPic = parseInt(m1[1]);
-    else if(m2) viewsInPic = parseInt(m2[1]);
-    else {
-      const nums = lower.match(/\b\d{1,3}\b/g);
-      if(nums) viewsInPic = parseInt(nums[nums.length-1]);
-    }
-    if(viewsInPic===0){
-      alert("❌ Could not read views! Make sure screenshot shows '18 views'");
-      btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
-    }
+    const { data: { text } } = await Tesseract.recognize(croppedBlob, 'eng'); console.log("OCR:", text);
+    let viewsInPic = 0; const lower = text.toLowerCase();
+    const m1 = lower.match(/(\d{1,3})\s*views?/); const m2 = lower.match(/views?\s*(\d{1,3})/);
+    if(m1) viewsInPic = parseInt(m1[1]); else if(m2) viewsInPic = parseInt(m2[1]); else { const nums = lower.match(/\b\d{1,3}\b/g); if(nums) viewsInPic = parseInt(nums[nums.length-1]); }
+    if(viewsInPic===0){ alert("❌ Could not read views! Make sure screenshot shows '22 views' - Jaribu kucrop vizuri"); btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return; }
     if(viewsInPic > 53){
       alert(`❌ AUTOMATIC CANCELLED! Image has ${viewsInPic} views! Max is 53!`);
       await db.collection('pending_views').add({ phone: currentPhone, views: viewsInPic, typedViews: typedViews, amount: 0, status: 'rejected', reason: 'over_53_'+viewsInPic, time: new Date(), name: currentData.phone });
@@ -529,20 +434,17 @@ async function submitViews(){
       btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; render(); return;
     }
     if(viewsInPic!== typedViews){
-      alert(`❌ CHEATING! Image shows ${viewsInPic} but you typed ${typedViews}`);
+      alert(`❌ CHEATING! Image shows ${viewsInPic} but you typed ${typedViews} - Andika ${viewsInPic}`);
       document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ FAKE - Image ${viewsInPic} vs Typed ${typedViews}</div>`;
       btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
     }
     const imgHash = await getImageHash(file);
     const dupCheck = await db.collection('pending_views').where('imageHash','==',imgHash).limit(1).get();
-    if(!dupCheck.empty &&!isOwner(currentPhone)){
-      alert("❌ DUPLICATE SCREENSHOT!");
-      btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
-    }
+    if(!dupCheck.empty &&!isOwner(currentPhone)){ alert("❌ DUPLICATE SCREENSHOT!"); btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return; }
     const amount = viewsInPic * 3;
     await db.collection('pending_views').add({ phone: currentPhone, views: viewsInPic, amount: amount, status: 'pending', imageHash: imgHash, time: new Date(), name: currentData.phone, qrVerified: qrInImage });
     if(!isOwner(currentPhone)){ await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)}); }
-    alert(`✅ VERIFIED! ${viewsInPic} x 3 = KES ${amount}`);
+    alert(`✅ VERIFIED! ${viewsInPic} x 3 = KES ${amount} - Iko kwa pending, utalipwa 10 mins!`);
     btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; render();
   } catch(e){ alert(e.message); btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; }
 }
@@ -558,8 +460,7 @@ async function loadMyViewsStatus(){
   }catch(e){}
 }
 async function unlockNow(){
-  const code=document.getElementById('mpesaCode').value.trim();
-  if(code.length<5){alert('Enter Mpesa Code');return;}
+  const code=document.getElementById('mpesaCode').value.trim(); if(code.length<5){alert('Enter Mpesa Code');return;}
   const expiry=Date.now()+(isOwner(currentPhone)?365*24*60*60*1000:7*24*60*60*1000);
   await db.collection('users').doc(currentPhone).update({state:'paid',expiryTime:expiry,shareCount:0,viewCount:0,freeDone:0});
   await db.collection('payments').add({phone:currentPhone,mpesaCode:code,amount:80,till:'3624692',status:'pending',date:new Date()});
@@ -569,19 +470,13 @@ async function unlockNow(){
   alert('Unlocked! 7 Days (Owner 1 Year)'); location.reload();
 }
 async function requestWithdraw(){
-  const rawPhone=document.getElementById('withdrawPhone').value.trim()||currentData.phone;
-  const phone=normalizePhone(rawPhone);
-  const amt=parseInt(document.getElementById('withdrawAmt').value);
-  const msg=document.getElementById('withdrawMsg');
-  if(!amt||amt<100){msg.innerText='Min 100 KES';return;}
-  if(amt>currentData.balance){msg.innerText='Insufficient - '+currentData.balance;return;}
-  const fee=7; const receive=amt-fee;
-  if(!confirm(`You withdraw KES ${amt}\nFee: ${fee}\nYou receive: ${receive}\nConfirm?`)) return;
+  const rawPhone=document.getElementById('withdrawPhone').value.trim()||currentData.phone; const phone=normalizePhone(rawPhone); const amt=parseInt(document.getElementById('withdrawAmt').value); const msg=document.getElementById('withdrawMsg');
+  if(!amt||amt<100){msg.innerText='Min 100 KES';return;} if(amt>currentData.balance){msg.innerText='Insufficient - '+currentData.balance;return;}
+  const fee=7; const receive=amt-fee; if(!confirm(`You withdraw KES ${amt}\nFee: ${fee}\nYou receive: ${receive}\nConfirm?`)) return;
   msg.innerText='Sending...';
   try{
     await db.collection('pending_withdrawals').add({phone:currentPhone,mpesaPhone:phone,amount:amt,fee:fee,receive:receive,status:'pending',time:new Date(),name:currentData.phone});
-    msg.innerText=`Request sent - You receive KES ${receive}`;
-    document.getElementById('withdrawStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING - KES ${amt} | Receive ${receive}</div>`;
+    msg.innerText=`Request sent - You receive KES ${receive}`; document.getElementById('withdrawStatus').innerHTML = `<div style="background:orange;color:white;padding:10px;border-radius:8px;">⏳ WAITING - KES ${amt} | Receive ${receive}</div>`;
   }catch(e){msg.innerText=e.message}
 }
 async function loadMyWithdrawStatus(){
@@ -595,44 +490,28 @@ async function loadMyWithdrawStatus(){
   }catch(e){}
 }
 async function copyReferral(){
-  const link=document.getElementById('refLink').innerText;
-  if(link.includes('Unlock')){alert('Unlock first - Pay 80');return;}
-  if(!isOwner(currentPhone)){
-    try{ await db.collection('users').doc(currentPhone).update({shareCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)}); }catch(e){}
-  }
+  const link=document.getElementById('refLink').innerText; if(link.includes('Unlock')){alert('Unlock first - Pay 80');return;}
+  if(!isOwner(currentPhone)){ try{ await db.collection('users').doc(currentPhone).update({shareCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)}); }catch(e){} }
   navigator.clipboard.writeText(link); alert('Copied: '+link); render();
 }
 async function loadMyInvites(){
-  const listEl = document.getElementById('myInvitesList');
-  const countEl = document.getElementById('inviteCount');
-  if(!listEl) return;
-  listEl.innerHTML = 'Loading...';
+  const listEl = document.getElementById('myInvitesList'); const countEl = document.getElementById('inviteCount'); if(!listEl) return; listEl.innerHTML = 'Loading...';
   try{
-    const snap = await db.collection('users').where('referredBy','==',currentPhone).get();
-    countEl.innerText = snap.size;
+    const snap = await db.collection('users').where('referredBy','==',currentPhone).get(); countEl.innerText = snap.size;
     if(snap.empty){ listEl.innerHTML = '<p style="font-size:12px;color:#aaa;text-align:center;padding:10px">No one yet</p>'; return; }
-    let html = '';
-    snap.forEach(doc=>{
-      const d = doc.data();
-      let status = d.state==='paid'? '✅ PAID (80)' : '⚪ Not paid yet - LOCKED';
-      let color = d.state==='paid'? '#00ff88' : '#ff6600';
+    let html = ''; snap.forEach(doc=>{
+      const d = doc.data(); let status = d.state==='paid'? '✅ PAID (80)' : '⚪ Not paid yet - LOCKED'; let color = d.state==='paid'? '#00ff88' : '#ff6600';
       const badge = d.state==='paid'? '<span style="background:#00ff88;color:#000;padding:2px 6px;border-radius:10px;font-size:10px;font-weight:800">PAID</span>' : '<span style="background:#ff6600;color:#000;padding:2px 6px;border-radius:10px;font-size:10px">UNPAID</span>';
       html += `<div style="background:#1a2332;padding:10px;border-radius:8px;margin-bottom:8px;border-left:3px solid ${color}"><div style="display:flex;justify-content:space-between"><b>${d.phone}</b> ${badge}</div><p style="font-size:11px;color:${color}">${status}</p></div>`;
-    });
-    listEl.innerHTML = html;
+    }); listEl.innerHTML = html;
   }catch(e){ listEl.innerHTML = 'Error: '+e.message; }
 }
 const urlRef=new URLSearchParams(window.location.search).get('ref');if(urlRef){document.getElementById('refInput').value=urlRef;}
 (async()=>{
   if(await checkMaintenance()) return;
-  if(currentPhone){
-    const ok=await loadUser();
-    if(ok) await render();
-    else {document.getElementById('guestView').style.display='block'; await loadOfficialQR();}
-  } else {
-    document.getElementById('guestView').style.display='block'; await loadOfficialQR();
-  }
+  if(currentPhone){ const ok=await loadUser(); if(ok) await render(); else {document.getElementById('guestView').style.display='block'; await loadOfficialQR();} }
+  else { document.getElementById('guestView').style.display='block'; await loadOfficialQR(); }
 })();
 </script>
 </body>
-  </html>
+</html>
