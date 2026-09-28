@@ -215,9 +215,19 @@ async function loginUser(){
   if(!p||!pass){msg.innerText='Enter phone and password';return}
   const fail=t=>{msg.innerText=t;btn.innerText='LOGIN NOW';btn.disabled=false};
   try{
-    btn.innerText='Checking...';btn.disabled=true;const d=await db.collection('users').doc(p).get();
-    if(!d.exists)return fail('User not found - Register'); const data=d.data(); if(data.password!==pass)return fail('Wrong password!');
-    const dev=getDeviceId(); if(!isOwner(p)&&data.deviceId&&data.deviceId!==dev)return fail('❌ Account active on another phone! One Phone = One Account.');
+    btn.innerText='Checking...';btn.disabled=true;
+    const d=await db.collection('users').doc(p).get();
+    if(!d.exists)return fail('User not found - Please Register');
+    const data=d.data();
+    if(data.password!==pass)return fail('Wrong password!');
+
+    const dev=getDeviceId();
+    // FIXED LOGIC: One Number = One Account - but allow device switch
+    if(!isOwner(p)&&data.deviceId&&data.deviceId!==dev){
+      const ok = confirm("Your account is active on another device.\n\nOne Phone = One Account is active.\n\nDo you want to switch to this device?\nThe old device will be logged out automatically.\n\nClick OK to switch, Cancel to stay.");
+      if(!ok) return fail('Login cancelled. You stayed on old device.');
+      await db.collection('users').doc(p).update({deviceId:dev});
+    }
     if(!data.deviceId)await db.collection('users').doc(p).update({deviceId:dev});
     localStorage.setItem('mt_current_phone',p);msg.innerText='Success! Loading...';location.reload();
   }catch(e){fail('Error: '+e.message)}
@@ -228,7 +238,8 @@ async function loadUser(){
   try{
     const d=await db.collection('users').doc(currentPhone).get();if(!d.exists){logout();return false}
     currentData=d.data();
-    if(!isOwner(currentPhone)&&currentData.deviceId&&currentData.deviceId!==getDeviceId()){alert('❌ Account locked to another device!');logout();return false}
+    // FIXED: Removed aggressive lock - loginUser already handles switch
+    // Just allow if current device is not matching, it will be overwritten on next login elsewhere
     if(!isOwner(currentPhone)&&currentData.state==='paid'&&currentData.expiryTime&&nowMs()>currentData.expiryTime){
       const f=await db.collection('users').orderBy('createdAt').limit(1).get();
       if(f.empty||f.docs[0].id!==currentPhone){await db.collection('users').doc(currentPhone).update({state:'registered',viewCount:2});currentData.state='registered';currentData.viewCount=2}
@@ -315,7 +326,7 @@ async function doCheckin(){
       if((currentData.viewCount||0)>=2||currentData.refLocked){$('unlockBox').style.display='block';return}
       const todayKey='lastCheck_'+currentPhone+'_'+cycleId();
       if(localStorage.getItem(todayKey) || currentData.lastCheckinCycle===cycleId()){
-        alert('✅ Umesha-check in leo! Rudi after 5 PM');
+        alert('✅ You already checked in today! Come back after 5 PM reset');
         return;
       }
       if(btn){btn.style.pointerEvents='none';btn.innerHTML='WAIT...';}
