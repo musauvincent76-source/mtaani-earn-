@@ -91,9 +91,9 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 4. After <b>2 submissions</b> dashboard LOCKS<br>
 5. Unlock: bring <b>3 paid referrals</b> OR pay <b>KES 80</b> = +2 submissions for 7 days<br>
 6. Referral cap <b>20</b> - then LOCK until 3 paid<br>
-7. FULL screenshot + time at top + <b style="color:gold">2 DOT SECURED</b> - no edits<br>
-8. Submit within <b>23 hours</b> of posting<br>
-9. Typed views must match screenshot (OCR) - same screenshot not allowed</div>
+7. FULL screenshot + time at top - no edits<br>
+8. Valid posting time: <b style="color:gold">6PM to 4PM next day only</b><br>
+9. Typed views must match screenshot (OCR) - cheating = auto reject</div>
 <div class="countdown"><h2 id="countdown23" style="color:#ffcc00;font-size:16px">Submit before 5 PM</h2></div>
 <div class="task"><span>1. Full Screenshot of WhatsApp Status</span><span class="tag tag-free">REQUIRED</span></div>
 <input type="file" id="fileFree" accept="image/*">
@@ -103,7 +103,7 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <input id="viewsCount" type="number" placeholder="Enter views - Max 53">
 <div style="margin-top:10px;background:#0f172a;padding:10px;border-radius:8px">
 <label style="font-size:11px;display:flex;align-items:center;gap:8px"><input type="checkbox" id="notEdited" style="width:auto"> Screenshot is NOT edited/cropped</label>
-<label style="font-size:11px;display:flex;align-items:center;gap:8px;margin-top:6px"><input type="checkbox" id="fullScreen" style="width:auto"> FULL screen - time at top + DOT visible</label>
+<label style="font-size:11px;display:flex;align-items:center;gap:8px;margin-top:6px"><input type="checkbox" id="fullScreen" style="width:auto"> FULL screen - time at top visible</label>
 </div>
 <button class="btn btn-yellow" onclick="submitViews()" id="viewBtn">SUBMIT VIEWS (3 KES each)</button>
 <div id="myViewsStatus" style="margin-top:8px"></div>
@@ -155,14 +155,7 @@ function showRegister(){$('loginBox').style.display='none'}
 function downloadTodayAdvert(){const s=$('todayAdvertMergedImg').src;if(!s){alert('No advert loaded');return}const a=document.createElement('a');a.href=s;a.download='MTAANI_ADVERT_TODAY_DOT.png';document.body.appendChild(a);a.click();a.remove()}
 function copyCaption(){navigator.clipboard.writeText($('todayCaptionText').innerText);alert('✅ Caption Copied!')}
 async function checkMaintenance(){try{const d=await db.collection('config').doc('site_status').get();if(d.exists&&d.data().maintenance===true){document.body.innerHTML='<div style="min-height:100vh;background:#05080f;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Inter,sans-serif;text-align:center"><div style="max-width:400px;border:2px solid #ffcc00;border-radius:20px;padding:30px"><div style="font-size:60px">🔧</div><h1 style="color:#ffcc00;font-size:22px">UNDER MAINTENANCE</h1><p style="color:#aaa;font-size:13px;margin-top:10px">MTAANI EARN is being upgraded!</p></div></div>';return true}}catch(e){}return false}
-
-async function loadOfficialAdvert(){
-  try{
-    const a=await db.collection('config').doc('today_advert').get();
-    if(a.exists&&a.data().mergedImage){$('todayAdvertMergedImg').src=a.data().mergedImage;if(a.data().caption)$('todayCaptionText').innerText=a.data().caption}
-  }catch(e){console.log('advert load',e)}
-}
-
+async function loadOfficialAdvert(){try{const a=await db.collection('config').doc('today_advert').get();if(a.exists&&a.data().mergedImage){$('todayAdvertMergedImg').src=a.data().mergedImage;if(a.data().caption)$('todayCaptionText').innerText=a.data().caption}}catch(e){console.log('advert load',e)}}
 async function updateAdvertWithDot(){
   const newCaption=$('newCaptionInput').value.trim(),link=$('newAdvertLinkInput').value.trim(),msg=$('qrUpdateMsg');
   if(!isOwner(currentPhone)){alert('Owner only');return}
@@ -176,14 +169,8 @@ async function updateAdvertWithDot(){
         const c=document.createElement('canvas');let w=adv.width,h=adv.height;const MAX=720;if(w>MAX){h=Math.round(h*(MAX/w));w=MAX;}
         c.width=w;c.height=h;const x2=c.getContext('2d');x2.drawImage(adv,0,0,w,h);
         x2.strokeStyle='gold';x2.lineWidth=6;x2.strokeRect(0,0,w,h);
-        // === TWO DOT SECURITY - VISIBLE TO SYSTEM, INVISIBLE TO EYE ===
-        x2.fillStyle='rgba(255,215,0,0.35)';
-        x2.beginPath();x2.arc(w-18, h-18, 5, 0, Math.PI*2);x2.fill();
-        x2.beginPath();x2.arc(w-38, h-18, 5, 0, Math.PI*2);x2.fill();
-        // Extra backup dots
-        x2.fillStyle='rgba(255,215,0,0.25)';
-        x2.fillRect(w-28, h-28, 2, 2);
-        x2.fillRect(w-48, h-28, 2, 2);
+        x2.fillStyle='rgba(255,215,0,0.35)';x2.beginPath();x2.arc(w-18, h-18, 5, 0, Math.PI*2);x2.fill();x2.beginPath();x2.arc(w-38, h-18, 5, 0, Math.PI*2);x2.fill();
+        x2.fillStyle='rgba(255,215,0,0.25)';x2.fillRect(w-28, h-28, 2, 2);x2.fillRect(w-48, h-28, 2, 2);
         merged=c.toDataURL('image/jpeg',0.55);
       }catch(e){console.log(e)}
     }
@@ -193,43 +180,26 @@ async function updateAdvertWithDot(){
     msg.innerText='✅ SUCCESS! Advert with 2 DOT uploaded!';setTimeout(()=>location.reload(),1200);
   }catch(e){alert(e.message);msg.innerText='Error: '+e.message}
 }
-
-// === TWO DOT DETECTION - CHECK IF SCREENSHOT IS ORIGINAL ===
-function checkTwoDots(file){
+function checkFullScreenshot(file){
   return new Promise(res=>{
     const img=new Image();
     img.onload=()=>{
-      try{
-        const W=img.width,H=img.height;
-        if(W<400||H<400){res({ok:false, reason:"Image too small - send FULL screenshot"});return;}
-        const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
-        const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0);
-        // Search bottom-right area where dots are placed
-        // Since screenshot is of WhatsApp status, advert is centered, dots will be in bottom-right of advert area
-        // We scan last 40% height to bottom, and middle to right
-        const searchXStart = Math.floor(W*0.3);
-        const searchYStart = Math.floor(H*0.3);
-        let goldPixels = 0;
-        const imageData = ctx.getImageData(searchXStart, searchYStart, W-searchXStart, H-searchYStart);
-        const data = imageData.data;
-        for(let i=0;i<data.length;i+=4){
-          const r=data[i],g=data[i+1],b=data[i+2];
-          // Gold detection: high R, high G, low B, and bright
-          if(r>200 && g>180 && b<100 && r+g>400){goldPixels++;}
-        }
-        // Also check for gold border
-        let borderFound = false;
-        // Quick border check - look for gold pixels near edges of advert
-        if(goldPixels>15){borderFound=true;}
-        if(!borderFound){res({ok:false, reason:"DOT security missing - this is not original advert or cropped. Upload FULL original screenshot with DOT visible"});return;}
-        res({ok:true, goldPixels});
-      }catch(e){res({ok:false, reason:"Cannot verify DOT - "+e.message});}
+      const W=img.width,H=img.height;
+      if(W<300 || H<500){res({ok:false, reason:"Image too small - send FULL screenshot without cropping. Width must be >300"});return;}
+      if(H < W){res({ok:false, reason:"Not FULL screen - screenshot must be vertical (full phone screen with time at top)"});return;}
+      res({ok:true, W, H});
     };
-    img.onerror=()=>res({ok:false, reason:"Invalid image"});
+    img.onerror=()=>res({ok:false, reason:"Invalid image file"});
     img.src=URL.createObjectURL(file);
   });
 }
-
+function checkPostingWindow(postedDate){
+  const h = postedDate.getHours();
+  if(h >= 16 && h < 18){
+    return {ok:false, msg:`❌ Posting time REJECTED! You posted between 4:01PM - 5:59PM ( ${h}:${String(postedDate.getMinutes()).padStart(2,'0')} ). Valid time is 6PM (18:00) to 4PM (16:00) next day only. Please post between 6PM-4PM.`};
+  }
+  return {ok:true};
+}
 async function registerUser(){
   const p=normalizePhone($('phoneInput').value),g=$('gmailInput').value.trim(),pass=$('passInput').value.trim(),conf=$('passConfirm').value.trim(),msg=$('guestMsg');
   const rawRef=$('refInput').value.trim()||new URLSearchParams(location.search).get('ref')||'',ref=rawRef?normalizePhone(rawRef):'';
@@ -382,38 +352,39 @@ async function submitViews(){
   }
   if(!file){alert('❌ Upload FULL screenshot!');return} if(!ps){alert('❌ Enter post time!');return}
   if(!typed||typed<=0||typed>53){alert('❌ Enter valid views 1-53');return} if(!$('notEdited').checked||!$('fullScreen').checked){alert('❌ Confirm both checkboxes');return}
-  const diff=(nowMs()-new Date(ps).getTime())/3600000;
+  const postedDate = new Date(ps);
+  const windowCheck = checkPostingWindow(postedDate);
+  if(!windowCheck.ok){alert(windowCheck.msg);$('myViewsStatus').innerHTML=`<div class="st" style="background:red">${windowCheck.msg}</div>`;return;}
+  const diff=(nowMs()-postedDate.getTime())/3600000;
   if(diff<-0.1){alert('❌ Post time is in the future');return} if(!owner&&diff>23){alert('❌ EXPIRED! Posted '+Math.floor(diff)+' hrs ago (max 23)');return}
   const stop=(m,html)=>{if(m)alert(m);if(html)$('myViewsStatus').innerHTML=`<div class="st" style="background:red">${html}</div>`;btn.innerText=LBL;btn.disabled=false};
   btn.disabled=true;
   try{
-    // === NEW: TWO DOT CHECK ===
-    btn.innerText='⏳ CHECKING 2 DOT SECURITY...';
-    const dotCheck = await checkTwoDots(file);
-    if(!dotCheck.ok){
-      // AUTO REJECT - DOT MISSING = EDITED
-      await db.collection('pending_views').add({phone:currentPhone,views:typed,typedViews:typed,amount:0,status:'rejected',reason:'DOT_MISSING_EDITED_'+dotCheck.reason,time:new Date(),name:currentData.phone});
-      return stop("❌ AUTO REJECTED! "+dotCheck.reason+" - This screenshot is EDITED or cropped. Upload ORIGINAL FULL screenshot with gold border + 2 DOT","❌ AUTO REJECT - DOT missing - EDITED IMAGE - Upload ORIGINAL");
+    btn.innerText='⏳ CHECKING FULL SCREEN...';
+    const fullCheck = await checkFullScreenshot(file);
+    if(!fullCheck.ok){
+      return stop("❌ "+fullCheck.reason,"❌ "+fullCheck.reason);
     }
-    // Check if cropped too much
     const imgCheck = await new Promise(r=>{ const im=new Image(); im.onload=()=>r(im); im.onerror=()=>r({width:0}); im.src=URL.createObjectURL(file); });
-    if(imgCheck.width < 500){ return stop("❌ Picha ndogo sana - tuma FULL screenshot bila ku-crop"); }
     const blob=await new Promise(r=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas'),h=i.height*.5;c.width=i.width;c.height=h;c.getContext('2d').drawImage(i,0,-(i.height-h),i.width,i.height);c.toBlob(r,'image/jpeg',.9)};i.src=URL.createObjectURL(file)});
-    btn.innerText='⏳ READING VIEWS...';const{data:{text}}=await Tesseract.recognize(blob,'eng');
+    btn.innerText='⏳ READING VIEWS (OCR)...';const{data:{text}}=await Tesseract.recognize(blob,'eng');
     let v=0;const lo=text.toLowerCase(),m1=lo.match(/(\d{1,3})\s*views?/),m2=lo.match(/views?\s*(\d{1,3})/);
     if(m1)v=parseInt(m1[1]);else if(m2)v=parseInt(m2[1]);else{const n=lo.match(/\b\d{1,3}\b/g);if(n)v=parseInt(n[n.length-1])}
-    if(!v)return stop("❌ Could not read views! Screenshot must show e.g. '22 views'");
+    if(!v)return stop("❌ Could not read views! Screenshot must show e.g. '22 views' - make sure views are visible","❌ OCR failed - views not visible");
     if(v>53){
       await db.collection('pending_views').add({phone:currentPhone,views:v,typedViews:typed,amount:0,status:'rejected',reason:'over_53_'+v,time:new Date(),name:currentData.phone});
       await recordSubmission();stop(`❌ AUTOMATIC CANCELLED! Image has ${v} views! Max is 53!`);render();return;
     }
-    if(v!==typed)return stop(`❌ Mismatch! Image shows ${v}, you typed ${typed}`,`❌ MISMATCH - Image ${v} vs Typed ${typed}`);
+    if(v!==typed){
+      await db.collection('pending_views').add({phone:currentPhone,views:v,typedViews:typed,amount:0,status:'rejected',reason:'CHEAT_TYPED_'+typed+'_OCR_'+v,time:new Date(),name:currentData.phone});
+      return stop(`❌ CHEATING DETECTED! You typed ${typed} but image shows ${v} views! Don't lie!`,`❌ CHEAT - You typed ${typed} but image has ${v} views`);
+    }
     const hash=await getImageHash(file);
-    if(!owner&&!(await db.collection('pending_views').where('imageHash','==',hash).limit(1).get()).empty)return stop('❌ DUPLICATE SCREENSHOT!');
+    if(!owner&&!(await db.collection('pending_views').where('imageHash','==',hash).limit(1).get()).empty)return stop('❌ DUPLICATE SCREENSHOT! You already submitted this image');
     const amount=v*3;
-    await db.collection('pending_views').add({phone:currentPhone,views:v,amount,status:'pending',imageHash:hash,time:new Date(),name:currentData.phone,dotVerified:true,goldPixels:dotCheck.goldPixels,cycle:cycleId()});
+    await db.collection('pending_views').add({phone:currentPhone,views:v,amount,status:'pending',imageHash:hash,time:new Date(),name:currentData.phone,dotVerified:true,postedHour:postedDate.getHours(),cycle:cycleId()});
     await recordSubmission();
-    alert(`✅ VERIFIED! ${v} x 3 = KES ${amount} - DOT OK + Pending approval (10 mins)`);btn.innerText=LBL;render();
+    alert(`✅ VERIFIED! ${v} x 3 = KES ${amount} - Time ${postedDate.getHours()}:${String(postedDate.getMinutes()).padStart(2,'0')} OK + Pending approval`);btn.innerText=LBL;render();
   }catch(e){stop(e.message)}
 }
 async function loadMyViewsStatus(){
