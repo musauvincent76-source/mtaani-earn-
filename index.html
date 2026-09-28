@@ -58,16 +58,30 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <div style="display:flex;gap:24px;margin-top:14px"><div><p style="font-size:11px;color:#aaa">BALANCE</p><h2 id="balMain" style="color:#ffcc00">KES 0</h2></div><div><p style="font-size:11px;color:#aaa">STATUS</p><b id="statusText">ACTIVE</b><p id="expiryText" style="font-size:10px;color:#aaa"></p></div></div>
 <button class="btn btn-dark" style="padding:8px;font-size:11px;margin-top:12px" onclick="logout()">LOGOUT</button>
 </div>
+
+<!-- OWNER PANEL WITH SEARCH -->
 <div id="ownerQRPanel" style="display:none" class="box" style="border:2px solid gold">
-<h3 style="color:gold">👑 OWNER ADMIN CONTROL - DOT SECURED</h3>
+<h3 style="color:gold">👑 OWNER ADMIN CONTROL - SUPER PANEL</h3>
+
+<div style="background:#000;padding:12px;border-radius:10px;border:1px solid gold;margin-top:12px">
+<h4 style="color:gold;font-size:12px">🔍 SEARCH & MANAGE USER (Firebase Delete)</h4>
+<input id="adminSearchPhone" placeholder="Enter phone e.g 0712404937">
+<button class="btn btn-yellow" style="padding:8px;font-size:11px" onclick="adminSearchUser()">🔍 SEARCH USER</button>
+<div id="adminSearchResult" style="margin-top:10px;font-size:11px"></div>
+</div>
+
+<div style="background:#000;padding:12px;border-radius:10px;border:1px solid #555;margin-top:12px">
 <p style="font-size:11px;color:#aaa">Upload Today's Advert - System will auto add 2 DOT security. No QR.</p>
 <textarea id="newCaptionInput" placeholder="Enter Today's Status Caption here..." style="min-height:90px"></textarea>
 <input id="newAdvertLinkInput" placeholder="Advert Image Link (Imgur / Postimages) - Optional">
 <button class="btn btn-yellow" onclick="updateAdvertWithDot()">UPDATE TODAY'S ADVERT (WITH 2 DOT)</button>
 <p id="qrUpdateMsg" style="font-size:11px;color:#00ff88;margin-top:6px"></p>
+</div>
+
 <h4 style="color:gold;margin-top:14px">💰 PENDING PAYMENTS (80)</h4><div id="pendingPayments"></div>
 <button class="btn btn-dark" style="font-size:11px;padding:8px" onclick="loadPendingPayments()">🔄 REFRESH</button>
 </div>
+
 <div class="grid">
 <div class="box" style="margin:0;text-align:center"><p style="font-size:11px;font-weight:700">DAILY CHECK-IN</p><div class="spin" onclick="doCheckin()">CHECK IN</div><p style="font-size:11px;color:#00ff88">+10 per day</p></div>
 <div class="box" style="margin:0;text-align:center;opacity:.7"><p style="font-size:11px;font-weight:700">SPIN & WIN <span class="tag tag-soon">SOON</span></p><div class="spin" style="border-color:#555" onclick="showComingSoon('Spin & Win')">SOON</div></div>
@@ -137,7 +151,7 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <script>
 firebase.initializeApp({apiKey:"AIzaSyBh3Zv2N2WVsXEkMzGgpmldZ9qamUAhGSo",authDomain:"mtaani-earn.firebaseapp.com",projectId:"mtaani-earn",storageBucket:"mtaani-earn.firebasestorage.app",messagingSenderId:"910785202691",appId:"1:910785202691:web:24b0273dda13fd78c41c36",measurementId:"G-TL5DYR9K6H"});
 const db=firebase.firestore(), $=id=>document.getElementById(id), inc=n=>firebase.firestore.FieldValue.increment(n);
-let currentPhone=localStorage.getItem('mt_current_phone')||'', currentData=null;
+let currentPhone=localStorage.getItem('mt_current_phone')||'', currentData=null, adminFoundUser=null;
 const DAY=86400000, RESET_UTC_MS=14*3600000; let clockOffset=0, lastCycle=null;
 const nowMs=()=>Date.now()+clockOffset;
 const cycleId=(t=nowMs())=>Math.floor((t-RESET_UTC_MS)/DAY);
@@ -184,13 +198,13 @@ function checkFullScreenshot(file){
   return new Promise(res=>{
     if(!file){res({ok:false,reason:"No file selected"});return;}
     if(file.size < 3000){res({ok:false,reason:"File too small/corrupt"});return;}
-    res({ok:true,W:1080,H:1920});
+    res({ok:true});
   });
 }
 function checkPostingWindow(postedDate){
   const h = postedDate.getHours();
   if(h >= 16 && h < 18){
-    return {ok:false, msg:`❌ Posting time REJECTED! You posted between 4:01PM - 5:59PM ( ${h}:${String(postedDate.getMinutes()).padStart(2,'0')} ). Valid time is 6PM (18:00) to 4PM (16:00) next day only. Please post between 6PM-4PM.`};
+    return {ok:false, msg:`❌ REJECTED! You posted 4:01PM-5:59PM (${h}:${String(postedDate.getMinutes()).padStart(2,'0')}). Valid 6PM-4PM only.`};
   }
   return {ok:true};
 }
@@ -220,9 +234,7 @@ async function loginUser(){
     if(!d.exists)return fail('User not found - Please Register');
     const data=d.data();
     if(data.password!==pass)return fail('Wrong password!');
-
     const dev=getDeviceId();
-    // FIXED LOGIC: One Number = One Account - but allow device switch
     if(!isOwner(p)&&data.deviceId&&data.deviceId!==dev){
       const ok = confirm("Your account is active on another device.\n\nOne Phone = One Account is active.\n\nDo you want to switch to this device?\nThe old device will be logged out automatically.\n\nClick OK to switch, Cancel to stay.");
       if(!ok) return fail('Login cancelled. You stayed on old device.');
@@ -238,8 +250,6 @@ async function loadUser(){
   try{
     const d=await db.collection('users').doc(currentPhone).get();if(!d.exists){logout();return false}
     currentData=d.data();
-    // FIXED: Removed aggressive lock - loginUser already handles switch
-    // Just allow if current device is not matching, it will be overwritten on next login elsewhere
     if(!isOwner(currentPhone)&&currentData.state==='paid'&&currentData.expiryTime&&nowMs()>currentData.expiryTime){
       const f=await db.collection('users').orderBy('createdAt').limit(1).get();
       if(f.empty||f.docs[0].id!==currentPhone){await db.collection('users').doc(currentPhone).update({state:'registered',viewCount:2});currentData.state='registered';currentData.viewCount=2}
@@ -349,6 +359,57 @@ async function recordSubmission(){
   await db.collection('users').doc(currentPhone).update({viewCount:inc(1),freeDone:inc(1),lastSubmitCycle:c});
   currentData.viewCount=(currentData.viewCount||0)+1;currentData.lastSubmitCycle=c;
 }
+
+// === ADMIN SUPER SEARCH ===
+async function adminSearchUser(){
+  const p = normalizePhone($('adminSearchPhone').value);
+  const res = $('adminSearchResult');
+  if(!p){res.innerHTML='<p style="color:red">Enter phone</p>';return}
+  res.innerHTML='⏳ Searching Firebase...';
+  try{
+    const doc = await db.collection('users').doc(p).get();
+    if(!doc.exists){res.innerHTML=`<p style="color:red">❌ User ${p} NOT FOUND in Firebase</p>`; adminFoundUser=null; return}
+    const d = doc.data();
+    adminFoundUser = p;
+    res.innerHTML = `
+      <div style="background:#101828;padding:10px;border-radius:8px;text-align:left;border-left:4px solid gold">
+        <b style="color:gold;font-size:13px">${d.phone}</b> ${d.isOwner?'👑':''}<br>
+        <span style="color:#aaa">Balance:</span> <b style="color:#ffcc00">KES ${d.balance}</b><br>
+        <span style="color:#aaa">State:</span> <b>${d.state}</b> | Views: <b>${d.viewCount||0}/2</b><br>
+        <span style="color:#aaa">Refs:</span> ${d.refTotal||0}/20 | Paid: ${d.paidThisCycle||0}/3<br>
+        <span style="color:#aaa">Device:</span> <span style="font-size:9px">${(d.deviceId||'none').slice(0,20)}</span><br>
+        <span style="color:#aaa">Gmail:</span> ${d.gmail||'-'}<br><br>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <button class="btn btn-dark" style="padding:7px;font-size:10px;background:#ff6600;color:#fff;margin:0" onclick="adminResetBalance()">💰 Reset Money to 0</button>
+          <button class="btn btn-dark" style="padding:7px;font-size:10px;margin:0" onclick="adminResetViews()">🔓 Reset Views / Unlock</button>
+          <button class="btn btn-dark" style="padding:7px;font-size:10px;background:#0044ff;color:#fff;margin:0" onclick="adminResetDevice()">📱 Reset Device ID</button>
+          <button class="btn btn-dark" style="padding:7px;font-size:10px;background:green;color:#fff;margin:0" onclick="adminMakePaid()">✅ Make Paid 7 days</button>
+        </div>
+        <button class="btn btn-dark" style="padding:8px;font-size:11px;background:red;color:white;border-color:red;margin-top:8px" onclick="adminFullDelete()">🗑️ FULL DELETE - Aanzie Upya (Firebase)</button>
+      </div>
+    `;
+  }catch(e){res.innerHTML='Error: '+e.message}
+}
+async function adminResetBalance(){ if(!adminFoundUser) return; if(!confirm(`Reset balance for ${adminFoundUser} to 0?`)) return; await db.collection('users').doc(adminFoundUser).update({balance:0}); alert('✅ Balance reset to 0'); adminSearchUser(); }
+async function adminResetViews(){ if(!adminFoundUser) return; if(!confirm(`Reset views for ${adminFoundUser} to 0/2?`)) return; await db.collection('users').doc(adminFoundUser).update({viewCount:0,freeDone:0,lastSubmitCycle:-1,refLocked:false}); alert('✅ Views reset - Unlocked'); adminSearchUser(); }
+async function adminResetDevice(){ if(!adminFoundUser) return; await db.collection('users').doc(adminFoundUser).update({deviceId: firebase.firestore.FieldValue.delete()}); alert('✅ Device ID reset! He can login with new phone without pop-up now'); adminSearchUser(); }
+async function adminMakePaid(){ if(!adminFoundUser) return; await applyPaidUnlock(adminFoundUser); alert('✅ Made PAID 7 days'); adminSearchUser(); }
+async function adminFullDelete(){
+  if(!adminFoundUser) return;
+  if(!confirm(`⚠️ FULL DELETE ${adminFoundUser}?\n\nItafuta:\n- Account Firebase\n- Balance\n- Views\n- Payments\n\nAtaanza upya kama mtu mpya!\n\nDelete?`)) return;
+  if(!confirm(`LAST CONFIRM: Delete ${adminFoundUser} COMPLETELY?`)) return;
+  try{
+    await db.collection('users').doc(adminFoundUser).delete();
+    for(let col of ['pending_views','pending_withdrawals','payments']){
+      const snap = await db.collection(col).where('phone','==',adminFoundUser).get();
+      snap.forEach(d=>d.ref.delete());
+    }
+    alert(`✅ ${adminFoundUser} DELETED from Firebase! Can register fresh.`);
+    $('adminSearchResult').innerHTML=`<p style="color:#00ff88">✅ ${adminFoundUser} deleted. Can register again.</p>`; adminFoundUser=null;
+  }catch(e){alert(e.message)}
+}
+
+// FAST OCR SUBMIT
 async function submitViews(){
   const typed=parseInt($('viewsCount').value),file=$('fileFree').files[0],ps=$('postedTime').value,btn=$('viewBtn'),owner=isOwner(currentPhone),LBL='SUBMIT VIEWS (3 KES each)';
   if(!owner){
@@ -365,33 +426,49 @@ async function submitViews(){
   const stop=(m,html)=>{if(m)alert(m);if(html)$('myViewsStatus').innerHTML=`<div class="st" style="background:red">${html}</div>`;btn.innerText=LBL;btn.disabled=false};
   btn.disabled=true;
   try{
-    btn.innerText='⏳ CHECKING FULL SCREEN...';
+    btn.innerText='⏳ CHECKING...';
     const fullCheck = await checkFullScreenshot(file);
-    if(!fullCheck.ok){
-      return stop("❌ "+fullCheck.reason,"❌ "+fullCheck.reason);
-    }
-    btn.innerText='⏳ READING VIEWS (OCR)...';
-    const blob=await new Promise(r=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas'),h=i.height*.5;c.width=i.width;c.height=h;c.getContext('2d').drawImage(i,0,-(i.height-h),i.width,i.height);c.toBlob(r,'image/jpeg',.9)};i.src=URL.createObjectURL(file)});
-    const{data:{text}}=await Tesseract.recognize(blob,'eng');
+    if(!fullCheck.ok) return stop("❌ "+fullCheck.reason,"❌ "+fullCheck.reason);
+
+    btn.innerText='⏳ COMPRESSING (fast)...';
+    const blob=await new Promise(r=>{
+      const i=new Image();
+      i.onload=()=>{
+        const c=document.createElement('canvas');
+        const h=i.height*0.45; // only bottom 45% where views are
+        c.width=i.width*0.5; c.height=h*0.5; // half size = 3x faster
+        c.getContext('2d').drawImage(i,0,-(i.height-h)*0.5,i.width*0.5,i.height*0.5);
+        c.toBlob(r,'image/jpeg',0.6);
+      };
+      i.src=URL.createObjectURL(file);
+    });
+
+    btn.innerText='⏳ READING VIEWS...';
+    const {data:{text}} = await Tesseract.recognize(blob,'eng',{
+      logger: m=>{ if(m.status==='recognizing text') btn.innerText=`⏳ READING... ${Math.round(m.progress*100)}%`; }
+    });
+
     let v=0;const lo=text.toLowerCase(),m1=lo.match(/(\d{1,3})\s*views?/),m2=lo.match(/views?\s*(\d{1,3})/);
     if(m1)v=parseInt(m1[1]);else if(m2)v=parseInt(m2[1]);else{const n=lo.match(/\b\d{1,3}\b/g);if(n)v=parseInt(n[n.length-1])}
-    if(!v)return stop("❌ Could not read views! Screenshot must show e.g. '22 views' - make sure views are visible","❌ OCR failed - views not visible");
+    if(!v) return stop("❌ Could not read views! Screenshot must show e.g. '22 views' - make sure views are visible","❌ OCR failed - views not visible");
     if(v>53){
       await db.collection('pending_views').add({phone:currentPhone,views:v,typedViews:typed,amount:0,status:'rejected',reason:'over_53_'+v,time:new Date(),name:currentData.phone});
-      await recordSubmission();stop(`❌ AUTOMATIC CANCELLED! Image has ${v} views! Max is 53!`);render();return;
+      await recordSubmission(); stop(`❌ CANCELLED! Image has ${v} views! Max 53!`); render(); return;
     }
     if(v!==typed){
       await db.collection('pending_views').add({phone:currentPhone,views:v,typedViews:typed,amount:0,status:'rejected',reason:'CHEAT_TYPED_'+typed+'_OCR_'+v,time:new Date(),name:currentData.phone});
-      return stop(`❌ CHEATING DETECTED! You typed ${typed} but image shows ${v} views! Don't lie!`,`❌ CHEAT - You typed ${typed} but image has ${v} views`);
+      return stop(`❌ CHEATING! You typed ${typed} but image shows ${v} views!`,`❌ CHEAT - typed ${typed} but has ${v}`);
     }
     const hash=await getImageHash(file);
-    if(!owner&&!(await db.collection('pending_views').where('imageHash','==',hash).limit(1).get()).empty)return stop('❌ DUPLICATE SCREENSHOT! You already submitted this image');
+    if(!owner&&!(await db.collection('pending_views').where('imageHash','==',hash).limit(1).get()).empty) return stop('❌ DUPLICATE SCREENSHOT!');
+
     const amount=v*3;
     await db.collection('pending_views').add({phone:currentPhone,views:v,amount,status:'pending',imageHash:hash,time:new Date(),name:currentData.phone,dotVerified:true,postedHour:postedDate.getHours(),cycle:cycleId()});
     await recordSubmission();
-    alert(`✅ VERIFIED! ${v} x 3 = KES ${amount} - Time ${postedDate.getHours()}:${String(postedDate.getMinutes()).padStart(2,'0')} OK + Pending approval`);btn.innerText=LBL;render();
+    alert(`✅ VERIFIED! ${v} x 3 = KES ${amount} - Pending approval`); btn.innerText=LBL; btn.disabled=false; render();
   }catch(e){stop(e.message)}
 }
+
 async function loadMyViewsStatus(){
   try{
     const s=await db.collection('pending_views').where('phone','==',currentPhone).orderBy('time','desc').limit(1).get();if(s.empty)return;const d=s.docs[0].data();
