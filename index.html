@@ -188,6 +188,12 @@ async function updateQrAndCaption(){
         const q=300,w=18,g=6,T=q+w*2+g*2,x=1080-T-40,y=1920-T-120;
         x2.fillStyle="#FFD700";x2.fillRect(x,y,T,T);x2.fillStyle="#FFF";x2.fillRect(x+g,y+g,T-g*2,T-g*2);x2.drawImage(qr,x+g+w,y+g+w,q,q);
         x2.fillStyle="#FFD700";x2.font="bold 28px Inter";x2.textAlign="center";x2.fillText("SCAN VERIFY",x+T/2,y+T+35);
+        // === SIRI - TUDOTI 3 INVISIBLE ===
+        x2.fillStyle="rgba(255,255,0,0.07)";
+        x2.fillRect(1080-24,1920-16,3,3);
+        x2.fillRect(1080-16,1920-16,3,3);
+        x2.fillRect(1080-8,1920-16,3,3);
+        // === MWISHO WA SIRI ===
         merged=c.toDataURL('image/png');
       }catch(e){console.log(e)}
     }
@@ -323,15 +329,32 @@ async function render(){
   updateSubmitButton();loadMyWithdrawStatus();loadMyViewsStatus();loadMyInvites();if(owner)loadPendingPayments();else loadMyPayment();
 }
 async function updateBalance(n){await db.collection('users').doc(currentPhone).update({balance:inc(n)});currentData.balance+=n;['topBal','balMain','balLock'].forEach(i=>$(i).innerText='KES '+currentData.balance)}
+let checkinBusy=false;
 async function doCheckin(){
+  if(checkinBusy) return;
+  checkinBusy=true;
+  const btn=document.querySelector('.spin');
   try{
     if(!isOwner(currentPhone)){
       if((currentData.viewCount||0)>=2||currentData.refLocked){$('unlockBox').style.display='block';return}
-      if(currentData.lastCheckinCycle===cycleId()){alert('✅ Already checked in today - come back after 5 PM');return}
-      await db.collection('users').doc(currentPhone).update({lastCheckinCycle:cycleId()});currentData.lastCheckinCycle=cycleId();
+      const todayKey='lastCheck_'+currentPhone+'_'+cycleId();
+      if(localStorage.getItem(todayKey) || currentData.lastCheckinCycle===cycleId()){
+        alert('✅ Umesha-check in leo! Rudi after 5 PM');
+        return;
+      }
+      if(btn){btn.style.pointerEvents='none';btn.innerHTML='WAIT...';}
+      await db.collection('users').doc(currentPhone).update({lastCheckinCycle:cycleId()});
+      localStorage.setItem(todayKey,'1');
+      currentData.lastCheckinCycle=cycleId();
     }
-    await updateBalance(10);alert('Checked In +10');
+    await updateBalance(10);
+    alert('Checked In +10 ✅');
   }catch(e){alert(e.message)}
+  finally{
+    checkinBusy=false;
+    if(btn){btn.style.pointerEvents='auto';btn.innerHTML='CHECK IN';}
+    setTimeout(()=>{checkinBusy=false;},2000);
+  }
 }
 async function getImageHash(f){const h=await crypto.subtle.digest('SHA-256',await f.arrayBuffer());return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 async function recordSubmission(){
@@ -355,6 +378,9 @@ async function submitViews(){
     btn.innerText='⏳ CHECKING GOLD QR...';const qr=await readQRFromFile(file);
     if(!qr)return stop("❌ FAKE! No GOLD QR found. Post today's advert with its QR.","❌ No QR found - post TODAY'S advert with the gold QR");
     if(qr.trim()!==CURRENT_QR_TEXT.trim())return stop("❌ OLD/FAKE QR! Use today's advert QR only.");
+    // NEW: Check if cropped too much
+    const imgCheck = await new Promise(r=>{ const im=new Image(); im.onload=()=>r(im); im.onerror=()=>r({width:0}); im.src=URL.createObjectURL(file); });
+    if(imgCheck.width < 500){ return stop("❌ Picha ndogo sana - tuma FULL screenshot bila ku-crop"); }
     const blob=await new Promise(r=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas'),h=i.height*.5;c.width=i.width;c.height=h;c.getContext('2d').drawImage(i,0,-(i.height-h),i.width,i.height);c.toBlob(r,'image/jpeg',.9)};i.src=URL.createObjectURL(file)});
     btn.innerText='⏳ READING VIEWS...';const{data:{text}}=await Tesseract.recognize(blob,'eng');
     let v=0;const lo=text.toLowerCase(),m1=lo.match(/(\d{1,3})\s*views?/),m2=lo.match(/views?\s*(\d{1,3})/);
