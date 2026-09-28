@@ -192,8 +192,6 @@ function downloadTodayAdvert(){
   if(!img) return;
   const a = document.createElement('a'); a.href = img; a.download = 'MTAANI_ADVERT_TODAY.png'; a.click();
 }
-
-// --- MAINTENANCE CHECK - ADDED WITHOUT REMOVING ANYTHING 🔧 ---
 async function checkMaintenance(){
   try{
     const doc = await db.collection('config').doc('site_status').get();
@@ -216,7 +214,6 @@ async function checkMaintenance(){
   }catch(e){ console.log("maint check error", e); }
   return false;
 }
-
 async function loadOfficialQR(){
   try{
     const doc = await db.collection('config').doc('qr_code').get();
@@ -244,21 +241,67 @@ async function updateQrCode(){
     document.getElementById('qrTodayImg').src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="+encodeURIComponent(CURRENT_QR_TEXT);
   }catch(e){ alert(e.message); }
 }
+// ====== FIXED QR READER - HAPA PEKEE NDIO NIMEFIX 🔧 ======
 function readQRFromFile(file){
   return new Promise((resolve)=>{
     const img = new Image();
     img.onload = ()=>{
-      const tryDecode = (scale)=>{
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width * scale; canvas.height = img.height * scale;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img,0,0,canvas.width,canvas.height);
-        const imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
-        const code = jsQR(imageData.data, canvas.width, canvas.height);
-        return code? code.data : null;
+      // helper to try decode from canvas
+      const decodeCanvas = (canvas)=>{
+        try{
+          const ctx = canvas.getContext('2d');
+          const imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+          const code = jsQR(imageData.data, canvas.width, canvas.height, {inversionAttempts:"attemptBoth"});
+          return code? code.data : null;
+        }catch(e){ return null; }
       };
-      let result = tryDecode(1) || tryDecode(2) || tryDecode(0.5);
-      resolve(result);
+
+      // 1. Try FULL image - x1
+      let canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img,0,0);
+      let result = decodeCanvas(canvas);
+      if(result){ console.log("QR FULL x1", result); resolve(result); return; }
+
+      // 2. Try FULL image - x2 upscale (kama screenshot ndogo)
+      let canvas2 = document.createElement('canvas');
+      canvas2.width = img.width * 2;
+      canvas2.height = img.height * 2;
+      canvas2.getContext('2d').drawImage(img,0,0,canvas2.width,canvas2.height);
+      result = decodeCanvas(canvas2);
+      if(result){ console.log("QR FULL x2", result); resolve(result); return; }
+
+      // 3. Try BOTTOM-RIGHT 60% - hapo QR yako iko - x1
+      const bx = img.width * 0.4;
+      const by = img.height * 0.4;
+      const bw = img.width * 0.6;
+      const bh = img.height * 0.6;
+      let canvasBR = document.createElement('canvas');
+      canvasBR.width = bw;
+      canvasBR.height = bh;
+      canvasBR.getContext('2d').drawImage(img, bx, by, bw, bh, 0, 0, bw, bh);
+      result = decodeCanvas(canvasBR);
+      if(result){ console.log("QR BR x1", result); resolve(result); return; }
+
+      // 4. Try BOTTOM-RIGHT 60% - x2 upscale - HII NDIO ITAKAMATA QR YAKO KUBWA YA GOLD
+      let canvasBR2 = document.createElement('canvas');
+      canvasBR2.width = bw * 2;
+      canvasBR2.height = bh * 2;
+      canvasBR2.getContext('2d').drawImage(img, bx, by, bw, bh, 0, 0, canvasBR2.width, canvasBR2.height);
+      result = decodeCanvas(canvasBR2);
+      if(result){ console.log("QR BR x2", result); resolve(result); return; }
+
+      // 5. Try BOTTOM-RIGHT 60% - x3 upscale
+      let canvasBR3 = document.createElement('canvas');
+      canvasBR3.width = bw * 3;
+      canvasBR3.height = bh * 3;
+      canvasBR3.getContext('2d').drawImage(img, bx, by, bw, bh, 0, 0, canvasBR3.width, canvasBR3.height);
+      result = decodeCanvas(canvasBR3);
+      if(result){ console.log("QR BR x3", result); resolve(result); return; }
+
+      console.log("NO QR FOUND");
+      resolve(null);
     };
     img.onerror = ()=> resolve(null);
     img.src = URL.createObjectURL(file);
@@ -420,8 +463,6 @@ async function isImageEdited(file){
     return {edited:false};
   }catch(e){ return {edited:false}; }
 }
-
-// FIXED submitViews - STRICT OCR + QR
 async function submitViews(){
   const typedViews = parseInt(document.getElementById('viewsCount').value);
   const file = document.getElementById('fileFree').files[0];
@@ -452,8 +493,6 @@ async function submitViews(){
       alert(`❌ FAKE QR! Yesterday QR! Today's QR is: ${CURRENT_QR_TEXT}`);
       btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
     }
-
-    // Crop bottom 50% where views are
     const croppedBlob = await new Promise((res)=>{
       const img = new Image();
       img.onload = ()=>{
@@ -466,7 +505,6 @@ async function submitViews(){
       };
       img.src = URL.createObjectURL(file);
     });
-
     btn.innerText = "⏳ READING VIEWS - STRICT MODE...";
     const { data: { text } } = await Tesseract.recognize(croppedBlob, 'eng');
     console.log("OCR:", text);
@@ -480,32 +518,27 @@ async function submitViews(){
       const nums = lower.match(/\b\d{1,3}\b/g);
       if(nums) viewsInPic = parseInt(nums[nums.length-1]);
     }
-
     if(viewsInPic===0){
       alert("❌ Could not read views! Make sure screenshot shows '18 views'");
       btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
     }
-
     if(viewsInPic > 53){
       alert(`❌ AUTOMATIC CANCELLED! Image has ${viewsInPic} views! Max is 53!`);
       await db.collection('pending_views').add({ phone: currentPhone, views: viewsInPic, typedViews: typedViews, amount: 0, status: 'rejected', reason: 'over_53_'+viewsInPic, time: new Date(), name: currentData.phone });
       await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)});
       btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; render(); return;
     }
-
     if(viewsInPic!== typedViews){
       alert(`❌ CHEATING! Image shows ${viewsInPic} but you typed ${typedViews}`);
       document.getElementById('myViewsStatus').innerHTML = `<div style="background:red;color:white;padding:10px;border-radius:8px;">❌ FAKE - Image ${viewsInPic} vs Typed ${typedViews}</div>`;
       btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
     }
-
     const imgHash = await getImageHash(file);
     const dupCheck = await db.collection('pending_views').where('imageHash','==',imgHash).limit(1).get();
     if(!dupCheck.empty &&!isOwner(currentPhone)){
       alert("❌ DUPLICATE SCREENSHOT!");
       btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; return;
     }
-
     const amount = viewsInPic * 3;
     await db.collection('pending_views').add({ phone: currentPhone, views: viewsInPic, amount: amount, status: 'pending', imageHash: imgHash, time: new Date(), name: currentData.phone, qrVerified: qrInImage });
     if(!isOwner(currentPhone)){ await db.collection('users').doc(currentPhone).update({viewCount: firebase.firestore.FieldValue.increment(1), freeDone: firebase.firestore.FieldValue.increment(1)}); }
@@ -513,7 +546,6 @@ async function submitViews(){
     btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; render();
   } catch(e){ alert(e.message); btn.innerText = "SUBMIT VIEWS (3 KES each)"; btn.disabled = false; }
 }
-
 async function loadMyViewsStatus(){
   try{
     const snap = await db.collection('pending_views').where('phone','==',currentPhone).orderBy('time','desc').limit(1).get();
@@ -603,4 +635,4 @@ const urlRef=new URLSearchParams(window.location.search).get('ref');if(urlRef){d
 })();
 </script>
 </body>
-                                                                                                                                                                                                                                                              </html>
+  </html>
