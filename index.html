@@ -33,7 +33,6 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 </style></head><body>
 <div class="container">
 <header><b style="font-family:Orbitron,sans-serif">MTAANI <span style="color:#ff6600">EARN</span></b><span id="topBal" style="background:#ffcc00;color:#000;padding:6px 14px;border-radius:20px;font-weight:900;font-size:13px">KES 0</span></header>
-
 <div id="guestView">
 <div class="box" style="text-align:center;border:2px solid #ffcc00">
 <h2>Welcome to Mtaani Earn 💰</h2>
@@ -56,14 +55,12 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <p id="loginMsg" style="font-size:11px;color:#ffcc00;margin-top:6px"></p>
 </div>
 </div>
-
 <div id="dashView" style="display:none">
 <div class="box" style="border:2px solid #00ff88">
 <h3 id="userPhone">071...</h3><p id="userGmail" style="font-size:11px;color:#aaa"></p>
 <div style="display:flex;gap:24px;margin-top:14px"><div><p style="font-size:11px;color:#aaa">BALANCE</p><h2 id="balMain" style="color:#ffcc00">KES 0</h2></div><div><p style="font-size:11px;color:#aaa">STATUS</p><b id="statusText">ACTIVE</b><p id="expiryText" style="font-size:10px;color:#aaa"></p></div></div>
 <button class="btn btn-dark" style="padding:8px;font-size:11px;margin-top:12px" onclick="logout()">LOGOUT</button>
 </div>
-
 <div id="ownerQRPanel" style="display:none" class="box qr-gold-box">
 <h3 style="color:gold">👑 OWNER ADMIN CONTROL</h3>
 <p style="font-size:11px;color:#aaa">Set Today's QR, Caption and Advert. Old QR becomes invalid.</p>
@@ -78,12 +75,10 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <p style="font-size:10px;color:gold;font-weight:900">🔐 OFFICIAL QR</p><img id="qrTodayImg" src="" alt="QR">
 <p id="qrCodeText" style="font-size:9px;margin-top:6px;background:#1a2332;padding:4px;border-radius:6px"></p></div>
 </div>
-
 <div class="grid">
 <div class="box" style="margin:0;text-align:center"><p style="font-size:11px;font-weight:700">DAILY CHECK-IN</p><div class="spin" onclick="doCheckin()">CHECK IN</div><p style="font-size:11px;color:#00ff88">+10 per day</p></div>
 <div class="box" style="margin:0;text-align:center;opacity:.7"><p style="font-size:11px;font-weight:700">SPIN & WIN <span class="tag tag-soon">SOON</span></p><div class="spin" style="border-color:#555" onclick="showComingSoon('Spin & Win')">SOON</div></div>
 </div>
-
 <div class="box" style="border:2px solid #ffcc00">
 <h4>Mtaani Adverts / Feeds <span class="tag tag-free">OPEN</span> <span class="tag tag-new">3 BOB/VIEW</span></h4>
 <div id="todayAdvertBox" style="border:3px solid gold;background:#000;border-radius:16px;overflow:hidden;margin:12px 0">
@@ -97,7 +92,6 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <p id="todayCaptionText" style="font-size:12px;margin-top:6px;background:#000;padding:8px;border-radius:6px;line-height:1.4">🔥 ADVERTISE YOUR BUSINESS WITH MTAANI TV! 📺<br><br>Post this advert on your Status and earn 3 BOB per view! Min 1, Max 53 views.<br><br>📲 Whatsapp: 0703182307<br>#MtaaniEarn #MtaaniTV</p>
 <button class="btn btn-dark" style="font-size:12px;padding:8px" onclick="copyCaption()">📋 COPY CAPTION</button>
 </div></div></div>
-
 <div class="rule-box"><b style="color:#ffcc00">📌 OFFICIAL RULES:</b><br>
 1. Rate: <b>3 KES per view</b><br>
 2. Max: <b>53 views</b> - 54+ = CANCELLED<br>
@@ -108,7 +102,6 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 7. FULL screenshot + time at top + <b style="color:gold">GOLD QR</b> - no edits<br>
 8. Submit within <b>23 hours</b> of posting<br>
 9. Typed views must match screenshot (OCR) - same screenshot not allowed</div>
-
 <div class="countdown"><h2 id="countdown23" style="color:#ffcc00;font-size:16px">Submit before 5 PM</h2></div>
 <div class="task"><span>1. Full Screenshot of WhatsApp Status</span><span class="tag tag-free">REQUIRED</span></div>
 <input type="file" id="fileFree" accept="image/*">
@@ -124,15 +117,12 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <div id="myViewsStatus" style="margin-top:8px"></div>
 <p id="viewCountInfo" style="font-size:10px;color:#aaa;margin-top:6px"></p>
 </div>
-
 <div class="box" style="opacity:.7"><h4>Daily Quiz <span class="tag tag-soon">COMING SOON</span></h4><button class="btn btn-dark" onclick="showComingSoon('Daily Quiz')">COMING SOON 🚧</button></div>
-
 <div class="box" id="unlockBox" style="background:#ffcc00;color:#000;text-align:center;display:none">
 <h3>🔒 DASHBOARD LOCKED!</h3><p>Balance <b id="balLock">KES 0</b> locked.</p><p style="font-size:12px"></p>
 <div style="background:#000;color:#ffcc00;padding:12px;border-radius:8px;margin:10px 0;font-weight:900">TILL: 3624692 | Amount: 80</div>
 <input id="mpesaCode" maxlength="10" placeholder="M-Pesa Code (10 characters)"><button class="btn btn-dark" onclick="unlockNow()">SUBMIT PAYMENT CODE</button><div id="payStatus"></div>
 </div>
-
 <div id="paidArea">
 <div class="box"><h4>Investment Plan <span class="tag tag-soon">COMING SOON</span></h4><button class="btn btn-dark" onclick="showComingSoon('Investment')">COMING SOON</button></div>
 <div class="box"><h4>Referral - Earn 40 <span class="tag tag-new">OPEN</span></h4>
@@ -152,13 +142,10 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 </div>
 </div>
 </div>
-
 <script>
 firebase.initializeApp({apiKey:"AIzaSyBh3Zv2N2WVsXEkMzGgpmldZ9qamUAhGSo",authDomain:"mtaani-earn.firebaseapp.com",projectId:"mtaani-earn",storageBucket:"mtaani-earn.firebasestorage.app",messagingSenderId:"910785202691",appId:"1:910785202691:web:24b0273dda13fd78c41c36",measurementId:"G-TL5DYR9K6H"});
 const db=firebase.firestore(), $=id=>document.getElementById(id), inc=n=>firebase.firestore.FieldValue.increment(n);
 let currentPhone=localStorage.getItem('mt_current_phone')||'', currentData=null, CURRENT_QR_TEXT="MTAANI ORIGINAL | CODE: XT9-2026 | VERIFIED";
-
-/* ===== SAA: server clock, reset 17:00 EAT (=14:00 UTC), moja kwa wote ===== */
 const DAY=86400000, RESET_UTC_MS=14*3600000; let clockOffset=0, lastCycle=null;
 const nowMs=()=>Date.now()+clockOffset;
 const cycleId=(t=nowMs())=>Math.floor((t-RESET_UTC_MS)/DAY);
@@ -166,7 +153,6 @@ const nextReset=(t=nowMs())=>(cycleId(t)+1)*DAY+RESET_UTC_MS;
 async function syncClock(){try{const r=db.collection('config').doc('clock');await r.set({t:firebase.firestore.FieldValue.serverTimestamp()});clockOffset=(await r.get()).data().t.toMillis()-Date.now();}catch(e){console.log('clock',e)}}
 function tickClock(){const t=nowMs(),c=cycleId(t);if(lastCycle!==null&&c!==lastCycle){location.reload();return}lastCycle=c;const l=Math.max(0,nextReset(t)-t);$('countdown23').innerText=`Submit before 5 PM - ${Math.floor(l/3600000)}h ${Math.floor(l%3600000/60000)}m left`;}
 setInterval(tickClock,1000);
-
 const OWNER_PHONES=["0703182307","703182307"];
 function normalizePhone(p){if(!p)return'';p=p.trim().replace(/\s+/g,'');if(p.startsWith('+254'))p='0'+p.slice(4);if(p.startsWith('254'))p='0'+p.slice(3);return p}
 function isOwner(p){if(!p)return false;p=normalizePhone(p);return p.includes('703182307')||OWNER_PHONES.includes(p)}
@@ -177,7 +163,6 @@ function showRegister(){$('loginBox').style.display='none'}
 function downloadTodayAdvert(){const s=$('todayAdvertMergedImg').src;if(!s){alert('No advert loaded');return}const a=document.createElement('a');a.href=s;a.download='MTAANI_ADVERT_TODAY.png';document.body.appendChild(a);a.click();a.remove()}
 function copyCaption(){navigator.clipboard.writeText($('todayCaptionText').innerText);alert('✅ Caption Copied!')}
 async function checkMaintenance(){try{const d=await db.collection('config').doc('site_status').get();if(d.exists&&d.data().maintenance===true){document.body.innerHTML='<div style="min-height:100vh;background:#05080f;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Inter,sans-serif;text-align:center"><div style="max-width:400px;border:2px solid #ffcc00;border-radius:20px;padding:30px"><div style="font-size:60px">🔧</div><h1 style="color:#ffcc00;font-size:22px">UNDER MAINTENANCE</h1><p style="color:#aaa;font-size:13px;margin-top:10px">MTAANI EARN is being upgraded!</p></div></div>';return true}}catch(e){}return false}
-
 async function loadOfficialQR(){
   try{
     const d=await db.collection('config').doc('qr_code').get(); if(d.exists)CURRENT_QR_TEXT=d.data().text;
@@ -217,7 +202,6 @@ function readQRFromFile(file){
     const img=new Image();
     img.onload=()=>{
       const W=img.width,H=img.height;
-      // [sx,sy,sw,sh,scale]
       const tries=[[0,0,W,H,1],[0,0,W,H,2],[W*.4,H*.4,W*.6,H*.6,1],[W*.4,H*.4,W*.6,H*.6,2],[W*.4,H*.4,W*.6,H*.6,3],[W*.7,H*.7,W*.3,H*.3,4]];
       for(const[sx,sy,sw,sh,k]of tries){
         try{const c=document.createElement('canvas');c.width=sw*k;c.height=sh*k;const x=c.getContext('2d');x.drawImage(img,sx,sy,sw,sh,0,0,c.width,c.height);
@@ -228,8 +212,6 @@ function readQRFromFile(file){
     img.onerror=()=>res(null);img.src=URL.createObjectURL(file);
   });
 }
-
-/* ===== ACCOUNT ===== */
 async function registerUser(){
   const p=normalizePhone($('phoneInput').value),g=$('gmailInput').value.trim(),pass=$('passInput').value.trim(),conf=$('passConfirm').value.trim(),msg=$('guestMsg');
   const rawRef=$('refInput').value.trim()||new URLSearchParams(location.search).get('ref')||'',ref=rawRef?normalizePhone(rawRef):'';
@@ -272,17 +254,15 @@ async function loadUser(){
     return true;
   }catch(e){console.log(e);return false}
 }
-
-/* ===== UNLOCK / REFERRAL ===== */
 async function applyPaidUnlock(phone){await db.collection('users').doc(phone).update({state:'paid',expiryTime:nowMs()+(isOwner(phone)?365:7)*DAY,viewCount:0,freeDone:0,refTotal:0,paidThisCycle:0,refLocked:false})}
 async function creditReferrer(refPhone){
   const r=db.collection('users').doc(refPhone);await r.update({balance:inc(40),paidThisCycle:inc(1)});
-  if(((await r.get()).data().paidThisCycle||0)>=3)await applyPaidUnlock(refPhone); // 3 paid = unlock +2, referral 0/20
+  if(((await r.get()).data().paidThisCycle||0)>=3)await applyPaidUnlock(refPhone);
 }
 async function unlockNow(){
   const code=$('mpesaCode').value.trim().toUpperCase();
   if(!/^[A-Z0-9]{10}$/.test(code)){alert('❌ Enter the 10-character M-Pesa code e.g QGH7X12ABC');return}
-  const ref=db.collection('payments').doc(code); // code ndiyo ID = haiwezi kutumika mara mbili
+  const ref=db.collection('payments').doc(code);
   try{
     if((await ref.get()).exists){alert('❌ This M-Pesa code was already used');return}
     await ref.set({phone:currentPhone,mpesaCode:code,amount:80,till:'3624692',status:'pending',date:new Date()});
@@ -316,8 +296,6 @@ async function loadMyPayment(){
   }catch(e){}
 }
 async function copyReferral(){navigator.clipboard.writeText($('refLink').innerText);alert('Copied: '+$('refLink').innerText)}
-
-/* ===== RENDER ===== */
 function updateSubmitButton(){
   const b=$('viewBtn'),done=!isOwner(currentPhone)&&currentData&&currentData.lastSubmitCycle===cycleId();
   b.disabled=!!done;b.innerText=done?'DONE TODAY - WAIT 5 PM RESET':'SUBMIT VIEWS (3 KES each)';
@@ -355,8 +333,6 @@ async function doCheckin(){
     await updateBalance(10);alert('Checked In +10');
   }catch(e){alert(e.message)}
 }
-
-/* ===== SUBMIT VIEWS ===== */
 async function getImageHash(f){const h=await crypto.subtle.digest('SHA-256',await f.arrayBuffer());return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 async function recordSubmission(){
   if(isOwner(currentPhone))return;const c=cycleId();
@@ -404,15 +380,13 @@ async function loadMyViewsStatus(){
     if(M)$('myViewsStatus').innerHTML=`<div class="st" style="background:${M[0]}">${M[1]}</div>`;
   }catch(e){}
 }
-
-/* ===== WITHDRAW ===== */
 async function requestWithdraw(){
   const phone=normalizePhone($('withdrawPhone').value.trim()||currentData.phone),amt=parseInt($('withdrawAmt').value),msg=$('withdrawMsg');
   if(!amt||amt<100){msg.innerText='Min 100 KES';return} if(amt>currentData.balance){msg.innerText='Insufficient - '+currentData.balance;return}
   const fee=7,rec=amt-fee;if(!confirm(`Withdraw KES ${amt}\nFee: ${fee}\nYou receive: ${rec}\nConfirm?`))return;
   msg.innerText='Sending...';
   try{
-    await updateBalance(-amt); // toa kwenye balance mara moja
+    await updateBalance(-amt);
     await db.collection('pending_withdrawals').add({phone:currentPhone,mpesaPhone:phone,amount:amt,fee,receive:rec,status:'pending',time:new Date(),name:currentData.phone});
     msg.innerText=`Request sent - You receive KES ${rec}`;loadMyWithdrawStatus();
   }catch(e){msg.innerText=e.message}
@@ -434,7 +408,6 @@ async function loadMyInvites(){
     el.innerHTML=h;
   }catch(e){el.innerHTML='Error: '+e.message}
 }
-
 const urlRef=new URLSearchParams(location.search).get('ref');if(urlRef)$('refInput').value=urlRef;
 (async()=>{
   await syncClock();tickClock();
