@@ -95,7 +95,7 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <button class="btn btn-dark" style="font-size:12px;padding:8px" onclick="copyCaption()">📋 COPY CAPTION</button>
 </div></div></div>
 <div class="rule-box"><b style="color:#ffcc00">📌 RULES:</b><br>
-1. Rate: <b>3 KES per view</b><br>2. Max: <b>53 views</b> - 54+ = CANCELLED<br>3. <b>ONE per day</b> - resets <b>5 PM</b><br>4. After <b>2 submissions</b> LOCK<br>5. Unlock: <b>3 paid referrals</b> OR <b>80</b> = +2 views 7 days<br>6. Referral cap <b>20</b> = LOCK, needs 3 PAID referrals to UNLOCK<br>7. FULL screenshot + time + YOUR OWN WHITE QR visible + 3 GOLD DOTS<br>8. Valid <b>6PM to 4PM</b> next day<br>9. Typed must match OCR</div>
+1. Rate: <b>3 KES per view</b><br>2. Max: <b>53 views</b> - 54+ = CANCELLED<br>3. <b>ONE per day</b> - resets <b>5 PM</b><br>4. After <b>2 submissions</b> LOCK<br>5. Unlock: <b>3 paid referrals</b> OR <b>80</b> = +2 views 7 days<br>6. Referral cap <b>20</b> = LOCK, needs 3 PAID referrals to UNLOCK<br>7. FULL screenshot + time + YOUR OWN WHITE QR visible + 3 GOLD DOTS<br>8. Valid <b>5PM to 4PM</b> next day - <b>4PM-5PM BLOCKED</b> for reset<br>9. Typed must match OCR</div>
 <div class="countdown"><h2 id="countdown23" style="color:#ffcc00;font-size:16px">Submit before 5 PM</h2></div>
 <div class="task"><span>1. Full Screenshot</span><span class="tag tag-free">REQUIRED</span></div>
 <input type="file" id="fileFree" accept="image/*">
@@ -184,7 +184,6 @@ async function stampAdvertForUser(){
       x.fillStyle="#FFD700";x.fillRect(qx,qy,tot,tot);
       x.fillStyle="#FFFFFF";x.fillRect(qx+pad,qy+pad,tot-pad*2,tot-pad*2);
       x.drawImage(qr,qx+pad*2,qy+pad*2,q,q);
-      // SECRET 3 DOTS - juu kidogo ya QR, visible from far but not obvious
       x.fillStyle='rgba(255,215,0,0.75)';
       x.beginPath();x.arc(qx+20, qy-18, 7, 0, Math.PI*2);x.fill();
       x.beginPath();x.arc(qx+45, qy-18, 7, 0, Math.PI*2);x.fill();
@@ -207,7 +206,6 @@ async function updateAdvertWithDot(){
         const c=document.createElement('canvas');let w=adv.width,h=adv.height;const MAX=720;if(w>MAX){h=Math.round(h*(MAX/w));w=MAX;}
         c.width=w;c.height=h;const x2=c.getContext('2d');x2.drawImage(adv,0,0,w,h);
         x2.strokeStyle='gold';x2.lineWidth=8;x2.strokeRect(0,0,w,h);
-        // DOTS 3 - juu kidogo ya mahali QR itawekwa, 75% visible, secret position
         x2.fillStyle='rgba(255,215,0,0.75)';
         const qx = w - 160;
         const qy = h - 20;
@@ -234,13 +232,23 @@ function checkFullScreenshot(file){
     img.src=URL.createObjectURL(file);
   });
 }
+
+// TIME FIX - SHARP 5PM to 4PM valid
 function parseNairobiDateTime(str){
   const [datePart,timePart]=str.split('T');
   const [y,m,d]=datePart.split('-').map(Number);
   const [hh,mm]=timePart.split(':').map(Number);
-  return {ms:Date.UTC(y,m-1,d,hh,mm)-3*3600000, hour:hh};
+  const ms=Date.UTC(y,m-1,d,hh,mm)-3*3600000;
+  const full=`${hh.toString().padStart(2,'0')}:${mm.toString().padStart(2,'0')}`;
+  return {ms, hour:hh, minute:mm, full};
 }
-function checkPostingWindow(hh){if(hh>=16&&hh<18){return{ok:false,msg:`REJECTED! Posted at ${hh}:00 (4PM-6PM not allowed)`}}return{ok:true}}
+function checkPostingWindow(hh){
+  if(hh>=16 && hh<17){
+    return {ok:false,msg:`REJECTED! System Reset Time 4PM-5PM. Post after 5PM`}
+  }
+  return {ok:true}
+}
+
 async function registerUser(){
   const p=normalizePhone($('phoneInput').value),g=$('gmailInput').value.trim(),pass=$('passInput').value.trim(),conf=$('passConfirm').value.trim(),msg=$('guestMsg'),btn=$('regBtn');
   const rawRef=$('refInput').value.trim()||new URLSearchParams(location.search).get('ref')||'',ref=rawRef?normalizePhone(rawRef):'';
@@ -455,9 +463,28 @@ async function submitViews(){
   }
   if(!file){alert('Upload FULL screenshot!');return} if(!ps){alert('Enter post time!');return}
   if(!typed||typed<=0||typed>53){alert('Enter valid views 1-53');return} if(!$('notEdited').checked||!$('fullScreen').checked){alert('Confirm both checkboxes');return}
-  const {ms:postedMs,hour:postedHour}=parseNairobiDateTime(ps);
+
+  const {ms:postedMs,hour:postedHour,full:postedFull}=parseNairobiDateTime(ps);
   const wc=checkPostingWindow(postedHour);if(!wc.ok){alert(wc.msg);$('myViewsStatus').innerHTML=`<div class="st" style="background:red">${wc.msg}</div>`;return}
-  const diff=(nowMs()-postedMs)/3600000;if(diff<-0.1){alert('Future time not allowed');return}if(!owner&&diff>23){alert('EXPIRED! More than 23 hours');return}
+  const diffMs=nowMs()-postedMs;
+  const diffMins=Math.floor(diffMs/60000);
+  const diffHrs=diffMs/3600000;
+
+  if(diffMs < -60000){alert('Future time not allowed');return}
+  if(!owner && diffMins < 10){
+    alert(`Too early! Umepost ${diffMins} mins ago tu. Ngoja angalau 30 mins`);
+    $('myViewsStatus').innerHTML=`<div class="st" style="background:orange">⏳ Umepost ${diffMins} mins ago. Ngoja kidogo</div>`;
+    return;
+  }
+  if(!owner && diffHrs>23){
+    alert(`EXPIRED! Ulipost ${postedFull}, sasa ni ${diffHrs.toFixed(1)}hrs yamepita. Max 23hrs (5PM-4PM)`);
+    $('myViewsStatus').innerHTML=`<div class="st" style="background:red">EXPIRED ${diffHrs.toFixed(1)}h ago</div>`;
+    return;
+  }
+  if(!owner){
+    $('myViewsStatus').innerHTML=`<div class="st" style="background:#001a4d;border:1px solid gold">📊 Posted at ${postedFull} - ${Math.floor(diffHrs)}h ${diffMins%60}m ago - Valid ✅</div>`;
+  }
+
   const stop=(m,html)=>{if(m)alert(m);if(html)$('myViewsStatus').innerHTML=`<div class="st" style="background:red">${html}</div>`;btn.innerText=LBL;btn.disabled=false};
   btn.disabled=true;
   try{
