@@ -209,14 +209,28 @@ async function updateAdvertWithDot(){
 function checkFullScreenshot(file){return new Promise(res=>{if(!file)return res({ok:false,reason:"No file"}); if(file.size<3000)return res({ok:false,reason:"File too small"}); const u=URL.createObjectURL(file),i=new Image(); i.onload=()=>{URL.revokeObjectURL(u);const r=i.height/i.width,flags=[]; if(i.width<500||r<1.5||r>2.6)return res({ok:false,reason:"Hii si screenshot kamili"}); if((Date.now()-file.lastModified)/3600000>26)flags.push('old_file'); res({ok:true,flags})}; i.onerror=()=>{URL.revokeObjectURL(u);res({ok:false,reason:"Picha haisomeki"})};i.src=u;})}
 function checkPostingWindow(ms){const h=eatHour(ms);if(h>=BLOCK_FROM&&h<BLOCK_TO){return{ok:false,msg:`❌ REJECTED! Posted ${h}:${String(eatMin(ms)).padStart(2,'0')} (${BLOCK_FROM}:00-${BLOCK_TO}:00 not allowed)`}}return{ok:true};}
 function showLogin(){$('loginBox').style.display='block';$('registerBox').style.display='none'} function showRegister(){$('loginBox').style.display='none';$('registerBox').style.display='block'}
+
+// === FIXED REGISTER - INAZUIA NAMBA MOJA ISIJIRUDIE ===
 async function registerUser(){
   const p=normalizePhone($('phoneInput').value),g=$('gmailInput').value.trim(),pass=$('passInput').value.trim(),conf=$('passConfirm').value.trim(),msg=$('guestMsg'),btn=$('regBtn');
   const rawRef=$('refInput').value.trim()||new URLSearchParams(location.search).get('ref')||'',ref=rawRef?normalizePhone(rawRef):'';
-  if(p.length<10){msg.innerText='Enter valid phone';return} if(pass.length<4){msg.innerText='Password min 4';return} if(pass!==conf){msg.innerText='Passwords mismatch!';return}
-  msg.innerText='⏳ Registering... Washa data...'; btn.disabled=true; btn.innerText='WAIT...';
+  if(p.length<10){msg.innerText='❌ Weka namba sahihi';return}
+  if(p===ref){msg.innerText='❌ Huwezi jirefer!';return}
+  if(pass.length<4){msg.innerText='❌ Password min 4';return}
+  if(pass!==conf){msg.innerText='❌ Password hazifanani!';return}
+  msg.innerText='⏳ Checking kama namba ipo... Washa data'; btn.disabled=true; btn.innerText='CHECKING...';
   try{
     await db.enableNetwork().catch(()=>{});
-    const docRef=db.collection('users').doc(p);if((await docRef.get()).exists){msg.innerText='Already registered! Login.';showLogin();btn.disabled=false;btn.innerText='REGISTER FREE';return}
+    const docRef=db.collection('users').doc(p);
+    let snap; try{ snap=await docRef.get({source:'server'}); }catch(e){ snap=await docRef.get(); }
+    if(snap.exists){
+      msg.innerText='❌ Namba '+p+' IMESHAJISAJILI! LOGIN.';
+      $('phoneInput').style.border='2px solid red';
+      btn.disabled=false; btn.innerText='REGISTER FREE';
+      showLogin(); if($('loginPhone'))$('loginPhone').value=p;
+      return;
+    }
+    msg.innerText='⏳ Registering...';
     const isFirst=(await db.collection('users').limit(1).get()).empty;
     let state=isFirst?'paid':'registered',expiryTime=isFirst?nowMs()+30*DAY:0,referredBy=null;
     if(ref&&ref!==p){const rDoc=await db.collection('users').doc(ref).get(); if(rDoc.exists){referredBy=ref; const rData=rDoc.data(); if((rData.refTotal||0)<20){await db.collection('users').doc(ref).update({refTotal:inc(1)}); if((rData.refTotal||0)+1>=20) await db.collection('users').doc(ref).update({refLocked:true}); } else { await db.collection('users').doc(ref).update({refTotal:inc(1)}); } } }
