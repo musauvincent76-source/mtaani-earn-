@@ -27,7 +27,7 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 .rule-box{background:#1a2332;border-left:3px solid #ffcc00;padding:10px;border-radius:8px;margin:8px 0;font-size:11px;line-height:1.5}
 .countdown{background:#000;border:1px solid #ffcc00;padding:8px;border-radius:8px;text-align:center;margin:8px 0}
 #todayAdvertMergedImg{width:100%;max-height:420px;object-fit:contain;background:#000;display:block}
-.st{padding:10px;border-radius:8px;color:#fff}
+.st{padding:12px;border-radius:10px;color:#fff;font-weight:700;margin-top:8px;font-size:12px;line-height:1.4}
 </style></head><body>
 <div class="container">
 <header><b style="font-family:Orbitron,sans-serif">MTAANI <span style="color:#ff6600">EARN</span></b><span id="topBal" style="background:#ffcc00;color:#000;padding:6px 14px;border-radius:20px;font-weight:900;font-size:13px">KES 0</span></header>
@@ -75,7 +75,9 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <p id="qrUpdateMsg" style="font-size:11px;color:#00ff88;margin-top:6px"></p>
 </div>
 <h4 style="color:gold;margin-top:14px">💰 PENDING PAYMENTS (80)</h4><div id="pendingPayments"></div>
-<button class="btn btn-dark" style="font-size:11px;padding:8px" onclick="loadPendingPayments()">🔄 REFRESH</button>
+<button class="btn btn-dark" style="font-size:11px;padding:8px" onclick="loadPendingPayments()">🔄 REFRESH PAYMENTS</button>
+<h4 style="color:gold;margin-top:14px">📸 PENDING VIEWS</h4><div id="pendingViews"></div>
+<button class="btn btn-dark" style="font-size:11px;padding:8px" onclick="loadPendingViews()">🔄 REFRESH VIEWS</button>
 </div>
 <div class="grid">
 <div class="box" style="margin:0;text-align:center"><p style="font-size:11px;font-weight:700">DAILY CHECK-IN</p><div class="spin" onclick="doCheckin()">CHECK IN</div><p style="font-size:11px;color:#00ff88">+10 per day</p></div>
@@ -95,7 +97,7 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <button class="btn btn-dark" style="font-size:12px;padding:8px" onclick="copyCaption()">📋 COPY CAPTION</button>
 </div></div></div>
 <div class="rule-box"><b style="color:#ffcc00">📌 RULES:</b><br>
-1. Rate: <b>3 KES per view</b><br>2. Max: <b>53 views</b> - 54+ = CANCELLED<br>3. <b>ONE per day</b> - resets <b>5 PM</b><br>4. After <b>2 submissions</b> LOCK<br>5. Unlock: <b>3 paid referrals</b> OR <b>80</b> = +2 views 7 days<br>6. Referral cap <b>20</b> = LOCK, needs 3 PAID referrals to UNLOCK<br>7. FULL screenshot + time + YOUR OWN WHITE QR visible + 3 GOLD DOTS<br>8. Valid <b>5PM to 4PM</b> next day - <b>4PM-5PM BLOCKED</b> for reset<br>9. Typed must match OCR</div>
+1. Rate: <b>3 KES per view</b><br>2. Max: <b>53 views</b> - 54+ = CANCELLED<br>3. <b>ONE per day</b> - resets <b>5 PM</b><br>4. After <b>2 submissions</b> LOCK<br>5. Unlock: <b>3 paid referrals</b> OR <b>80</b> = +2 views 7 days<br>6. Referral cap <b>20</b> = LOCK<br>7. FULL screenshot + time + YOUR OWN WHITE QR visible + 3 GOLD DOTS<br>8. Valid <b>5PM to 4PM</b> next day - <b>4PM-5PM BLOCKED</b><br>9. Typed must match OCR</div>
 <div class="countdown"><h2 id="countdown23" style="color:#ffcc00;font-size:16px">Submit before 5 PM</h2></div>
 <div class="task"><span>1. Full Screenshot</span><span class="tag tag-free">REQUIRED</span></div>
 <input type="file" id="fileFree" accept="image/*">
@@ -168,7 +170,6 @@ async function loadOfficialAdvert(){
 }
 function loadImg(src){return new Promise(r=>{const i=new Image();i.crossOrigin="anonymous";i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src})}
 function myQrToken(){return `MTAANI-${currentPhone}-${cycleId()}`}
-
 async function stampAdvertForUser(){
   const img=$('todayAdvertMergedImg');
   if(!baseAdvertSrc){return}
@@ -193,11 +194,10 @@ async function stampAdvertForUser(){
     myAdvertDataUrl=url;img.src=url;
   }catch(e){img.src=baseAdvertSrc;myAdvertDataUrl=baseAdvertSrc}
 }
-
 async function updateAdvertWithDot(){
   const newCaption=$('newCaptionInput').value.trim(),link=$('newAdvertLinkInput').value.trim(),msg=$('qrUpdateMsg');
   if(!isOwner(currentPhone)){alert('Owner only');return}
-  msg.innerText='Adding DOT security - visible but secret...';
+  msg.innerText='Adding DOT security...';
   try{
     let merged=null;
     if(link){
@@ -207,8 +207,7 @@ async function updateAdvertWithDot(){
         c.width=w;c.height=h;const x2=c.getContext('2d');x2.drawImage(adv,0,0,w,h);
         x2.strokeStyle='gold';x2.lineWidth=8;x2.strokeRect(0,0,w,h);
         x2.fillStyle='rgba(255,215,0,0.75)';
-        const qx = w - 160;
-        const qy = h - 20;
+        const qx = w - 160; const qy = h - 20;
         x2.beginPath();x2.arc(qx+20, qy-38, 7,0,Math.PI*2);x2.fill();
         x2.beginPath();x2.arc(qx+45, qy-38, 7,0,Math.PI*2);x2.fill();
         x2.beginPath();x2.arc(qx+70, qy-38, 7,0,Math.PI*2);x2.fill();
@@ -218,59 +217,47 @@ async function updateAdvertWithDot(){
     const u={updatedAt:new Date(),dotSecured:true};
     if(newCaption)u.caption=newCaption; if(merged)u.mergedImage=merged; else if(link)u.mergedImage=link;
     if(Object.keys(u).length>2)await db.collection('config').doc('today_advert').set(u,{merge:true});
-    msg.innerText='SUCCESS! Dots placed just above QR (secret but visible)';setTimeout(()=>location.reload(),1200);
+    msg.innerText='SUCCESS!';setTimeout(()=>location.reload(),1200);
   }catch(e){alert(e.message);msg.innerText='Error: '+e.message}
 }
-
 function checkFullScreenshot(file){
   return new Promise(res=>{
     if(!file){res({ok:false,reason:"No file"});return}
     if(file.size<3000){res({ok:false,reason:"File too small"});return}
     const img=new Image();
-    img.onload=()=>{ if(img.height<img.width){res({ok:false,reason:"Not a full portrait screenshot - looks cropped"});return} res({ok:true}) };
+    img.onload=()=>{ if(img.height<img.width){res({ok:false,reason:"Not a full portrait screenshot"});return} res({ok:true}) };
     img.onerror=()=>res({ok:true});
     img.src=URL.createObjectURL(file);
   });
 }
-
-// TIME FIX - SHARP 5PM to 4PM valid
 function parseNairobiDateTime(str){
   const [datePart,timePart]=str.split('T');
   const [y,m,d]=datePart.split('-').map(Number);
   const [hh,mm]=timePart.split(':').map(Number);
   const ms=Date.UTC(y,m-1,d,hh,mm)-3*3600000;
   const full=`${hh.toString().padStart(2,'0')}:${mm.toString().padStart(2,'0')}`;
-  return {ms, hour:hh, minute:mm, full};
+  return {ms, hour:hh, full};
 }
 function checkPostingWindow(hh){
-  if(hh>=16 && hh<17){
-    return {ok:false,msg:`REJECTED! System Reset Time 4PM-5PM. Post after 5PM`}
-  }
+  if(hh>=16 && hh<17){return {ok:false,msg:`REJECTED! System Reset 4PM-5PM. Post after 5PM`}}
   return {ok:true}
 }
-
 async function registerUser(){
   const p=normalizePhone($('phoneInput').value),g=$('gmailInput').value.trim(),pass=$('passInput').value.trim(),conf=$('passConfirm').value.trim(),msg=$('guestMsg'),btn=$('regBtn');
   const rawRef=$('refInput').value.trim()||new URLSearchParams(location.search).get('ref')||'',ref=rawRef?normalizePhone(rawRef):'';
-  if(p.length<10){msg.innerText='Enter valid phone starting with 07...';return}
-  if(p===ref){msg.innerText='You cannot refer yourself!';return}
-  if(pass.length<4){msg.innerText='Password minimum 4 characters';return}
-  if(pass!==conf){msg.innerText='Passwords do not match!';return}
-  msg.innerText='Checking if number exists... Please enable data'; if(btn){btn.disabled=true; btn.innerText='CHECKING...'}
+  if(p.length<10){msg.innerText='Enter valid phone';return}
+  if(p===ref){msg.innerText='Cannot refer self';return}
+  if(pass.length<4){msg.innerText='Password min 4';return}
+  if(pass!==conf){msg.innerText='Passwords mismatch';return}
+  msg.innerText='Checking...'; if(btn){btn.disabled=true; btn.innerText='CHECKING...'}
   try{
     await db.enableNetwork().catch(()=>{});
     const docRef=db.collection('users').doc(p);
     let snap; try{ snap=await docRef.get({source:'server'}); }catch(e){ snap=await docRef.get(); }
-    if(snap.exists){
-      msg.innerText='Phone '+p+' ALREADY REGISTERED! Please LOGIN.';
-      $('phoneInput').style.border='2px solid red';
-      if(btn){btn.disabled=false; btn.innerText='REGISTER FREE';}
-      showLogin(); if($('loginPhone'))$('loginPhone').value=p;
-      return;
-    }
+    if(snap.exists){msg.innerText='Phone ALREADY REGISTERED! LOGIN.';showLogin();$('loginPhone').value=p;btn.disabled=false;btn.innerText='REGISTER FREE';return;}
     msg.innerText='Registering...';
     const isFirst=(await db.collection('users').limit(1).get()).empty;
-    let state=isFirst?'paid':'registered',expiryTime=isFirst?nowMs()+30*DAY:0,referredBy=null;
+    let state=isFirst?'paid':'registered',expiryTime=isFirst?nowMs()+30*86400000:0,referredBy=null;
     if(ref&&ref!==p){
       const rDoc=await db.collection('users').doc(ref).get();
       if(rDoc.exists){
@@ -281,9 +268,9 @@ async function registerUser(){
         if(newTotal>=20&&!rData.refLocked) await db.collection('users').doc(ref).update({refLocked:true});
       }
     }
-    if(isOwner(p)){state='paid';expiryTime=nowMs()+365*DAY}
+    if(isOwner(p)){state='paid';expiryTime=nowMs()+365*86400000}
     await docRef.set({phone:p,gmail:g,password:pass,balance:0,state,freeDone:0,viewCount:0,lastSubmitCycle:-1,lastCheckinCycle:-1,refTotal:0,paidThisCycle:0,refLocked:false,referredBy,referralPaid:false,expiryTime,deviceId:getDeviceId(),createdAt:new Date(),isOwner:isOwner(p)});
-    localStorage.setItem('mt_current_phone',p);msg.innerText=isFirst?'FIRST USER - FREE!':'Registered successfully!';setTimeout(()=>location.reload(),1000);
+    localStorage.setItem('mt_current_phone',p);msg.innerText='Registered!';setTimeout(()=>location.reload(),800);
   }catch(e){msg.innerText='Error: '+e.message; if(btn){btn.disabled=false; btn.innerText='REGISTER FREE';}}
 }
 async function loginUser(){
@@ -293,12 +280,12 @@ async function loginUser(){
   try{
     btn.innerText='Checking...';btn.disabled=true;
     const d=await db.collection('users').doc(p).get();
-    if(!d.exists)return fail('User not found - Please Register');
+    if(!d.exists)return fail('User not found');
     const data=d.data();
     if(data.password!==pass)return fail('Wrong password!');
     const dev=getDeviceId();
     if(!isOwner(p)&&data.deviceId&&data.deviceId!==dev){
-      const ok=confirm("Account active on other device.\nOne Phone = One Account.\n\nSwitch to this device? OK=Switch");
+      const ok=confirm("Account active on other device. Switch?");
       if(!ok) return fail('Cancelled');
       await db.collection('users').doc(p).update({deviceId:dev});
     }
@@ -319,7 +306,7 @@ async function loadUser(){
     return true;
   }catch(e){return false}
 }
-async function applyPaidUnlock(phone){await db.collection('users').doc(phone).update({state:'paid',expiryTime:nowMs()+7*DAY,viewCount:0,freeDone:0,refTotal:0,paidThisCycle:0,refLocked:false})}
+async function applyPaidUnlock(phone){await db.collection('users').doc(phone).update({state:'paid',expiryTime:nowMs()+7*86400000,viewCount:0,freeDone:0,refTotal:0,paidThisCycle:0,refLocked:false})}
 async function creditReferrer(refPhone){
   const r=db.collection('users').doc(refPhone);
   const snap=await r.get();if(!snap.exists)return;
@@ -330,12 +317,12 @@ async function creditReferrer(refPhone){
 }
 async function unlockNow(){
   const code=$('mpesaCode').value.trim().toUpperCase();
-  if(!/^[A-Z0-9]{10}$/.test(code)){alert('Enter 10-character M-Pesa code');return}
+  if(!/^[A-Z0-9]{10}$/.test(code)){alert('Enter 10-char code');return}
   const ref=db.collection('payments').doc(code);
   try{
-    if((await ref.get()).exists){alert('Code already used');return}
+    if((await ref.get()).exists){alert('Code used');return}
     await ref.set({phone:currentPhone,mpesaCode:code,amount:80,till:'3624692',status:'pending',date:new Date()});
-    $('mpesaCode').value='';alert('Code received. Wait for approval.');loadMyPayment();
+    $('mpesaCode').value='';alert('Code received');loadMyPayment();
   }catch(e){alert(e.message)}
 }
 async function approvePayment(code){
@@ -353,36 +340,53 @@ async function loadPendingPayments(){
   const el=$('pendingPayments');if(!el)return;
   try{
     const s=await db.collection('payments').where('status','==','pending').get();
-    el.innerHTML=s.empty?'<p style="font-size:11px;color:#aaa">No pending payments</p>':s.docs.map(x=>{const d=x.data();return `<div style="background:#1a2332;padding:8px;border-radius:8px;margin-top:6px;text-align:left;font-size:12px"><b>${d.phone}</b> - ${d.mpesaCode}<div style="display:flex;gap:6px"><button class="btn btn-green" style="padding:6px;margin-top:6px" onclick="approvePayment('${d.mpesaCode}')">APPROVE</button><button class="btn btn-dark" style="padding:6px;margin-top:6px" onclick="rejectPayment('${d.mpesaCode}')">REJECT</button></div></div>`}).join('');
+    el.innerHTML=s.empty?'<p style="font-size:11px;color:#aaa">No pending</p>':s.docs.map(x=>{const d=x.data();return `<div style="background:#1a2332;padding:8px;border-radius:8px;margin-top:6px;text-align:left;font-size:12px"><b>${d.phone}</b> - ${d.mpesaCode}<div style="display:flex;gap:6px"><button class="btn btn-green" style="padding:6px;margin-top:6px" onclick="approvePayment('${d.mpesaCode}')">APPROVE</button><button class="btn btn-dark" style="padding:6px;margin-top:6px" onclick="rejectPayment('${d.mpesaCode}')">REJECT</button></div></div>`}).join('');
   }catch(e){el.innerText=e.message}
 }
+async function loadPendingViews(){
+  const el=$('pendingViews');if(!el)return;
+  try{
+    const s=await db.collection('pending_views').where('status','==','pending').limit(10).get();
+    if(s.empty){el.innerHTML='<p style="font-size:11px;color:#aaa">No pending views</p>';return}
+    el.innerHTML=s.docs.map(doc=>{
+      const d=doc.data(); const id=doc.id;
+      return `<div style="background:#1a2332;padding:10px;border-radius:10px;margin-top:8px;text-align:left;border:1px solid gold"><b>${d.phone}</b> - ${d.views} views = KES ${d.amount}<br><span style="font-size:10px;color:#aaa">Posted ${d.postedFull||''} | ${d.diffMins||0} mins ago</span><div style="display:flex;gap:6px;margin-top:6px"><button class="btn btn-green" style="padding:6px;font-size:11px" onclick="approveView('${id}')">✅ APPROVE + PAY ${d.amount}</button><button class="btn btn-dark" style="padding:6px;font-size:11px;background:red;color:#fff" onclick="rejectView('${id}')">❌ REJECT</button></div></div>`;
+    }).join('');
+  }catch(e){el.innerText=e.message}
+}
+async function approveView(id){
+  if(!isOwner(currentPhone))return;
+  const ref=db.collection('pending_views').doc(id); const snap=await ref.get(); if(!snap.exists)return;
+  const d=snap.data(); await ref.update({status:'approved'});
+  await db.collection('users').doc(d.phone).update({balance:inc(d.amount)});
+  alert(`Approved ${d.phone} KES ${d.amount}`); loadPendingViews();
+}
+async function rejectView(id){ if(!isOwner(currentPhone))return; await db.collection('pending_views').doc(id).update({status:'rejected'}); loadPendingViews(); }
 async function loadMyPayment(){
   try{
     const s=await db.collection('payments').where('phone','==',currentPhone).get();if(s.empty)return;
     const l=s.docs.map(x=>x.data()).sort((a,b)=>b.date.toMillis()-a.date.toMillis())[0];
-    const M={pending:['#000','Payment '+l.mpesaCode+' waiting for approval'],rejected:['red','Payment '+l.mpesaCode+' rejected']}[l.status];
-    if(M)$('payStatus').innerHTML=`<div class="st" style="background:${M[0]};color:#fff;margin-top:8px">${M[1]}</div>`;
+    const M={pending:['#000','Payment '+l.mpesaCode+' waiting'],rejected:['red','Payment '+l.mpesaCode+' rejected']}[l.status];
+    if(M)$('payStatus').innerHTML=`<div class="st" style="background:${M[0]}">${M[1]}</div>`;
   }catch(e){}
 }
-async function copyReferral(){navigator.clipboard.writeText($('refLink').innerText);alert('Copied: '+$('refLink').innerText)}
+async function copyReferral(){navigator.clipboard.writeText($('refLink').innerText);alert('Copied')}
 function updateSubmitButton(){const b=$('viewBtn'),done=!isOwner(currentPhone)&&currentData&&currentData.lastSubmitCycle===cycleId();if(b){b.disabled=!!done;b.innerText=done?'DONE TODAY - WAIT 5 PM RESET':'SUBMIT VIEWS (3 KES each)';}}
 function applyLockUI(){
   const vc=currentData.viewCount||0,tot=currentData.refTotal||0,paid=currentData.paidThisCycle||0,locked=vc>=2||currentData.refLocked===true||tot>=20;
   const vEl=$('viewCountInfo');if(vEl)vEl.innerText=`Views: ${vc}/2`;
   const sEl=$('shareCountInfo');if(sEl){
-    if(currentData.refLocked||tot>=20){sEl.innerHTML=`Total: ${tot}/20 LOCKED 🔒 | Paid: ${paid}/3<br>Need ${Math.max(0,3-paid)} more PAID (80) referral(s) to unlock`;}
+    if(currentData.refLocked||tot>=20){sEl.innerHTML=`Total: ${tot}/20 LOCKED 🔒 | Paid: ${paid}/3<br>Need ${Math.max(0,3-paid)} more PAID`;}
     else{sEl.innerText=`Total: ${tot}/20 | Paid this cycle: ${paid}/3`;}
   }
   const rc=$('refCount');if(rc)rc.innerText=tot;
-  const area=$('paidArea'),box=$('unlockBox'),bx=area.querySelectorAll('.box');
+  const area=$('paidArea'),box=$('unlockBox');
   if(locked){
-    if(box){box.style.display='block';box.querySelectorAll('p')[1].innerHTML=`Pay <b>KES 80</b> OR bring <b>3 paid referrals</b> (${paid}/3) = +2 submissions for 7 days. ${tot>=20?'<br><b style=color:red>REF LOCK 20/20: Bring 3 paid to unlock</b>':''}`;}
+    if(box){box.style.display='block';}
     const st=$('statusText');if(st)st.innerText='LOCKED 🔒';
-    if(area){area.style.opacity='.45';area.style.pointerEvents='none';[1,2,3].forEach(i=>{if(bx[i]){bx[i].style.opacity='1';bx[i].style.pointerEvents='auto'}})}
   }else{
     if(box)box.style.display='none';
     const st=$('statusText');if(st)st.innerText=currentData.state==='paid'?'UNLOCKED ✅':'ACTIVE ✅';
-    if(area){area.style.opacity='1';area.style.pointerEvents='auto'}
   }
 }
 async function render(){
@@ -390,12 +394,12 @@ async function render(){
   if(!currentPhone||!currentData){$('guestView').style.display='block';$('dashView').style.display='none';return}
   const owner=isOwner(currentPhone),d=currentData;
   $('guestView').style.display='none';$('dashView').style.display='block';$('ownerQRPanel').style.display=owner?'block':'none';
-  $('userPhone').innerText=d.phone+(owner?' 👑 OWNER UNLIMITED':'');$('userGmail').innerText=d.gmail||'';
+  $('userPhone').innerText=d.phone+(owner?' 👑 OWNER':'');$('userGmail').innerText=d.gmail||'';
   ['topBal','balMain','balLock'].forEach(i=>{const e=$(i);if(e)e.innerText='KES '+d.balance});
   const rl=$('refLink');if(rl)rl.innerText=location.origin+location.pathname+'?ref='+d.phone;
-  if(owner){$('statusText').innerText='OWNER ✅ UNLIMITED';$('expiryText').innerText='NEVER EXPIRES';$('unlockBox').style.display='none';$('paidArea').style.opacity='1';$('paidArea').style.pointerEvents='auto';$('viewCountInfo').innerText='OWNER UNLIMITED';$('refCount').innerText=d.refTotal||0}
-  else{applyLockUI();const et=$('expiryText');if(et)et.innerText=d.state==='paid'&&d.expiryTime?'Expires in '+Math.max(0,Math.ceil((d.expiryTime-nowMs())/DAY))+' days':''}
-  updateSubmitButton();loadMyWithdrawStatus();loadMyViewsStatus();loadMyInvites();if(owner)loadPendingPayments();else loadMyPayment();
+  if(owner){$('statusText').innerText='OWNER ✅';$('expiryText').innerText='NEVER';$('unlockBox').style.display='none';$('viewCountInfo').innerText='OWNER UNLIMITED';$('refCount').innerText=d.refTotal||0}
+  else{applyLockUI();const et=$('expiryText');if(et)et.innerText=d.state==='paid'&&d.expiryTime?'Expires in '+Math.max(0,Math.ceil((d.expiryTime-nowMs())/86400000))+' days':''}
+  updateSubmitButton();loadMyWithdrawStatus();loadMyViewsStatus();loadMyInvites();if(owner){loadPendingPayments();loadPendingViews();}else loadMyPayment();
 }
 async function updateBalance(n){await db.collection('users').doc(currentPhone).update({balance:inc(n)});currentData.balance+=n;['topBal','balMain','balLock'].forEach(i=>{const e=$(i);if(e)e.innerText='KES '+currentData.balance})}
 let checkinBusy=false;
@@ -405,7 +409,7 @@ async function doCheckin(){
   try{
     if(!isOwner(currentPhone)){
       if((currentData.viewCount||0)>=2||currentData.refLocked||(currentData.refTotal||0)>=20){$('unlockBox').style.display='block';return}
-      if(currentData.lastCheckinCycle===cycleId()){alert('Already checked in today! Come after 5 PM');return}
+      if(currentData.lastCheckinCycle===cycleId()){alert('Already checked in today!');return}
       if(btn){btn.style.pointerEvents='none';btn.innerHTML='WAIT...';}
       await db.collection('users').doc(currentPhone).update({lastCheckinCycle:cycleId()});
       currentData.lastCheckinCycle=cycleId();
@@ -420,7 +424,7 @@ function readQRFromFile(file){
     const img=new Image();
     img.onload=()=>{
       const W=img.width,H=img.height;
-      const tries=[[0,0,W,H,1],[0,0,W,H,2],[W*.4,H*.4,W*.6,H*.6,1],[W*.4,H*.4,W*.6,H*.6,2],[W*.4,H*.4,W*.6,H*.6,3],[W*.7,H*.7,W*.3,H*.3,4]];
+      const tries=[[0,0,W,H,1],[0,0,W,H,2],[W*.4,H*.4,W*.6,H*.6,1],[W*.4,H*.4,W*.6,H*.6,2],[W*.7,H*.7,W*.3,H*.3,4]];
       for(const[sx,sy,sw,sh,k]of tries){
         try{const c=document.createElement('canvas');c.width=sw*k;c.height=sh*k;const x=c.getContext('2d');x.drawImage(img,sx,sy,sw,sh,0,0,c.width,c.height);
           const d=x.getImageData(0,0,c.width,c.height);const code=jsQR(d.data,c.width,c.height,{inversionAttempts:"attemptBoth"});if(code){res(code.data);return}}catch(e){}
@@ -432,105 +436,124 @@ function readQRFromFile(file){
 }
 async function adminSearchUser(){
   const p=normalizePhone($('adminSearchPhone').value),res=$('adminSearchResult');
-  if(!p){res.innerHTML='<p style="color:red">Enter phone number</p>';return}
-  res.innerHTML='Searching Firebase...';
+  if(!p){res.innerHTML='<p style="color:red">Enter phone</p>';return}
+  res.innerHTML='Searching...';
   try{
     const doc=await db.collection('users').doc(p).get();
     if(!doc.exists){res.innerHTML=`<p style="color:red">❌ ${p} NOT FOUND</p>`;adminFoundUser=null;return}
     const d=doc.data();adminFoundUser=p;
-    res.innerHTML=`<div style="background:#101828;padding:10px;border-radius:8px;text-align:left;border-left:4px solid gold"><b style="color:gold;font-size:13px">${d.phone}</b> ${d.isOwner?'👑':''}<br><span style="color:#aaa">Balance:</span> <b style="color:#ffcc00">KES ${d.balance}</b><br><span style="color:#aaa">State:</span> <b>${d.state}</b> | Views: <b>${d.viewCount||0}/2</b><br><span style="color:#aaa">Refs:</span> ${d.refTotal||0}/20 ${d.refLocked?'<b style=color:red>LOCKED</b>':''} | Paid: ${d.paidThisCycle||0}/3<br><span style="color:#aaa">Device:</span> <span style="font-size:9px">${(d.deviceId||'none').slice(0,20)}</span><br><span style="color:#aaa">Gmail:</span> ${d.gmail||'-'}<br><br><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><button class="btn btn-dark" style="padding:7px;font-size:10px;background:#ff6600;color:#fff;margin:0" onclick="adminResetBalance()">💰 Reset Money to 0</button><button class="btn btn-dark" style="padding:7px;font-size:10px;margin:0" onclick="adminResetViews()">🔓 Reset Views / Unlock</button><button class="btn btn-dark" style="padding:7px;font-size:10px;background:#0044ff;color:#fff;margin:0" onclick="adminResetDevice()">📱 Reset Device ID</button><button class="btn btn-dark" style="padding:7px;font-size:10px;background:green;color:#fff;margin:0" onclick="adminMakePaid()">✅ Make Paid 7 days</button></div><button class="btn btn-dark" style="padding:8px;font-size:11px;background:red;color:white;border-color:red;margin-top:8px" onclick="adminFullDelete()">🗑️ FULL DELETE - Reset Fresh</button></div>`;
+    res.innerHTML=`<div style="background:#101828;padding:10px;border-radius:8px;text-align:left;border-left:4px solid gold"><b style="color:gold">${d.phone}</b> ${d.isOwner?'👑':''}<br>Balance: <b style="color:#ffcc00">KES ${d.balance}</b><br>State: <b>${d.state}</b> | Views: <b>${d.viewCount||0}/2</b><br>Refs: ${d.refTotal||0}/20 | Paid: ${d.paidThisCycle||0}/3<br><br><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><button class="btn btn-dark" style="padding:7px;font-size:10px;background:#ff6600;color:#fff" onclick="adminResetBalance()">Reset Money</button><button class="btn btn-dark" style="padding:7px;font-size:10px" onclick="adminResetViews()">Reset Views</button><button class="btn btn-dark" style="padding:7px;font-size:10px;background:#0044ff;color:#fff" onclick="adminResetDevice()">Reset Device</button><button class="btn btn-dark" style="padding:7px;font-size:10px;background:green;color:#fff" onclick="adminMakePaid()">Make Paid</button></div><button class="btn btn-dark" style="padding:8px;background:red;color:white;margin-top:8px" onclick="adminFullDelete()">🗑️ FULL DELETE</button></div>`;
   }catch(e){res.innerHTML='Error: '+e.message}
 }
-async function adminResetBalance(){if(!adminFoundUser)return;if(!confirm(`Reset balance ${adminFoundUser} to 0?`))return;await db.collection('users').doc(adminFoundUser).update({balance:0});alert('Balance reset to 0');adminSearchUser()}
-async function adminResetViews(){if(!adminFoundUser)return;await db.collection('users').doc(adminFoundUser).update({viewCount:0,freeDone:0,lastSubmitCycle:-1,refLocked:false,refTotal:0,paidThisCycle:0});alert('Views reset - Unlocked');adminSearchUser()}
-async function adminResetDevice(){if(!adminFoundUser)return;await db.collection('users').doc(adminFoundUser).update({deviceId:firebase.firestore.FieldValue.delete()});alert('Device ID reset!');adminSearchUser()}
-async function adminMakePaid(){if(!adminFoundUser)return;await applyPaidUnlock(adminFoundUser);alert('Made PAID for 7 days');adminSearchUser()}
+async function adminResetBalance(){if(!adminFoundUser)return;if(!confirm(`Reset ${adminFoundUser} to 0?`))return;await db.collection('users').doc(adminFoundUser).update({balance:0});alert('Reset');adminSearchUser()}
+async function adminResetViews(){if(!adminFoundUser)return;await db.collection('users').doc(adminFoundUser).update({viewCount:0,freeDone:0,lastSubmitCycle:-1,refLocked:false,refTotal:0,paidThisCycle:0});alert('Reset');adminSearchUser()}
+async function adminResetDevice(){if(!adminFoundUser)return;await db.collection('users').doc(adminFoundUser).update({deviceId:firebase.firestore.FieldValue.delete()});alert('Device reset');adminSearchUser()}
+async function adminMakePaid(){if(!adminFoundUser)return;await applyPaidUnlock(adminFoundUser);alert('Paid 7 days');adminSearchUser()}
 async function adminFullDelete(){
   if(!adminFoundUser)return;
-  if(!confirm(`FULL DELETE ${adminFoundUser}? This will delete everything in Firebase!`))return;
-  if(!confirm(`LAST CONFIRM DELETE ${adminFoundUser}?`))return;
+  if(!confirm(`DELETE ${adminFoundUser}?`))return;
   try{
     await db.collection('users').doc(adminFoundUser).delete();
     for(let col of ['pending_views','pending_withdrawals','payments']){const snap=await db.collection(col).where('phone','==',adminFoundUser).get();snap.forEach(d=>d.ref.delete())}
-    alert(`${adminFoundUser} DELETED! Can register fresh.`);$('adminSearchResult').innerHTML=`<p style="color:#00ff88">✅ ${adminFoundUser} deleted</p>`;adminFoundUser=null;
+    alert(`${adminFoundUser} DELETED`);adminFoundUser=null;
   }catch(e){alert(e.message)}
 }
+
+// ==== FIXED SUBMIT VIEWS - WITH CLEAR CANCEL MESSAGES ====
 async function submitViews(){
   const typed=parseInt($('viewsCount').value),file=$('fileFree').files[0],ps=$('postedTime').value,btn=$('viewBtn'),owner=isOwner(currentPhone),LBL='SUBMIT VIEWS (3 KES each)';
+  const statusEl=$('myViewsStatus');
+  function showStatus(html,color){ statusEl.innerHTML=`<div class="st" style="background:${color}">${html}</div>`; }
+  function cancelENG(reason){ showStatus(`❌ CANCELLED: ${reason}`, '#ff0000'); btn.innerText=LBL; btn.disabled=false; }
+
   if(!owner){
-    if(currentData.lastSubmitCycle===cycleId()){alert('DONE TODAY - WAIT 5 PM RESET');return}
-    if((currentData.viewCount||0)>=2||currentData.refLocked||(currentData.refTotal||0)>=20){alert('LOCKED - Unlock first');return}
+    if(currentData.lastSubmitCycle===cycleId()){ cancelENG('Already submitted today - Wait for 5 PM reset'); return }
+    if((currentData.viewCount||0)>=2||currentData.refLocked||(currentData.refTotal||0)>=20){ cancelENG('Account locked - Unlock first with 3 paid referrals or pay 80'); return }
   }
-  if(!file){alert('Upload FULL screenshot!');return} if(!ps){alert('Enter post time!');return}
-  if(!typed||typed<=0||typed>53){alert('Enter valid views 1-53');return} if(!$('notEdited').checked||!$('fullScreen').checked){alert('Confirm both checkboxes');return}
+  if(!file){alert('Upload FULL screenshot!');return}
+  if(!ps){alert('Enter post time!');return}
+  if(!typed||typed<=0||typed>53){ cancelENG('Invalid views - Enter views between 1 and 53'); return }
+  if(!$('notEdited').checked||!$('fullScreen').checked){ cancelENG('Please confirm both checkboxes - Not edited and FULL screen visible'); return }
 
   const {ms:postedMs,hour:postedHour,full:postedFull}=parseNairobiDateTime(ps);
-  const wc=checkPostingWindow(postedHour);if(!wc.ok){alert(wc.msg);$('myViewsStatus').innerHTML=`<div class="st" style="background:red">${wc.msg}</div>`;return}
-  const diffMs=nowMs()-postedMs;
-  const diffMins=Math.floor(diffMs/60000);
-  const diffHrs=diffMs/3600000;
+  const wc=checkPostingWindow(postedHour); if(!wc.ok){ cancelENG(wc.msg); return }
+  const diffMs=nowMs()-postedMs; const diffMins=Math.floor(diffMs/60000); const diffHrs=diffMs/3600000;
+  if(diffMs < -60000){ cancelENG('Future time not allowed'); return }
+  if(!owner && diffMins < 10){ cancelENG(`Posted only ${diffMins} mins ago - Wait at least 10 mins for views`); return }
+  if(!owner && diffHrs>23){ cancelENG(`Expired - Posted ${postedFull}, ${diffHrs.toFixed(1)} hours ago. Max 23 hours allowed`); return }
 
-  if(diffMs < -60000){alert('Future time not allowed');return}
-  if(!owner && diffMins < 10){
-    alert(`Too early! Umepost ${diffMins} mins ago tu. Ngoja angalau 30 mins`);
-    $('myViewsStatus').innerHTML=`<div class="st" style="background:orange">⏳ Umepost ${diffMins} mins ago. Ngoja kidogo</div>`;
-    return;
-  }
-  if(!owner && diffHrs>23){
-    alert(`EXPIRED! Ulipost ${postedFull}, sasa ni ${diffHrs.toFixed(1)}hrs yamepita. Max 23hrs (5PM-4PM)`);
-    $('myViewsStatus').innerHTML=`<div class="st" style="background:red">EXPIRED ${diffHrs.toFixed(1)}h ago</div>`;
-    return;
-  }
-  if(!owner){
-    $('myViewsStatus').innerHTML=`<div class="st" style="background:#001a4d;border:1px solid gold">📊 Posted at ${postedFull} - ${Math.floor(diffHrs)}h ${diffMins%60}m ago - Valid ✅</div>`;
-  }
-
-  const stop=(m,html)=>{if(m)alert(m);if(html)$('myViewsStatus').innerHTML=`<div class="st" style="background:red">${html}</div>`;btn.innerText=LBL;btn.disabled=false};
   btn.disabled=true;
   try{
     btn.innerText='CHECKING SCREENSHOT...';
-    const fullCheck=await checkFullScreenshot(file);if(!fullCheck.ok) return stop(fullCheck.reason,fullCheck.reason);
+    const fullCheck=await checkFullScreenshot(file); if(!fullCheck.ok){ cancelENG(`Invalid screenshot - ${fullCheck.reason}`); return }
     if(!owner){
       btn.innerText='CHECKING YOUR WHITE QR...';
       const qr=await readQRFromFile(file);
-      if(!qr) return stop("No QR found in screenshot! Download today's advert with your WHITE QR and use it.","No QR found in screenshot");
+      if(!qr){ cancelENG('Invalid QR - No QR found in screenshot. Download advert with your WHITE QR'); return }
       const expected=myQrToken();
-      if(qr.trim()!==expected) return stop("This QR is not yours or is old! Download a new advert.","Wrong or old QR - not yours");
+      if(qr.trim()!==expected){ cancelENG('Invalid QR - This QR is not yours or is old. Download new advert today'); return }
       const tokenRef=db.collection('used_qr').doc(qr.trim());
-      if((await tokenRef.get()).exists) return stop("This QR has already been used!","QR already used");
+      if((await tokenRef.get()).exists){ cancelENG('Invalid QR - This QR already used. Download new advert'); return }
     }
     btn.innerText='COMPRESSING...';
+    // FAST COMPRESS - only 40% bottom where views are
     const blob=await new Promise(r=>{
       const i=new Image();i.onload=()=>{
         const c=document.createElement('canvas');
-        const h=i.height*0.45;c.width=i.width*0.5;c.height=h*0.5;
-        c.getContext('2d').drawImage(i,0,-(i.height-h)*0.5,i.width*0.5,i.height*0.5);
-        c.toBlob(r,'image/jpeg',0.6);
+        const cropH=i.height*0.5; const cropY=i.height-cropH;
+        c.width=i.width*0.4; c.height=cropH*0.4;
+        c.getContext('2d').drawImage(i,0,cropY,i.width,cropH,0,0,c.width,c.height);
+        c.toBlob(r,'image/jpeg',0.35);
       };i.src=URL.createObjectURL(file);
     });
     btn.innerText='READING VIEWS...';
     const {data:{text}}=await Tesseract.recognize(blob,'eng',{logger:m=>{if(m.status==='recognizing text')btn.innerText=`READING... ${Math.round(m.progress*100)}%`}});
     let v=0;const lo=text.toLowerCase(),m1=lo.match(/(\d{1,3})\s*views?/),m2=lo.match(/views?\s*(\d{1,3})/);
     if(m1)v=parseInt(m1[1]);else if(m2)v=parseInt(m2[1]);else{const n=lo.match(/\b\d{1,3}\b/g);if(n)v=parseInt(n[n.length-1])}
-    if(!v) return stop("Could not read views! Screenshot must show '22 views'","OCR failed - cannot read views");
-    if(v>53){await db.collection('pending_views').add({phone:currentPhone,views:v,typedViews:typed,amount:0,status:'rejected',reason:'over_53_'+v,time:new Date(),name:currentData.phone});await recordSubmission();stop(`CANCELLED! ${v} views! Max is 53!`);render();return}
-    if(v!==typed){await db.collection('pending_views').add({phone:currentPhone,views:v,typedViews:typed,amount:0,status:'rejected',reason:'CHEAT_TYPED_'+typed+'_OCR_'+v,time:new Date(),name:currentData.phone});return stop(`CHEATING! You typed ${typed} but image has ${v} views!`,`CHEAT - typed ${typed} but image has ${v}`)}
-    const hash=await getImageHash(file);if(!owner&&!(await db.collection('pending_views').where('imageHash','==',hash).limit(1).get()).empty) return stop('DUPLICATE SCREENSHOT! Already used');
+    if(!v){ cancelENG('Cannot read views - Screenshot must clearly show e.g. "23 views" at bottom'); return }
+    if(v>53){
+      await db.collection('pending_views').add({phone:currentPhone,views:v,typedViews:typed,amount:0,status:'rejected',reason:`CANCELLED: Maximum views is 53 - Your image shows ${v}`,time:new Date(),name:currentData.phone});
+      await recordSubmission();
+      cancelENG(`Maximum views is 53 - Your image shows ${v} views`);
+      render(); return
+    }
+    if(v!==typed){
+      await db.collection('pending_views').add({phone:currentPhone,views:v,typedViews:typed,amount:0,status:'rejected',reason:`CANCELLED: Views mismatch - You typed ${typed} but image shows ${v}`,time:new Date(),name:currentData.phone});
+      cancelENG(`Views mismatch - You typed ${typed} but image shows ${v} views. Type what is visible`);
+      return
+    }
+    const hash=await getImageHash(file);
+    if(!owner&&!(await db.collection('pending_views').where('imageHash','==',hash).limit(1).get()).empty){ cancelENG('Edited screenshot detected - Duplicate screenshot already used'); return }
+
+    // SUCCESS - PENDING
     const amount=v*3;
-    await db.collection('pending_views').add({phone:currentPhone,views:v,amount,status:'pending',imageHash:hash,time:new Date(),name:currentData.phone,dotVerified:true,qrVerified:!owner?myQrToken():null,postedHour,cycle:cycleId()});
+    showStatus(`✅ PENDING - ${v} views = KES ${amount} - Waiting for admin approval. You cannot submit again today.`, '#ff9900');
+    btn.innerText='SUBMITTED - PENDING APPROVAL';
+    await db.collection('pending_views').add({phone:currentPhone,views:v,amount,status:'pending',imageHash:hash,time:new Date(),name:currentData.phone,dotVerified:true,qrVerified:!owner?myQrToken():null,postedHour,cycle:cycleId(),postedFull,diffMins});
     if(!owner)await db.collection('used_qr').doc(myQrToken()).set({phone:currentPhone,time:new Date()});
-    await recordSubmission();alert(`VERIFIED! ${v} x 3 = KES ${amount} - Pending approval`);btn.innerText=LBL;btn.disabled=false;render();
-  }catch(e){stop(e.message)}
+    await recordSubmission();
+    setTimeout(()=>{ render(); },1500);
+  }catch(e){ cancelENG(`Error - ${e.message}`); }
 }
-async function loadMyViewsStatus(){try{const s=await db.collection('pending_views').where('phone','==',currentPhone).orderBy('time','desc').limit(1).get();if(s.empty)return;const d=s.docs[0].data();const M={pending:['orange',`PENDING - ${d.views} x 3 = KES ${d.amount}`],approved:['green',`APPROVED - KES ${d.amount}`],rejected:['red',`${d.reason}`]}[d.status];if(M)$('myViewsStatus').innerHTML=`<div class="st" style="background:${M[0]}">${M[1]}</div>`;}catch(e){}}
+
+async function loadMyViewsStatus(){
+  try{
+    const s=await db.collection('pending_views').where('phone','==',currentPhone).orderBy('time','desc').limit(1).get();
+    if(s.empty)return;
+    const d=s.docs[0].data();
+    if(d.status==='pending') $('myViewsStatus').innerHTML=`<div class="st" style="background:#ff9900;color:#000">✅ PENDING - ${d.views} views = KES ${d.amount} - Waiting for admin. Cannot submit again today.</div>`;
+    else if(d.status==='approved') $('myViewsStatus').innerHTML=`<div class="st" style="background:green">✅ APPROVED - KES ${d.amount} added to balance</div>`;
+    else if(d.status==='rejected') $('myViewsStatus').innerHTML=`<div class="st" style="background:red">❌ CANCELLED: ${d.reason}</div>`;
+  }catch(e){}
+}
 async function requestWithdraw(){
   const phone=normalizePhone($('withdrawPhone').value.trim()||currentData.phone),amt=parseInt($('withdrawAmt').value),msg=$('withdrawMsg');
-  if(!amt||amt<100){msg.innerText='Minimum 100 KES';return} if(amt>currentData.balance){msg.innerText='Insufficient balance - '+currentData.balance;return}
-  const fee=7,rec=amt-fee;if(!confirm(`Withdraw KES ${amt}\nFee: ${fee}\nYou receive: ${rec}\nConfirm?`))return;
-  msg.innerText='Sending request...';
-  try{await updateBalance(-amt);await db.collection('pending_withdrawals').add({phone:currentPhone,mpesaPhone:phone,amount:amt,fee,receive:rec,status:'pending',time:new Date(),name:currentData.phone});msg.innerText=`Request sent - You will receive KES ${rec}`;loadMyWithdrawStatus();}catch(e){msg.innerText=e.message}
+  if(!amt||amt<100){msg.innerText='Min 100';return} if(amt>currentData.balance){msg.innerText='Insufficient '+currentData.balance;return}
+  const fee=7,rec=amt-fee;if(!confirm(`Withdraw ${amt} Fee ${fee} Receive ${rec}?`))return;
+  msg.innerText='Sending...';
+  try{await updateBalance(-amt);await db.collection('pending_withdrawals').add({phone:currentPhone,mpesaPhone:phone,amount:amt,fee,receive:rec,status:'pending',time:new Date(),name:currentData.phone});msg.innerText=`Sent - Receive ${rec}`;loadMyWithdrawStatus();}catch(e){msg.innerText=e.message}
 }
-async function loadMyWithdrawStatus(){try{const s=await db.collection('pending_withdrawals').where('phone','==',currentPhone).orderBy('time','desc').limit(1).get();if(s.empty)return;const d=s.docs[0].data();if(d.status==='pending')$('withdrawStatus').innerHTML=`<div class="st" style="background:orange">WAITING - KES ${d.amount} | You receive ${d.receive}</div>`;else if(d.status==='approved')$('withdrawStatus').innerHTML=`<div class="st" style="background:green">APPROVED - KES ${d.receive} sent</div>`;}catch(e){}}
+async function loadMyWithdrawStatus(){try{const s=await db.collection('pending_withdrawals').where('phone','==',currentPhone).orderBy('time','desc').limit(1).get();if(s.empty)return;const d=s.docs[0].data();if(d.status==='pending')$('withdrawStatus').innerHTML=`<div class="st" style="background:orange">WAITING - KES ${d.amount} | Receive ${d.receive}</div>`;else if(d.status==='approved')$('withdrawStatus').innerHTML=`<div class="st" style="background:green">APPROVED - KES ${d.receive} sent</div>`;}catch(e){}}
 async function loadMyInvites(){
   const el=$('myInvitesList');el.innerHTML='Loading...';
   try{
