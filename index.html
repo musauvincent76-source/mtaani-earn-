@@ -32,7 +32,7 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <div class="container">
 <header><b style="font-family:Orbitron,sans-serif">MTAANI <span style="color:#ff6600">EARN</span></b><span id="topBal" style="background:#ffcc00;color:#000;padding:6px 14px;border-radius:20px;font-weight:900;font-size:13px">KES 0</span></header>
 <div id="guestView">
-<div class="box" style="text-align:center;border:2px solid #ffcc00">
+<div class="box" style="text-align:center;border:2px solid #ffcc00" id="registerBox">
 <h2>Welcome to Mtaani Earn 💰</h2>
 <p style="font-size:13px;color:#9ca3af;margin:10px 0">One Phone = One Account. Secured.</p>
 <input id="phoneInput" type="tel" placeholder="Phone e.g 0712345678">
@@ -40,7 +40,7 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <input id="passInput" type="password" placeholder="Create Password (min 4)">
 <input id="passConfirm" type="password" placeholder="Confirm Password">
 <input id="refInput" type="text" placeholder="Referral Phone (Optional)">
-<button class="btn btn-yellow" onclick="registerUser()">REGISTER FREE</button>
+<button class="btn btn-yellow" id="regBtn" onclick="registerUser()">REGISTER FREE</button>
 <span class="link" onclick="showLogin()">Already have account? LOGIN</span>
 <p id="guestMsg" style="font-size:11px;color:#ffcc00;margin-top:6px"></p>
 </div>
@@ -61,6 +61,12 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 </div>
 <div id="ownerQRPanel" style="display:none" class="box">
 <h3 style="color:gold">👑 OWNER ADMIN CONTROL</h3>
+<div style="background:#200;border:1px solid red;padding:12px;border-radius:12px;margin-bottom:12px">
+<b style="color:red">🚨 MAINTENANCE - Ndani ya website tu</b><br>
+<button onclick="toggleMaintenance(true)" style="background:red;color:white;padding:10px;border-radius:8px;width:100%;font-weight:900;margin-top:6px;border:0;cursor:pointer">🔴 ZIMA WEBSITE</button>
+<button onclick="toggleMaintenance(false)" style="background:green;color:white;padding:10px;border-radius:8px;width:100%;font-weight:900;margin-top:6px;border:0;cursor:pointer">🟢 WASHA WEBSITE</button>
+<p id="maintMsg" style="font-size:11px;color:yellow;margin-top:6px"></p>
+</div>
 <div style="background:#000;padding:12px;border-radius:10px;border:1px solid gold;margin-top:12px">
 <h4 style="color:gold;font-size:12px">🔍 SEARCH & MANAGE USER</h4>
 <input id="adminSearchPhone" placeholder="Enter phone e.g 0712404937">
@@ -137,14 +143,13 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <script>
 firebase.initializeApp({apiKey:"AIzaSyBh3Zv2N2WVsXEkMzGgpmldZ9qamUAhGSo",authDomain:"mtaani-earn.firebaseapp.com",projectId:"mtaani-earn",storageBucket:"mtaani-earn.firebasestorage.app",messagingSenderId:"910785202691",appId:"1:910785202691:web:24b0273dda13fd78c41c36"});
 const db=firebase.firestore();
-db.settings({ experimentalForceLongPolling: true, ignoreUndefinedProperties: true });
 const $=id=>document.getElementById(id), inc=n=>firebase.firestore.FieldValue.increment(n);
 let currentPhone=localStorage.getItem('mt_current_phone')||'', currentData=null, adminFoundUser=null;
 const DAY=86400000, RESET_UTC_MS=14*3600000; let clockOffset=0, lastCycle=null;
 const nowMs=()=>Date.now()+clockOffset;
 const cycleId=(t=nowMs())=>Math.floor((t-RESET_UTC_MS)/DAY);
 const nextReset=(t=nowMs())=>(cycleId(t)+1)*DAY+RESET_UTC_MS;
-async function syncClock(){try{const r=db.collection('config').doc('clock');await r.set({t:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); const snap=await r.get({source:'server'}).catch(()=>r.get()); clockOffset=snap.data().t.toMillis()-Date.now();}catch(e){}}
+async function syncClock(){try{await db.enableNetwork().catch(()=>{}); const r=db.collection('config').doc('clock');await r.set({t:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); const snap=await r.get(); clockOffset=snap.data().t.toMillis()-Date.now();}catch(e){}}
 function tickClock(){const t=nowMs(),c=cycleId(t);if(lastCycle!==null&&c!==lastCycle){location.reload();return}lastCycle=c;const l=Math.max(0,nextReset(t)-t);const el=$('countdown23');if(el)el.innerText=`Submit before 5 PM - ${Math.floor(l/3600000)}h ${Math.floor(l%3600000/60000)}m left`;}
 setInterval(tickClock,1000);
 const MIN_HRS=20.5, MAX_HRS=23, BLOCK_FROM=16, BLOCK_TO=18, TIME_TOL_MIN=10, DOT_Y=0.30;
@@ -193,8 +198,9 @@ async function verifyPostTime(file,postedMs){
     const img=await fileToImage(file),sw=img.width,sh=Math.round(img.height*0.22),sc=Math.min(1.5,1000/sw),c=document.createElement('canvas');c.width=Math.round(sw*sc);c.height=Math.round(sh*sc);const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,0,0,sw,sh,0,0,c.width,c.height);const id=g.getImageData(0,0,c.width,c.height),d=id.data;let sum=0;for(let i=0;i<d.length;i+=4)sum+=d[i]*0.3+d[i+1]*0.59+d[i+2]*0.11;if(sum/(d.length/4)<110){for(let i=0;i<d.length;i+=4){d[i]=255-d[i];d[i+1]=255-d[i+1];d[i+2]=255-d[i+2]}g.putImageData(id,0,0)} const {data:{text}}=await Tesseract.recognize(c,'eng'); const m=text.match(/(today|yesterday|leo|jana)\D{0,6}(\d{1,2})\s*[:.]\s*(\d{2})/i); if(!m)return{state:'unread'}; const h=+m[2],mi=+m[3];if(h>23||mi>59)return{state:'unread'}; const shot=(h%12)*60+mi,typed=(eatHour(postedMs)%12)*60+eatMin(postedMs); let dd=Math.abs(shot-typed);dd=Math.min(dd,720-dd); return dd<=TIME_TOL_MIN?{state:'match'}:{state:'mismatch',found:m[2]+':'+m[3]};}catch(e){return{state:'unread'}}
 }
 function copyCaption(){navigator.clipboard.writeText($('todayCaptionText').innerText);alert('✅ Copied!')}
-async function checkMaintenance(){try{const d=await db.collection('config').doc('site_status').get({source:'server'}).catch(()=>db.collection('config').doc('site_status').get()); if(d.exists&&d.data().maintenance===true){document.body.innerHTML='<div style="min-height:100vh;background:#05080f;display:flex;align-items:center;justify-content:center"><div style="border:2px solid #ffcc00;border-radius:20px;padding:30px"><h1 style="color:#ffcc00">UNDER MAINTENANCE</h1></div></div>';return true}}catch(e){}return false}
-async function loadOfficialAdvert(){try{const a=await db.collection('config').doc('today_advert').get().catch(()=>null); if(a&&a.exists&&a.data().mergedImage){$('todayAdvertMergedImg').src=a.data().mergedImage;if(a.data().caption)$('todayCaptionText').innerText=a.data().caption}}catch(e){}}
+async function checkMaintenance(){try{const d=await db.collection('config').doc('site_status').get(); if(d.exists&&d.data().maintenance===true&&!isOwner(currentPhone)){document.body.innerHTML='<div style="min-height:100vh;background:#05080f;display:flex;align-items:center;justify-content:center"><div style="border:2px solid #ffcc00;border-radius:20px;padding:30px;text-align:center"><h1 style="color:#ffcc00">UNDER MAINTENANCE</h1><p style="color:#aaa">Rudi baadaye</p></div></div>';return true}}catch(e){}return false}
+async function toggleMaintenance(on){if(!isOwner(currentPhone)){alert('Owner only');return} await db.collection('config').doc('site_status').set({maintenance:on,updatedAt:new Date()},{merge:true}); $('maintMsg').innerText=on?'🔴 Website IMEZIMWA - Watu hawaezi ingia':'🟢 Website IMEWASHWA - Watu wanaingia';}
+async function loadOfficialAdvert(){try{const a=await db.collection('config').doc('today_advert').get(); if(a&&a.exists&&a.data().mergedImage){$('todayAdvertMergedImg').src=a.data().mergedImage;if(a.data().caption)$('todayCaptionText').innerText=a.data().caption}}catch(e){}}
 async function updateAdvertWithDot(){
   const newCaption=$('newCaptionInput').value.trim(),link=$('newAdvertLinkInput').value.trim(),msg=$('qrUpdateMsg');
   if(!isOwner(currentPhone)){alert('Owner only');return} msg.innerText='⏳ Updating...';
@@ -202,37 +208,37 @@ async function updateAdvertWithDot(){
 }
 function checkFullScreenshot(file){return new Promise(res=>{if(!file)return res({ok:false,reason:"No file"}); if(file.size<3000)return res({ok:false,reason:"File too small"}); const u=URL.createObjectURL(file),i=new Image(); i.onload=()=>{URL.revokeObjectURL(u);const r=i.height/i.width,flags=[]; if(i.width<500||r<1.5||r>2.6)return res({ok:false,reason:"Hii si screenshot kamili"}); if((Date.now()-file.lastModified)/3600000>26)flags.push('old_file'); res({ok:true,flags})}; i.onerror=()=>{URL.revokeObjectURL(u);res({ok:false,reason:"Picha haisomeki"})};i.src=u;})}
 function checkPostingWindow(ms){const h=eatHour(ms);if(h>=BLOCK_FROM&&h<BLOCK_TO){return{ok:false,msg:`❌ REJECTED! Posted ${h}:${String(eatMin(ms)).padStart(2,'0')} (${BLOCK_FROM}:00-${BLOCK_TO}:00 not allowed)`}}return{ok:true};}
-function showLogin(){$('loginBox').style.display='block'} function showRegister(){$('loginBox').style.display='none'} function showComingSoon(n){alert('Coming Soon - '+n)}
-
+function showLogin(){$('loginBox').style.display='block';$('registerBox').style.display='none'} function showRegister(){$('loginBox').style.display='none';$('registerBox').style.display='block'}
 async function registerUser(){
-  const p=normalizePhone($('phoneInput').value),g=$('gmailInput').value.trim(),pass=$('passInput').value.trim(),conf=$('passConfirm').value.trim(),msg=$('guestMsg');
+  const p=normalizePhone($('phoneInput').value),g=$('gmailInput').value.trim(),pass=$('passInput').value.trim(),conf=$('passConfirm').value.trim(),msg=$('guestMsg'),btn=$('regBtn');
   const rawRef=$('refInput').value.trim()||new URLSearchParams(location.search).get('ref')||'',ref=rawRef?normalizePhone(rawRef):'';
   if(p.length<10){msg.innerText='Enter valid phone';return} if(pass.length<4){msg.innerText='Password min 4';return} if(pass!==conf){msg.innerText='Passwords mismatch!';return}
-  msg.innerText='Registering...';
+  msg.innerText='⏳ Registering... Washa data...'; btn.disabled=true; btn.innerText='WAIT...';
   try{
-    const docRef=db.collection('users').doc(p);if((await docRef.get()).exists){msg.innerText='Already registered!';showLogin();return}
+    await db.enableNetwork().catch(()=>{});
+    const docRef=db.collection('users').doc(p);if((await docRef.get()).exists){msg.innerText='Already registered! Login.';showLogin();btn.disabled=false;btn.innerText='REGISTER FREE';return}
     const isFirst=(await db.collection('users').limit(1).get()).empty;
     let state=isFirst?'paid':'registered',expiryTime=isFirst?nowMs()+30*DAY:0,referredBy=null;
     if(ref&&ref!==p){const rDoc=await db.collection('users').doc(ref).get(); if(rDoc.exists){referredBy=ref; const rData=rDoc.data(); if((rData.refTotal||0)<20){await db.collection('users').doc(ref).update({refTotal:inc(1)}); if((rData.refTotal||0)+1>=20) await db.collection('users').doc(ref).update({refLocked:true}); } else { await db.collection('users').doc(ref).update({refTotal:inc(1)}); } } }
     if(isOwner(p)){state='paid';expiryTime=nowMs()+365*DAY}
     await docRef.set({phone:p,gmail:g,password:pass,balance:0,state,freeDone:0,viewCount:0,lastSubmitCycle:-1,lastCheckinCycle:-1,refTotal:0,paidThisCycle:0,refLocked:false,referredBy,referralPaid:false,expiryTime,deviceId:getDeviceId(),createdAt:new Date(),isOwner:isOwner(p)});
-    localStorage.setItem('mt_current_phone',p);msg.innerText='Registered!';setTimeout(()=>location.reload(),1000);
-  }catch(e){msg.innerText='Error: '+e.message}
+    localStorage.setItem('mt_current_phone',p);msg.innerText='✅ Registered!';setTimeout(()=>location.reload(),800);
+  }catch(e){msg.innerText='❌ Error: '+e.message; btn.disabled=false; btn.innerText='REGISTER FREE';}
 }
 async function loginUser(){
   const p=normalizePhone($('loginPhone').value),pass=$('loginPass').value.trim(),msg=$('loginMsg'),btn=$('loginBtn');
   if(!p||!pass){msg.innerText='Enter phone and password';return}
-  const fail=t=>{msg.innerText=t;btn.innerText='LOGIN NOW';btn.disabled=false};
+  msg.innerText='⏳ Checking...'; btn.disabled=true; btn.innerText='CHECKING...';
   try{
-    btn.innerText='Checking...';btn.disabled=true;
+    await db.enableNetwork().catch(()=>{});
     const d=await db.collection('users').doc(p).get();
-    if(!d.exists)return fail('User not found');
-    const data=d.data(); if(data.password!==pass)return fail('Wrong password!');
+    if(!d.exists){msg.innerText='User not found';btn.disabled=false;btn.innerText='LOGIN NOW';return}
+    const data=d.data(); if(data.password!==pass){msg.innerText='Wrong password!';btn.disabled=false;btn.innerText='LOGIN NOW';return}
     const dev=getDeviceId();
-    if(!isOwner(p)&&data.deviceId&&data.deviceId!==dev){const ok=confirm("Account active on other device. Switch?"); if(!ok)return fail('Cancelled'); await db.collection('users').doc(p).update({deviceId:dev});}
+    if(!isOwner(p)&&data.deviceId&&data.deviceId!==dev){const ok=confirm("Account active on other device. Switch?"); if(!ok){msg.innerText='Cancelled';btn.disabled=false;btn.innerText='LOGIN NOW';return} await db.collection('users').doc(p).update({deviceId:dev});}
     if(!data.deviceId)await db.collection('users').doc(p).update({deviceId:dev});
     localStorage.setItem('mt_current_phone',p);location.reload();
-  }catch(e){fail(e.message)}
+  }catch(e){msg.innerText='❌ '+e.message;btn.disabled=false;btn.innerText='LOGIN NOW';}
 }
 function logout(){localStorage.removeItem('mt_current_phone');location.reload()}
 async function loadUser(){
@@ -312,39 +318,17 @@ async function commitSubmission(rec,shot){
   const c=cycleId(),owner=isOwner(currentPhone),uRef=db.collection('users').doc(currentPhone), pRef=owner?db.collection('pending_views').doc():db.collection('pending_views').doc(currentPhone+'_'+c);
   await db.runTransaction(async t=>{const u=await t.get(uRef),p=await t.get(pRef); if(!owner&&(p.exists||u.data().lastSubmitCycle===c))throw new Error('Already submitted today. Wait 5 PM.'); t.set(pRef,rec); if(shot)t.set(db.collection('screenshots').doc(pRef.id),{phone:currentPhone,image:shot,time:new Date()}); if(!owner)t.update(uRef,{viewCount:inc(1),freeDone:inc(1),lastSubmitCycle:c});}); if(!owner){currentData.viewCount=(currentData.viewCount||0)+1;currentData.lastSubmitCycle=c}
 }
-
-// ====== FIXED SEARCH - FORCE ONLINE, NO MORE "CLIENT OFFLINE" ======
 async function adminSearchUser(){
   const p=normalizePhone($('adminSearchPhone').value),res=$('adminSearchResult');
   if(!p){res.innerHTML='<p style="color:red">Weka namba e.g 0712345678</p>';return}
-  res.innerHTML='⏳ Searching Firebase (server)...';
+  res.innerHTML='⏳ Searching...';
   try{
     await db.enableNetwork().catch(()=>{});
-    // 1. Jaribu server direct
-    let doc=null;
-    try{ doc=await db.collection('users').doc(p).get({source:'server'}); }catch(e){
-      // 2. Kama server fail, jaribu default (auto)
-      console.log('server get failed', e.message);
-      doc=await db.collection('users').doc(p).get();
-    }
-    if(!doc ||!doc.exists){
-      // 3. Jaribu cache kama bado
-      try{
-        const cached=await db.collection('users').doc(p).get({source:'cache'});
-        if(cached.exists){
-          const d=cached.data();
-          adminFoundUser=p;
-          res.innerHTML=`<div style="background:#101828;padding:10px;border-radius:8px;border-left:4px solid orange"><b style="color:orange">${d.phone} (CACHE)</b><br>Bal: KES ${d.balance}<br>Views: ${d.viewCount||0}/2<br><span style="font-size:10px;color:#aaa">Iko cache tu - washa data uone live</span><br><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px"><button class="btn btn-dark" style="padding:7px;font-size:10px;background:#ff6600;color:#fff;margin:0" onclick="adminResetBalance()">💰 Reset 0</button><button class="btn btn-dark" style="padding:7px;font-size:10px;margin:0" onclick="adminResetViews()">🔓 Reset</button><button class="btn btn-dark" style="padding:7px;font-size:10px;background:#0044ff;color:#fff;margin:0" onclick="adminResetDevice()">📱 Device</button><button class="btn btn-dark" style="padding:7px;font-size:10px;background:green;color:#fff;margin:0" onclick="adminMakePaid()">✅ Paid</button></div><button class="btn btn-dark" style="padding:8px;font-size:11px;background:red;color:white;margin-top:8px" onclick="adminFullDelete()">🗑️ FULL DELETE</button></div>`;
-          return;
-        }
-      }catch(_){}
-      res.innerHTML=`<p style="color:red">❌ ${p} NOT FOUND Firebase</p><p style="font-size:10px;color:#aaa">Hakikisha Firebase Rules ziko: allow read, write: if true</p>`; adminFoundUser=null; return;
-    }
+    const doc=await db.collection('users').doc(p).get();
+    if(!doc.exists){res.innerHTML=`<p style="color:red">❌ ${p} NOT FOUND</p>`; adminFoundUser=null; return;}
     const d=doc.data(); adminFoundUser=p;
-    res.innerHTML=`<div style="background:#101828;padding:10px;border-radius:8px;text-align:left;border-left:4px solid gold"><b style="color:gold;font-size:13px">${d.phone}</b> ${d.isOwner?'👑':''}<br><span style="color:#aaa">Balance:</span> <b style="color:#ffcc00">KES ${d.balance}</b><br><span style="color:#aaa">State:</span> <b>${d.state}</b> | Views: <b>${d.viewCount||0}/2</b><br><span style="color:#aaa">Refs:</span> ${d.refTotal||0}/20 ${d.refLocked?'<b style=color:red>LOCKED</b>':''} | Paid: ${d.paidThisCycle||0}/3<br><span style="color:#aaa">Device:</span> <span style="font-size:9px">${(d.deviceId||'none').slice(0,22)}</span><br><span style="color:#aaa">Gmail:</span> ${d.gmail||'-'}<br><br><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><button class="btn btn-dark" style="padding:7px;font-size:10px;background:#ff6600;color:#fff;margin:0" onclick="adminResetBalance()">💰 Reset 0</button><button class="btn btn-dark" style="padding:7px;font-size:10px;margin:0" onclick="adminResetViews()">🔓 Reset Views</button><button class="btn btn-dark" style="padding:7px;font-size:10px;background:#0044ff;color:#fff;margin:0" onclick="adminResetDevice()">📱 Reset Device</button><button class="btn btn-dark" style="padding:7px;font-size:10px;background:green;color:#fff;margin:0" onclick="adminMakePaid()">✅ Paid 7d</button></div><button class="btn btn-dark" style="padding:8px;font-size:11px;background:red;color:white;margin-top:8px" onclick="adminFullDelete()">🗑️ FULL DELETE</button></div>`;
-  }catch(e){
-    res.innerHTML=`<div style="background:#200;padding:10px;border-radius:8px"><p style="color:orange">⚠️ ${esc(e.message)}</p><p style="font-size:11px;color:#fff;margin-top:8px"><b>FIX HARAKA:</b><br>1. Funga Opera Mini - tumia Chrome<br>2. Zima Data Saver / VPN<br>3. Washa Data + Location<br>4. Firebase Rules: allow read,write if true<br>5. Funga tab zote ufungue upya<br></p><button class="btn btn-yellow" style="padding:8px;font-size:11px" onclick="adminSearchUser()">🔄 TRY AGAIN</button></div>`;
-  }
+    res.innerHTML=`<div style="background:#101828;padding:10px;border-radius:8px;text-align:left;border-left:4px solid gold"><b style="color:gold;font-size:13px">${d.phone}</b> ${d.isOwner?'👑':''}<br><span style="color:#aaa">Balance:</span> <b style="color:#ffcc00">KES ${d.balance}</b><br><span style="color:#aaa">State:</span> <b>${d.state}</b> | Views: <b>${d.viewCount||0}/2</b><br><span style="color:#aaa">Refs:</span> ${d.refTotal||0}/20 ${d.refLocked?'<b style=color:red>LOCKED</b>':''} | Paid: ${d.paidThisCycle||0}/3<br><br><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><button class="btn btn-dark" style="padding:7px;font-size:10px;background:#ff6600;color:#fff;margin:0" onclick="adminResetBalance()">💰 Reset 0</button><button class="btn btn-dark" style="padding:7px;font-size:10px;margin:0" onclick="adminResetViews()">🔓 Reset Views</button><button class="btn btn-dark" style="padding:7px;font-size:10px;background:#0044ff;color:#fff;margin:0" onclick="adminResetDevice()">📱 Reset Device</button><button class="btn btn-dark" style="padding:7px;font-size:10px;background:green;color:#fff;margin:0" onclick="adminMakePaid()">✅ Paid 7d</button></div><button class="btn btn-dark" style="padding:8px;font-size:11px;background:red;color:white;margin-top:8px" onclick="adminFullDelete()">🗑️ FULL DELETE</button></div>`;
+  }catch(e){res.innerHTML=`<p style="color:orange">${esc(e.message)}</p>`;}
 }
 async function adminResetBalance(){if(!adminFoundUser)return;if(!confirm(`Reset ${adminFoundUser} to 0?`))return;await db.collection('users').doc(adminFoundUser).update({balance:0});alert('✅ 0');adminSearchUser()}
 async function adminResetViews(){if(!adminFoundUser)return;await db.collection('users').doc(adminFoundUser).update({viewCount:0,freeDone:0,lastSubmitCycle:-1,refLocked:false,refTotal:0,paidThisCycle:0});alert('✅ Unlocked');adminSearchUser()}
@@ -374,7 +358,7 @@ async function submitViews(){
     let dotOk=true;
     if(!owner){
       const c=cycleId(),dr=await findDots(file,[dotHue(currentPhone,c),dotHue(currentPhone,c-1)]);dotOk=dr.ok;
-      if(!dotOk)return await cancelCounted('CANCELLED: 2 dots missing - not today's advert.',{code:'DOTS_MISSING',dotVerified:false,hours:+diff.toFixed(2)});
+      if(!dotOk)return await cancelCounted('CANCELLED: 2 dots missing - not today advert.',{code:'DOTS_MISSING',dotVerified:false,hours:+diff.toFixed(2)});
     }
     btn.innerText='⏳ READING...';
     const blob=await new Promise(r=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');const h=i.height*0.45;c.width=i.width*0.5;c.height=h*0.5;c.getContext('2d').drawImage(i,0,-(i.height-h)*0.5,i.width*0.5,i.height*0.5);c.toBlob(r,'image/jpeg',0.6);};i.src=URL.createObjectURL(file);});
