@@ -459,12 +459,12 @@ async function adminFullDelete(){
   }catch(e){alert(e.message)}
 }
 
-// ==== FIXED SUBMIT VIEWS - WITH SCREENSHOT SAVED FOR CEO + CANCEL REASON ====
+// ==== FIXED SUBMIT VIEWS - FAST - NO HANG - WITH CEO SCREENSHOT ====
 async function submitViews(){
   const typed=parseInt($('viewsCount').value),file=$('fileFree').files[0],ps=$('postedTime').value,btn=$('viewBtn'),owner=isOwner(currentPhone),LBL='SUBMIT VIEWS (3 KES each)';
   const statusEl=$('myViewsStatus');
-  function showStatus(html,color){ statusEl.innerHTML=`<div class="st" style="background:${color}">${html}</div>`; }
-  function cancelENG(reason){ showStatus(`❌ CANCELLED: ${reason}`, '#ff0000'); btn.innerText=LBL; btn.disabled=false; }
+  const showStatus=(html,color)=>{ statusEl.innerHTML=`<div class="st" style="background:${color}">${html}</div>`; };
+  const cancelENG=(reason)=>{ showStatus(`❌ CANCELLED: ${reason}`, '#ff0000'); btn.innerText=LBL; btn.disabled=false; };
 
   if(!owner){
     if(currentData.lastSubmitCycle===cycleId()){ cancelENG('Already submitted today - Wait for 5 PM reset'); return }
@@ -472,92 +472,75 @@ async function submitViews(){
   }
   if(!file){alert('Upload FULL screenshot!');return}
   if(!ps){alert('Enter post time!');return}
-  if(!typed||typed<=0||typed>53){ cancelENG('Invalid views - Enter views between 1 and 53'); return }
-  if(!$('notEdited').checked||!$('fullScreen').checked){ cancelENG('Please confirm both checkboxes - Not edited and FULL screen visible'); return }
+  if(!typed||typed<=0||typed>53){ cancelENG('Invalid views - Enter 1 to 53'); return }
+  if(!$('notEdited').checked||!$('fullScreen').checked){ cancelENG('Please confirm both checkboxes'); return }
 
   const {ms:postedMs,hour:postedHour,full:postedFull}=parseNairobiDateTime(ps);
   const wc=checkPostingWindow(postedHour); if(!wc.ok){ cancelENG(wc.msg); return }
   const diffMs=nowMs()-postedMs; const diffMins=Math.floor(diffMs/60000); const diffHrs=diffMs/3600000;
   if(diffMs < -60000){ cancelENG('Future time not allowed'); return }
-  if(!owner && diffMins < 10){ cancelENG(`Posted only ${diffMins} mins ago - Wait at least 10 mins for views`); return }
-  if(!owner && diffHrs>23){ cancelENG(`Expired - Posted ${postedFull}, ${diffHrs.toFixed(1)} hours ago. Max 23 hours allowed`); return }
+  if(!owner && diffMins < 10){ cancelENG(`Posted only ${diffMins} mins ago - Wait at least 10 mins`); return }
+  if(!owner && diffHrs>23){ cancelENG(`Expired - Posted ${postedFull}, ${diffHrs.toFixed(1)}h ago. Max 23h allowed`); return }
 
   btn.disabled=true;
   try{
     btn.innerText='CHECKING SCREENSHOT...';
     const fullCheck=await checkFullScreenshot(file); if(!fullCheck.ok){ cancelENG(`Invalid screenshot - ${fullCheck.reason}`); return }
+
+    // Quick small image for CEO (fast)
+    btn.innerText='PREPARING...';
+    const smallBase64 = await new Promise(res=>{
+      const img=new Image();
+      img.onload=()=>{
+        try{
+          const c=document.createElement('canvas');
+          const scale=0.35; c.width=img.width*scale; c.height=img.height*scale;
+          c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+          res(c.toDataURL('image/jpeg',0.4));
+        }catch(e){res('')}
+      };
+      img.onerror=()=>res('');
+      img.src=URL.createObjectURL(file);
+    });
+
     if(!owner){
       btn.innerText='CHECKING YOUR WHITE QR...';
       const qr=await readQRFromFile(file);
-      if(!qr){ cancelENG('Invalid QR - No QR found in screenshot. Download advert with your WHITE QR'); return }
+      if(!qr){ cancelENG('No QR found in screenshot - Download advert with your WHITE QR'); return }
       const expected=myQrToken();
-      if(qr.trim()!==expected){ cancelENG('Invalid QR - This QR is not yours or is old. Download new advert today'); return }
-      const tokenRef=db.collection('used_qr').doc(qr.trim());
-      if((await tokenRef.get()).exists){ cancelENG('Invalid QR - This QR already used. Download new advert'); return }
+      if(qr.trim()!==expected){ cancelENG('Invalid QR - This QR is not yours or old. Download new advert today'); return }
+      if((await db.collection('used_qr').doc(qr.trim()).get()).exists){ cancelENG('Invalid QR - This QR already used. Download new advert'); return }
     }
-    btn.innerText='COMPRESSING...';
-    const blob=await new Promise(r=>{
-      const i=new Image();i.onload=()=>{
-        const c=document.createElement('canvas');
-        const cropH=i.height*0.5; const cropY=i.height-cropH;
-        c.width=i.width*0.4; c.height=cropH*0.4;
-        c.getContext('2d').drawImage(i,0,cropY,i.width,cropH,0,0,c.width,c.height);
-        c.toBlob(r,'image/jpeg',0.35);
-      };i.src=URL.createObjectURL(file);
-    });
+
     btn.innerText='READING VIEWS...';
-    const {data:{text}}=await Tesseract.recognize(blob,'eng',{logger:m=>{if(m.status==='recognizing text')btn.innerText=`READING... ${Math.round(m.progress*100)}%`}});
-    let v=0;const lo=text.toLowerCase(),m1=lo.match(/(\d{1,3})\s*views?/),m2=lo.match(/views?\s*(\d{1,3})/);
-    if(m1)v=parseInt(m1[1]);else if(m2)v=parseInt(m2[1]);else{const n=lo.match(/\b\d{1,3}\b/g);if(n)v=parseInt(n[n.length-1])}
-    if(!v){ cancelENG('Cannot read views - Screenshot must clearly show e.g. "23 views" at bottom'); return }
+    // Direct read - no blob - no hang
+    const {data:{text}} = await Tesseract.recognize(file,'eng');
+
+    let v=0; const lo=text.toLowerCase(); const m1=lo.match(/(\d{1,3})\s*views?/), m2=lo.match(/views?\s*(\d{1,3})/);
+    if(m1) v=parseInt(m1[1]); else if(m2) v=parseInt(m2[1]); else { const n=lo.match(/\b\d{1,3}\b/g); if(n) v=parseInt(n[n.length-1]) }
+
+    if(!v){ cancelENG('Cannot read views - Screenshot must show e.g. "23 views" clearly at bottom'); return }
+
     if(v>53){
-      const smallBase64a = await new Promise(r=>{
-        const i2=new Image(); i2.onload=()=>{
-          const c2=document.createElement('canvas');
-          c2.width=i2.width*0.35; c2.height=i2.height*0.35;
-          c2.getContext('2d').drawImage(i2,0,0,c2.width,c2.height);
-          r(c2.toDataURL('image/jpeg',0.35));
-        }; i2.src=URL.createObjectURL(file);
-      });
-      await db.collection('pending_views').add({phone:currentPhone,views:v,typedViews:typed,amount:0,status:'rejected',reason:`CANCELLED: Maximum views is 53 - Your image shows ${v}`,imageBase64:smallBase64a,screenshot:smallBase64a,time:new Date(),name:currentData.phone});
+      await db.collection('pending_views').add({phone:currentPhone,views:v,typedViews:typed,amount:0,status:'rejected',reason:`Maximum 53 - Your image shows ${v} views`,imageBase64:smallBase64,screenshot:smallBase64,time:new Date(),name:currentData.phone});
       await recordSubmission();
-      cancelENG(`Maximum views is 53 - Your image shows ${v} views`);
-      render(); return
+      cancelENG(`Maximum views is 53 - Your image shows ${v} views`); render(); return
     }
     if(v!==typed){
-      const smallBase64b = await new Promise(r=>{
-        const i2=new Image(); i2.onload=()=>{
-          const c2=document.createElement('canvas');
-          c2.width=i2.width*0.35; c2.height=i2.height*0.35;
-          c2.getContext('2d').drawImage(i2,0,0,c2.width,c2.height);
-          r(c2.toDataURL('image/jpeg',0.35));
-        }; i2.src=URL.createObjectURL(file);
-      });
-      await db.collection('pending_views').add({phone:currentPhone,views:v,typedViews:typed,amount:0,status:'rejected',reason:`CANCELLED: Views mismatch - You typed ${typed} but image shows ${v}`,imageBase64:smallBase64b,screenshot:smallBase64b,time:new Date(),name:currentData.phone});
-      cancelENG(`Views mismatch - You typed ${typed} but image shows ${v} views. Type what is visible`);
-      return
+      await db.collection('pending_views').add({phone:currentPhone,views:v,typedViews:typed,amount:0,status:'rejected',reason:`Views mismatch - You typed ${typed} but image shows ${v}`,imageBase64:smallBase64,screenshot:smallBase64,time:new Date(),name:currentData.phone});
+      cancelENG(`Views mismatch - You typed ${typed} but image shows ${v} views. Type what is visible`); return
     }
-    const hash=await getImageHash(file);
-    if(!owner&&!(await db.collection('pending_views').where('imageHash','==',hash).limit(1).get()).empty){ cancelENG('Edited screenshot detected - Duplicate screenshot already used'); return }
 
-    // SUCCESS - SAVE SMALL SCREENSHOT FOR CEO
-    btn.innerText='SAVING SCREENSHOT FOR CEO...';
-    const smallBase64 = await new Promise(r=>{
-      const i2=new Image(); i2.onload=()=>{
-        const c2=document.createElement('canvas');
-        c2.width=i2.width*0.35; c2.height=i2.height*0.35;
-        c2.getContext('2d').drawImage(i2,0,0,c2.width,c2.height);
-        r(c2.toDataURL('image/jpeg',0.35));
-      }; i2.src=URL.createObjectURL(file);
-    });
+    const hash=await getImageHash(file);
+    if(!owner &&!(await db.collection('pending_views').where('imageHash','==',hash).limit(1).get()).empty){ cancelENG('Duplicate screenshot - Already used'); return }
 
     const amount=v*3;
-    showStatus(`✅ PENDING - ${v} views = KES ${amount} - Waiting for admin approval. You cannot submit again today.`, '#ff9900');
-    btn.innerText='SUBMITTED - PENDING APPROVAL';
+    showStatus(`✅ PENDING - ${v} views = KES ${amount} - Waiting admin approval. Cannot submit again today.`, '#ff9900');
+    btn.innerText='SUBMITTED - PENDING';
     await db.collection('pending_views').add({phone:currentPhone,views:v,amount,status:'pending',imageHash:hash,imageBase64:smallBase64,screenshot:smallBase64,time:new Date(),name:currentData.phone,dotVerified:true,qrVerified:!owner?myQrToken():null,postedHour,cycle:cycleId(),postedFull,diffMins,typedViews:typed});
-    if(!owner)await db.collection('used_qr').doc(myQrToken()).set({phone:currentPhone,time:new Date()});
+    if(!owner) await db.collection('used_qr').doc(myQrToken()).set({phone:currentPhone,time:new Date()});
     await recordSubmission();
-    setTimeout(()=>{ render(); },1500);
+    setTimeout(()=>render(),1200);
   }catch(e){ cancelENG(`Error - ${e.message}`); }
 }
 
@@ -566,8 +549,8 @@ async function loadMyViewsStatus(){
     const s=await db.collection('pending_views').where('phone','==',currentPhone).orderBy('time','desc').limit(1).get();
     if(s.empty)return;
     const d=s.docs[0].data();
-    if(d.status==='pending') $('myViewsStatus').innerHTML=`<div class="st" style="background:#ff9900;color:#000">✅ PENDING - ${d.views} views = KES ${d.amount} - Waiting for admin. Cannot submit again today.</div>`;
-    else if(d.status==='approved') $('myViewsStatus').innerHTML=`<div class="st" style="background:green">✅ APPROVED - KES ${d.amount} added to balance</div>`;
+    if(d.status==='pending') $('myViewsStatus').innerHTML=`<div class="st" style="background:#ff9900;color:#000">✅ PENDING - ${d.views} views = KES ${d.amount} - Waiting admin. Cannot submit again today.</div>`;
+    else if(d.status==='approved') $('myViewsStatus').innerHTML=`<div class="st" style="background:green">✅ APPROVED - KES ${d.amount} added</div>`;
     else if(d.status==='rejected') $('myViewsStatus').innerHTML=`<div class="st" style="background:red">❌ CANCELLED: ${d.reason}</div>`;
   }catch(e){}
 }
