@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MTAANI EARN - CEO VIP DASHBOARD</title>
+<title>MTAANI EARN - CEO VIP</title>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
@@ -21,7 +21,7 @@ body{background:#05080f;color:#fff;font-family:Inter,sans-serif}
 .stat-card h3{font-family:Orbitron,sans-serif;font-size:20px;color:#ffcc00}
 .box{background:rgba(16,24,40,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;margin:12px 16px}
 table{width:100%;border-collapse:collapse;font-size:11px}
-th,td{padding:10px 6px;border-bottom:1px solid rgba(255,255,255,0.06);text-align:left}
+th,td{padding:10px 6px;border-bottom:1px solid rgba(255,255,255,0.06);text-align:left;vertical-align:top}
 th{color:#ffcc00;font-size:9px}
 .btn{padding:7px 12px;border:0;border-radius:8px;font-weight:900;font-size:10px;cursor:pointer}
 .btn-green{background:linear-gradient(90deg,#00ff88,#00cc6a);color:#000}
@@ -32,35 +32,36 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 .tab{display:inline-block;padding:8px 14px;background:#1a2332;border-radius:20px;margin:3px;cursor:pointer;font-size:10px;font-weight:800}
 .tab.active{background:#ffcc00;color:#000}
 .advert-preview{border:3px solid gold;border-radius:16px;overflow:hidden;position:relative;background:#000;margin-top:10px}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal img{max-width:100%;max-height:80vh;border:3px solid gold;border-radius:12px}
 </style>
 </head>
 <body>
 <div class="header">
-<div><div class="logo">MTAANI <span>EARN</span></div><div style="font-size:9px;color:#aaa;letter-spacing:2px">PREMIUM • CEO VIEW • SECURED</div></div>
+<div><div class="logo">MTAANI <span>EARN</span></div><div style="font-size:9px;color:#aaa;letter-spacing:2px">CEO VIEW • SECURED</div></div>
 <div style="display:flex;gap:10px;align-items:center">
-<button class="btn-website" onclick="viewWebsite()">🌐 VIEW SITE</button>
-<div style="text-align:right"><div style="font-size:10px;color:#aaa">CEO • Vincent Musau 👑</div><div class="badge">VERIFIED BOSS</div></div>
+<button class="btn-website" onclick="window.open('index.html','_blank')">🌐 VIEW SITE</button>
+<div style="text-align:right"><div style="font-size:10px;color:#aaa">CEO Vincent 👑</div><div class="badge">VERIFIED</div></div>
 </div>
 </div>
 
 <div id="loginAdmin" style="max-width:400px;margin:60px auto;padding:20px">
 <h2 style="color:#ffcc00;text-align:center">🔐 CEO LOGIN</h2>
 <div class="box" style="text-align:center;border:2px solid #ffcc00">
-<input id="adminPass" type="password" placeholder="Enter secret password">
-<button onclick="adminLogin()" style="width:100%;padding:13px;background:linear-gradient(90deg,#ffcc00,#ff6600);color:#000;border:0;border-radius:10px;font-weight:900;margin-top:12px">LOGIN AS CEO 👑</button>
+<input id="adminPass" type="password" placeholder="Password">
+<button onclick="adminLogin()" style="width:100%;padding:13px;background:linear-gradient(90deg,#ffcc00,#ff6600);color:#000;border:0;border-radius:10px;font-weight:900;margin-top:12px">LOGIN 👑</button>
 <p id="adminMsg" style="font-size:11px;color:#ff4444;margin-top:8px"></p>
 </div>
 </div>
 
 <div id="adminDash" style="display:none">
-
 <div style="margin:16px;display:flex;gap:10px">
-<button id="maintBtn" onclick="toggleMaintenance()" style="flex:1;padding:14px;background:linear-gradient(90deg,#ff0033,#ff6600);color:#fff;border:0;border-radius:12px;font-weight:900;font-size:12px;cursor:pointer">🔧 ACTIVATE MAINTENANCE MODE</button>
-<div id="maintStatus" style="flex:1;background:#000;border:2px solid #00ff88;padding:12px;border-radius:12px;text-align:center;font-size:11px;font-weight:900;color:#00ff88;display:flex;align-items:center;justify-content:center">🟢 SITE LIVE</div>
+<button id="maintBtn" onclick="toggleMaintenance()" style="flex:1;padding:14px;background:linear-gradient(90deg,#ff0033,#ff6600);color:#fff;border:0;border-radius:12px;font-weight:900;font-size:12px;cursor:pointer">🔧 MAINTENANCE</button>
+<div id="maintStatus" style="flex:1;background:#000;border:2px solid #00ff88;padding:12px;border-radius:12px;text-align:center;font-size:11px;font-weight:900;color:#00ff88;display:flex;align-items:center;justify-content:center">🟢 LIVE</div>
 </div>
 
 <div class="till-box">
-<div style="font-size:11px;color:#ffcc00;letter-spacing:2px;font-weight:900">🔥 ACTIVE TILL • 3624692 • VERIFIED 🔥</div>
+<div style="font-size:11px;color:#ffcc00;letter-spacing:2px;font-weight:900">🔥 TILL 3624692 🔥</div>
 <div class="till-num">3624692</div>
 </div>
 
@@ -80,57 +81,52 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 </div>
 
 <div id="sec-views" class="box" style="border:2px solid #ffcc00">
-<h3 style="color:#ffcc00">👁️ PENDING VIEWS - 3 BOB / MAX 53</h3>
-<table><thead><tr><th>PHONE</th><th>VIEWS x 3</th><th>POSTED</th><th>CHECKS</th><th>ACTION</th></tr></thead><tbody id="pendingViewsTable"></tbody></table>
+<h3 style="color:#ffcc00">👁️ PENDING VIEWS - Client Screenshot + Proof</h3>
+<p style="font-size:9px;color:#aaa">Click VIEW IMAGE kuona screenshot yote. Hapa ndio uta-approve.</p>
+<div id="pendingViewsTable"></div>
 </div>
 
 <div id="sec-advert" class="box" style="display:none;border:2px solid gold">
-<h3 style="color:gold">📢 HANDMADE ADVERT - FIXED 1MB</h3>
-<p style="font-size:10px;color:#aaa">Upload advert yako hapa, system ita-auto compress hadi 720px na JPEG 0.55 ndio iingie Firestore.</p>
+<h3 style="color:gold">📢 HANDMADE ADVERT - AUTO COMPRESS</h3>
+<p style="font-size:10px;color:#aaa">System ita-compress hadi 720px JPEG 0.55 + itaweka GOLD border + 3 GOLD DOTS juu ya QR area (secret security).</p>
 <div id="advertCurrent" class="advert-preview" style="display:none"><img id="currentAdvertImg" style="width:100%"></div>
 <div style="margin-top:12px;background:#0f172a;padding:12px;border-radius:12px">
-<h4 style="color:gold;font-size:11px">UPLOAD HANDMADE ADVERT YAKO</h4>
+<h4 style="color:gold;font-size:11px">UPLOAD ADVERT YAKO HANDMADE</h4>
 <input type="file" id="advertFile" accept="image/*">
-<p style="font-size:9px;color:#aaa;margin-top:4px">Chagua picha yako - ita-compress auto</p>
-<button class="btn-yellow" onclick="mergeAndUploadAdvert()">🔥 COMPRESS + UPLOAD TO SITE</button>
+<textarea id="captionInput" placeholder="Caption ya leo..." style="min-height:70px"></textarea>
+<button class="btn-yellow" onclick="mergeAndUploadAdvert()">🔥 COMPRESS + UPLOAD</button>
 <p id="advertMsg" style="font-size:11px;color:#00ff88;margin-top:6px"></p>
 </div>
 <div style="margin-top:10px;background:#000;border:1px dashed gold;padding:10px;border-radius:10px">
-<p style="font-size:9px;color:gold">PREVIEW (JPEG 0.55):</p>
-<canvas id="mergeCanvas" style="width:100%;border-radius:12px;display:none"></canvas>
+<p style="font-size:9px;color:gold">PREVIEW:</p>
 <img id="mergedPreview" style="width:100%;border-radius:12px;display:none;border:3px solid gold">
 </div>
 </div>
 
 <div id="sec-withdraw" class="box" style="display:none;border:2px solid #00ff88">
-<h3 style="color:#00ff88">💰 WITHDRAWAL REQUESTS</h3>
-<table><thead><tr><th>USER</th><th>M-PESA NO</th><th>AMOUNT / FEE / RECEIVE</th><th>STATUS</th><th>ACTION</th></tr></thead><tbody id="withdrawTable"></tbody></table>
+<h3 style="color:#00ff88">💰 WITHDRAWALS</h3>
+<div id="withdrawTable"></div>
 </div>
 <div id="sec-payments" class="box" style="display:none">
 <h3 style="color:#00ff88">📱 PAYMENTS - TILL 3624692</h3>
-<table><thead><tr><th>PHONE</th><th>M-PESA CODE</th><th>AMOUNT</th><th>DATE</th></tr></thead><tbody id="paymentsTable"></tbody></table>
+<table><thead><tr><th>PHONE</th><th>CODE</th><th>AMT</th><th>DATE</th></tr></thead><tbody id="paymentsTable"></tbody></table>
 </div>
 <div id="sec-users" class="box" style="display:none">
-<h3 style="color:#aaa">👥 ALL USERS</h3>
-<table><thead><tr><th>PHONE</th><th>BALANCE</th><th>STATUS</th><th>INVITED BY</th><th>SHARE/VIEW</th><th>REF COUNT</th></tr></thead><tbody id="usersTable"></tbody></table>
+<h3 style="color:#aaa">👥 USERS</h3>
+<table><thead><tr><th>PHONE</th><th>BAL</th><th>STATUS</th><th>REF</th><th>VIEWS</th></tr></thead><tbody id="usersTable"></tbody></table>
 </div>
 </div>
 
+<div id="imgModal" class="modal" onclick="this.style.display='none'"><img id="modalImg" src=""></div>
+
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBh3Zv2N2WVsXEkMzGgpmldZ9qamUAhGSo",
-  authDomain: "mtaani-earn.firebaseapp.com",
-  projectId: "mtaani-earn",
-  storageBucket: "mtaani-earn.firebasestorage.app",
-  messagingSenderId: "910785202691",
-  appId: "1:910785202691:web:24b0273dda13fd78c41c36",
-};
+const firebaseConfig = { apiKey: "AIzaSyBh3Zv2N2WVsXEkMzGgpmldZ9qamUAhGSo", authDomain: "mtaani-earn.firebaseapp.com", projectId: "mtaani-earn", storageBucket: "mtaani-earn.firebasestorage.app", messagingSenderId: "910785202691", appId: "1:910785202691:web:24b0273dda13fd78c41c36", };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const ADMIN_PASSWORDS = ["Mtaani2024!", "mtaani2024!", "MTAANI2024!", "1234"];
 let MAINT_MODE = false;
 
-function viewWebsite(){window.open('index.html','_blank');}
+function viewImage(src){ document.getElementById('modalImg').src=src; document.getElementById('imgModal').style.display='flex'; }
 function adminLogin(){
   const p=document.getElementById('adminPass').value.trim();
   if(ADMIN_PASSWORDS.includes(p)){ localStorage.setItem('mt_admin','yes'); showDash(); }
@@ -149,7 +145,6 @@ function showSection(s){
   if(s==='payments') loadPayments();
   if(s==='users') loadUsersOnly();
 }
-
 async function loadMaintStatus(){
   try{
     const doc = await db.collection('config').doc('site_status').get();
@@ -161,31 +156,19 @@ function updateMaintUI(){
   const btn = document.getElementById('maintBtn');
   const stat = document.getElementById('maintStatus');
   if(MAINT_MODE){
-    btn.innerHTML = "✅ DEACTIVATE - RUDISHA SITE LIVE";
-    btn.style.background = "linear-gradient(90deg,#00ff88,#00cc6a)";
-    btn.style.color = "#000";
-    stat.innerHTML = "🔴 UNDER MAINTENANCE";
-    stat.style.borderColor = "#ff0033";
-    stat.style.color = "#ff0033";
+    btn.innerHTML = "✅ RUDISHA LIVE"; btn.style.background = "linear-gradient(90deg,#00ff88,#00cc6a)"; btn.style.color = "#000";
+    stat.innerHTML = "🔴 MAINTENANCE"; stat.style.borderColor = "#ff0033"; stat.style.color = "#ff0033";
   } else {
-    btn.innerHTML = "🔧 ACTIVATE MAINTENANCE - FUNGA SITE";
-    btn.style.background = "linear-gradient(90deg,#ff0033,#ff6600)";
-    btn.style.color = "#fff";
-    stat.innerHTML = "🟢 SITE LIVE - WATU WANAONA";
-    stat.style.borderColor = "#00ff88";
-    stat.style.color = "#00ff88";
+    btn.innerHTML = "🔧 FUNGA SITE"; btn.style.background = "linear-gradient(90deg,#ff0033,#ff6600)"; btn.style.color = "#fff";
+    stat.innerHTML = "🟢 LIVE"; stat.style.borderColor = "#00ff88"; stat.style.color = "#00ff88";
   }
 }
 async function toggleMaintenance(){
   const newMode =!MAINT_MODE;
-  const confirmMsg = newMode? "FUNGA SITE YOTE? Client wataona UNDER MAINTENANCE?" : "RUDISHA SITE LIVE? Client wataiona tena?";
-  if(!confirm(confirmMsg)) return;
-  await db.collection('config').doc('site_status').set({ maintenance: newMode, updatedAt: new Date(), updatedBy: 'CEO Vincent' }, {merge:true});
-  MAINT_MODE = newMode;
-  updateMaintUI();
-  alert(newMode? "🔴 SITE IMEFUNGWA! Iko Under Maintenance" : "🟢 SITE IMERUDI LIVE!");
+  if(!confirm(newMode? "FUNGA SITE?" : "RUDISHA LIVE?")) return;
+  await db.collection('config').doc('site_status').set({ maintenance: newMode, updatedAt: new Date() }, {merge:true});
+  MAINT_MODE = newMode; updateMaintUI();
 }
-
 async function loadCurrentAdvert(){
   try{
     const doc = await db.collection('config').doc('today_advert').get();
@@ -197,24 +180,32 @@ async function loadCurrentAdvert(){
 }
 async function mergeAndUploadAdvert(){
   const file = document.getElementById('advertFile').files[0];
-  if(!file){ alert('Chagua advert kwanza'); return; }
+  const caption = document.getElementById('captionInput').value.trim();
+  if(!file){ alert('Chagua picha'); return; }
   const msgEl = document.getElementById('advertMsg');
-  msgEl.innerText = '⏳ Ina-compress 720px + JPEG 0.55...';
+  msgEl.innerText = '⏳ Compressing 720px JPEG 0.55 + GOLD DOTS...';
   const advertImg = new Image();
   advertImg.onload = async ()=>{
-      const canvas = document.getElementById('mergeCanvas'); const ctx = canvas.getContext('2d');
+      const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
       let w = advertImg.width; let h = advertImg.height; const MAX = 720;
       if(w > MAX){ h = Math.round(h * (MAX / w)); w = MAX; }
       canvas.width = w; canvas.height = h;
       ctx.drawImage(advertImg,0,0,w,h);
-      ctx.strokeStyle = 'gold'; ctx.lineWidth = 6; ctx.strokeRect(0,0,w,h);
+      ctx.strokeStyle = 'gold'; ctx.lineWidth = 8; ctx.strokeRect(0,0,w,h);
+      ctx.fillStyle='rgba(255,215,0,0.75)';
+      const qx = w - 160; const qy = h - 20;
+      ctx.beginPath();ctx.arc(qx+20, qy-38, 7,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(qx+45, qy-38, 7,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(qx+70, qy-38, 7,0,Math.PI*2);ctx.fill();
       const mergedBase64 = canvas.toDataURL('image/jpeg', 0.55);
       const sizeKB = Math.round(mergedBase64.length * 0.75 / 1024);
       document.getElementById('mergedPreview').src = mergedBase64; document.getElementById('mergedPreview').style.display='block';
-      if(sizeKB > 900){ msgEl.innerHTML = `<span style="color:red">❌ Bado kubwa ${sizeKB}KB</span>`; return; }
+      if(sizeKB > 950){ msgEl.innerHTML = `<span style="color:red">❌ Bado kubwa ${sizeKB}KB - Jaribu picha ndogo</span>`; return; }
       try{
-        await db.collection('config').doc('today_advert').set({ mergedImage: mergedBase64, updatedAt: new Date(), sizeKB: sizeKB }, {merge:true});
-        msgEl.innerHTML = `<span style="color:#00ff88">✅ SUCCESS! ${sizeKB}KB - Imeingia Site!</span>`; loadCurrentAdvert();
+        const data={ mergedImage: mergedBase64, updatedAt: new Date(), sizeKB: sizeKB, dotSecured:true };
+        if(caption) data.caption=caption;
+        await db.collection('config').doc('today_advert').set(data, {merge:true});
+        msgEl.innerHTML = `<span style="color:#00ff88">✅ SUCCESS ${sizeKB}KB - Imeingia Site!</span>`; loadCurrentAdvert();
       }catch(e){ msgEl.innerHTML = `<span style="color:red">❌ ${e.message}</span>`; }
   };
   advertImg.src = URL.createObjectURL(file);
@@ -234,40 +225,60 @@ async function loadUsersOnly(){
   const usersSnap = await db.collection('users').orderBy('createdAt','desc').limit(100).get();
   let html=''; usersSnap.forEach(doc=>{
     const d=doc.data();
-    const status = d.state==='paid'? '✅ UNLOCKED' : ( (d.shareCount>=2||d.viewCount>=2||d.freeDone>=2)? '🔒 LOCKED' : '🟡 FREE');
-    html+=`<tr><td>${d.phone}</td><td style='color:#ffcc00'>KES ${d.balance}</td><td>${status}</td><td>${d.referredBy||'Direct'}</td><td>S:${d.shareCount||0} V:${d.viewCount||0}</td><td>${d.referralCount||0}</td></tr>`;});
+    const status = d.state==='paid'? '✅ PAID' : ( (d.viewCount>=2||d.refLocked)? '🔒 LOCKED' : '🟡 FREE');
+    html+=`<tr><td>${d.phone}</td><td style='color:#ffcc00'>${d.balance}</td><td>${status}</td><td>${d.referredBy||'Direct'}</td><td>V:${d.viewCount||0} R:${d.refTotal||0}</td></tr>`;});
   document.getElementById('usersTable').innerHTML=html;
 }
 async function loadPendingViews(){
-  const snap = await db.collection('pending_views').where('status','==','pending').get();
-  let html=''; if(snap.empty) html='<tr><td colspan=5>No pending</td></tr>';
+  const snap = await db.collection('pending_views').where('status','==','pending').orderBy('time','desc').limit(20).get();
+  let html='';
+  if(snap.empty){ document.getElementById('pendingViewsTable').innerHTML='<p style="font-size:11px;color:#aaa">No pending views - wote wame-approve</p>'; return; }
   snap.forEach(doc=>{
     const d=doc.data();
-    html+=`<tr><td>${d.phone}</td><td>${d.views} x3 = KES ${d.amount}</td><td style='font-size:9px'>${d.time?.toDate?.()?.toLocaleDateString()||''}</td><td style='font-size:9px'>${d.isFullScreenshot?'✅ Full':''}</td><td><button class='btn btn-green' onclick='approveView("${doc.id}","${d.phone}",${d.amount})'>APPROVE</button> <button class='btn btn-red' onclick='rejectView("${doc.id}")'>REJECT</button></td></tr>`;
+    const timeStr = d.time?.toDate?.()?.toLocaleString() || '';
+    const posted = d.postedFull || d.postedHour || '';
+    const imgSrc = d.imageBase64 || d.screenshot || '';
+    html+=`<div style="background:#1a2332;padding:12px;border-radius:12px;margin-top:10px;border:1px solid gold">
+      <div style="display:flex;justify-content:space-between"><b style="color:gold">${d.phone}</b><span style="color:#00ff88;font-weight:900">${d.views} views = KES ${d.amount}</span></div>
+      <div style="font-size:10px;color:#aaa;margin-top:4px">Posted: ${posted} | ${d.diffMins||0} mins ago | ${timeStr}<br>Typed:${d.typedViews||d.views} OCR:${d.views} | Hash:${(d.imageHash||'').slice(0,10)}... | QR:${d.qrVerified?'✅':''}</div>
+      <div style="margin-top:8px;display:flex;gap:6px">
+        ${imgSrc? `<button class="btn" style="background:#fff;color:#000" onclick="viewImage('${imgSrc}')">👁️ VIEW SCREENSHOT</button>` : `<span style="font-size:10px;color:red">No image saved (old submission)</span>`}
+        <button class='btn btn-green' onclick='approveView("${doc.id}","${d.phone}",${d.amount})'>✅ APPROVE + PAY</button>
+        <button class='btn btn-red' onclick='rejectView("${doc.id}")'>❌ REJECT</button>
+      </div>
+      ${imgSrc? `<img src="${imgSrc}" style="width:100%;max-height:200px;object-fit:contain;background:#000;margin-top:8px;border-radius:8px;cursor:pointer" onclick="viewImage('${imgSrc}')">` : ''}
+    </div>`;
   });
   document.getElementById('pendingViewsTable').innerHTML=html;
 }
 async function approveView(id, phone, amount){
-  if(!confirm(`Approve ${phone} KES ${amount}?`)) return;
+  if(!confirm(`Approve ${phone} KES ${amount}? Pesa itaongezwa balance`)) return;
   await db.collection('users').doc(phone).update({balance: firebase.firestore.FieldValue.increment(amount)});
-  await db.collection('pending_views').doc(id).update({status:'approved'});
+  await db.collection('pending_views').doc(id).update({status:'approved', approvedAt:new Date()});
+  alert(`✅ Approved ${phone} +KES ${amount}`);
+  loadPendingViews(); loadData();
+}
+async function rejectView(id){
+  const reason=prompt('Reason for rejection?')||'Rejected by admin';
+  await db.collection('pending_views').doc(id).update({status:'rejected', reason:reason});
   loadPendingViews();
 }
-async function rejectView(id){ await db.collection('pending_views').doc(id).update({status:'rejected'}); loadPendingViews(); }
 async function loadWithdraws(){
   const snap = await db.collection('pending_withdrawals').where('status','==','pending').get();
-  let html=''; snap.forEach(doc=>{
+  let html='';
+  snap.forEach(doc=>{
     const d=doc.data();
-    html+=`<tr><td>${d.phone}</td><td>${d.mpesaPhone||d.phone}</td><td>KES ${d.amount} - Fee 7 = Tuma ${d.receive||d.amount-7}</td><td>⏳</td><td><button class='btn btn-green' onclick='approveNewWithdraw("${doc.id}","${d.phone}",${d.amount})'>APPROVE</button></td></tr>`;
+    html+=`<div style="background:#1a2332;padding:10px;border-radius:10px;margin-top:8px;border-left:3px solid #00ff88"><b>${d.phone}</b> -> ${d.mpesaPhone||d.phone}<br>Amount KES ${d.amount} - Fee 7 = <b style="color:#00ff88">Tuma ${d.receive||d.amount-7}</b><br><button class='btn btn-green' style="margin-top:6px" onclick='approveNewWithdraw("${doc.id}")'>✅ APPROVED - NIMETUMA</button></div>`;
   });
-  document.getElementById('withdrawTable').innerHTML=html||'<tr><td colspan=5>No pending</td></tr>';
+  document.getElementById('withdrawTable').innerHTML=html||'No pending';
 }
-async function approveNewWithdraw(id, phone, amount){
-  await db.collection('pending_withdrawals').doc(id).update({status:'approved'});
-  loadWithdraws();
+async function approveNewWithdraw(id){
+  if(!confirm('Umetuma pesa kwa M-Pesa?')) return;
+  await db.collection('pending_withdrawals').doc(id).update({status:'approved', approvedAt:new Date()});
+  loadWithdraws(); loadData();
 }
-async function loadPayments(){ const snap = await db.collection('payments').orderBy('date','desc').limit(30).get(); let html=''; snap.forEach(doc=>{const d=doc.data(); html+=`<tr><td>${d.phone}</td><td>${d.mpesaCode}</td><td>${d.amount}</td><td>${d.date?.toDate?.()?.toLocaleString()||''}</td></tr>`;}); document.getElementById('paymentsTable').innerHTML=html; }
+async function loadPayments(){ const snap = await db.collection('payments').orderBy('date','desc').limit(50).get(); let html=''; snap.forEach(doc=>{const d=doc.data(); html+=`<tr><td>${d.phone}</td><td>${d.mpesaCode}</td><td>${d.amount}</td><td>${d.date?.toDate?.()?.toLocaleString()||''} - ${d.status}</td></tr>`;}); document.getElementById('paymentsTable').innerHTML=html; }
 (function(){ if(localStorage.getItem('mt_admin')==='yes'){showDash();} })();
 </script>
 </body>
-</html>
+  </html>
