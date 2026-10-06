@@ -54,7 +54,16 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <input id="loginPhone" placeholder="Phone Number">
 <input id="loginPass" type="password" placeholder="Your Password">
 <button class="btn btn-green" id="loginBtn" onclick="loginUser()">LOGIN NOW</button>
-<span class="link" onclick="showRegister()">No account? REGISTER</span>
+<span class="link" onclick="showRegister()">No account? REGISTER</span><br>
+<span class="link" onclick="toggleForgot()">Forgot password?</span>
+<div id="forgotBox" style="display:none;margin-top:12px;background:#0f172a;padding:12px;border-radius:10px;border:1px dashed #ffcc00;text-align:left">
+<p style="font-size:11px;color:#ffcc00;font-weight:800">🔑 RESET PASSWORD</p>
+<p style="font-size:10px;color:#aaa;margin-top:4px">Enter your phone and the Gmail you registered with. Admin will verify you and send a new password on WhatsApp.</p>
+<input id="forgotPhone" type="tel" placeholder="Your phone e.g 0712345678">
+<input id="forgotGmail" type="email" placeholder="Gmail you registered with">
+<button class="btn btn-yellow" id="forgotBtn" onclick="requestReset()">SEND RESET REQUEST</button>
+<p id="forgotMsg" style="font-size:11px;color:#ffcc00;margin-top:6px"></p>
+</div>
 <p id="loginMsg" style="font-size:11px;color:#ffcc00;margin-top:6px"></p>
 </div>
 </div>
@@ -153,9 +162,20 @@ const ms=t=>t&&t.toMillis?t.toMillis():+t||0;
 async function syncClock(){try{const r=db.collection('config').doc('clock');await r.set({t:TS()});clockOffset=(await r.get()).data().t.toMillis()-Date.now()}catch(e){}}
 function tickClock(){const t=nowMs(),c=cycleId(t);if(lastCycle!==null&&c!==lastCycle){location.reload();return}lastCycle=c;const l=Math.max(0,nextReset(t)-t),el=$('countdown23');if(el)el.innerText=`Submit before 5 PM - ${Math.floor(l/3600000)}h ${Math.floor(l%3600000/60000)}m left`}
 setInterval(tickClock,1000);
+// ---- one tab per browser ----
 const bc=window.BroadcastChannel?new BroadcastChannel('mtaani_tab'):null,tabId=Math.random().toString(36).slice(2);let tabBlocked=false;
 if(bc){bc.onmessage=e=>{if(e.data==='hello'&&!tabBlocked)bc.postMessage('busy');if(e.data==='busy'&&!tabBlocked){tabBlocked=true;$('tabBlock').style.display='flex'}};bc.postMessage('hello')}
 const sid=()=>localStorage.getItem('mt_sid')||'';
+function toggleForgot(){const b=$('forgotBox'),open=b.style.display==='block';b.style.display=open?'none':'block';if(!open&&!$('forgotPhone').value)$('forgotPhone').value=$('loginPhone').value}
+async function requestReset(){
+  const p=normalizePhone($('forgotPhone').value),g=$('forgotGmail').value.trim().toLowerCase(),msg=$('forgotMsg'),btn=$('forgotBtn');
+  if(!/^0\d{9}$/.test(p)){msg.innerText='Enter valid phone (10 digits)';return}
+  if(!/^\S+@\S+\.\S+$/.test(g)){msg.innerText='Enter the Gmail you registered with';return}
+  btn.disabled=true;msg.innerText='Sending...';
+  try{await db.collection('password_resets').doc(p).set({phone:p,gmail:g,status:'pending',time:TS()});msg.innerText='✅ Request sent. Admin will verify you and send your new password on WhatsApp (0703182307).'}
+  catch(e){msg.innerText=e.code==='permission-denied'?'Request already sent or blocked - WhatsApp admin on 0703182307':'Error: '+e.message}
+  btn.disabled=false;
+}
 function showLogin(){$('loginBox').style.display='block'}function showRegister(){$('loginBox').style.display='none'}
 function downloadTodayAdvert(){const s=myAdvertDataUrl||$('todayAdvertMergedImg').src;if(!s){alert('No advert loaded');return}const a=document.createElement('a');a.href=s;a.download='MTAANI_ADVERT_TODAY.png';document.body.appendChild(a);a.click();a.remove()}
 function copyCaption(){navigator.clipboard.writeText($('todayCaptionText').innerText);alert('Caption Copied!')}
@@ -173,6 +193,7 @@ async function stampAdvertForUser(){
     if(qr){
       const q=Math.round(base.width*0.22),pad=Math.round(q*0.08),tot=q+pad*4,qx=base.width-tot-20,qy=base.height-tot-20;
       x.fillStyle="#FFD700";x.fillRect(qx,qy,tot,tot);x.fillStyle="#FFFFFF";x.fillRect(qx+pad,qy+pad,tot-pad*2,tot-pad*2);x.drawImage(qr,qx+pad*2,qy+pad*2,q,q);
+      // 3 gold dots, size relative to QR, placed above the QR box
       const r=Math.max(4,Math.round(q*0.05)),dy=qy+pad*2-Math.round(q*0.36);x.fillStyle="#FFD700";
       [0.1,0.3,0.5].forEach(k=>{x.beginPath();x.arc(qx+pad*2+q*k,dy,r,0,Math.PI*2);x.fill()});
     }
@@ -192,6 +213,7 @@ async function updateAdvert(){
 }
 function checkFullScreenshot(file){return new Promise(res=>{if(file.size<3000){res({ok:false,reason:"File too small"});return}const img=new Image();img.onload=()=>res(img.height<img.width?{ok:false,reason:"Not a full portrait screenshot"}:{ok:true});img.onerror=()=>res({ok:true});img.src=URL.createObjectURL(file)})}
 function parseNairobiDateTime(str){const[d,t]=str.split('T'),[y,m,dd]=d.split('-').map(Number),[hh,mm]=t.split(':').map(Number);return{ms:Date.UTC(y,m-1,dd,hh,mm)-3*3600000,hour:hh,full:`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`}}
+// ---- auth ----
 async function registerUser(){
   const p=normalizePhone($('phoneInput').value),g=$('gmailInput').value.trim(),pass=$('passInput').value,conf=$('passConfirm').value,msg=$('guestMsg'),btn=$('regBtn');
   const raw=$('refInput').value.trim()||new URLSearchParams(location.search).get('ref')||'',ref=raw?normalizePhone(raw):null;
@@ -231,6 +253,7 @@ auth.onAuthStateChanged(async u=>{
     await render();
   },e=>{});
 });
+// ---- render ----
 function isLocked(){const d=currentData;return (d.viewCount||0)>=2||refTotal()>=20}
 function refTotal(){const r=ms(currentData.refResetAt);return invites.filter(x=>ms(x.createdAt)>r).length}
 async function render(){
@@ -253,6 +276,7 @@ function applyLockUI(){
   $('expiryText').innerText=d.state==='paid'&&d.expiryTime?'Expires in '+Math.max(0,Math.ceil((d.expiryTime-nowMs())/DAY))+' days':'';
 }
 function updateSubmitButton(){const b=$('viewBtn'),done=!isOwner(currentPhone)&&currentData&&currentData.lastSubmitCycle===cycleId();if(b&&!busy){b.disabled=!!done;b.innerText=done?'DONE TODAY - WAIT 5 PM RESET':'SUBMIT VIEWS (3 KES each)'}}
+// ---- payments / admin ----
 const PAYSTACK_PK='pk_live_f5bafce512b6886d08e193be98fb5d38b79a1bba',API_BASE='https://mtaani-paystack.musauvincent76.workers.dev';
 async function unlockNow(){
   if(busy)return;
@@ -317,6 +341,7 @@ async function doCheckin(){
   finally{busy=false;if(btn){btn.style.pointerEvents='auto';btn.innerHTML='CHECK IN'}}
 }
 async function getImageHash(f){const h=await crypto.subtle.digest('SHA-256',await f.arrayBuffer());return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+// ---- QR + dots ---- (SECURITY v2)
 const SEC={MIN_H:20.5,MAX_H:23.5,MAX_VIEWS:53,REJECT_AT:3};
 const EDIT_SIGS=['photoshop','adobe','canva','snapseed','lightroom','picsart','gimp','photopea','pixlr','fotor','remini','faceapp','midjourney','dall-e','openai','gemini','stable diffusion','firefly','c2pa','jumbf','synthid','ai generated'];
 const fileImg=f=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=URL.createObjectURL(f)});
@@ -330,12 +355,11 @@ function readQR(img){
     const cw=Math.min(2200,Math.round(sw*k)),f=cw/sw,ch=Math.round(sh*f);
     try{const c=document.createElement('canvas');c.width=cw;c.height=ch;const x=c.getContext('2d');x.drawImage(img,sx,sy,sw,sh,0,0,cw,ch);
       const q=jsQR(x.getImageData(0,0,cw,ch).data,cw,ch,{inversionAttempts:'attemptBoth'});
-      if(q){const p=o=>({x:sx+o.x/f,y:sy+o.y/f});return{data:q.data,[STRIPPED]
-    }catch(e){/* retry */}
+      if(q){const p=o=>({x:sx+o.x/f,y:sy+o.y/f});return{data:q.data,tl:p(q.location.topLeftCorner),tr:p(q.location.topRightCorner),img}}}catch(e){}
   }
   return null;
 }
-function countDots(q){
+function countDots(q){ // counts round gold blobs above the QR (tolerant to WhatsApp compression)
   try{
     const{img,tl,tr}=q,Ws=Math.hypot(tr.x-tl.x,tr.y-tl.y);if(Ws<20)return 0;
     const x0=Math.max(0,Math.floor(tl.x-.15*Ws)),x1=Math.min(img.width,Math.ceil(tr.x+.15*Ws)),y0=Math.max(0,Math.floor(tl.y-1.1*Ws)),y1=Math.floor(tl.y-.2*Ws),w=x1-x0,h=y1-y0;
@@ -371,6 +395,7 @@ function ocrChecks(typed,postedFull,o){
   if(times.length&&!times.some(x=>{const d=Math.abs(x-tmin);return Math.min(d,1440-d)<=10})){R.points+=1;R.flags.push('Status time in image differs from typed time')}
   return R;
 }
+// ---- submit ----
 async function submitViews(){
   if(busy)return;
   const typed=parseInt($('viewsCount').value),file=$('fileFree').files[0],ps=$('postedTime').value,btn=$('viewBtn'),owner=isOwner(currentPhone),LBL='SUBMIT VIEWS (3 KES each)',statusEl=$('myViewsStatus');
@@ -426,16 +451,12 @@ async function submitViews(){
   }catch(e){cancelENG(e.code==='permission-denied'?'Rejected by server - duplicate screenshot, QR already used, or limit reached':`Error - ${e.message}`)}
 }
 async function loadMyViewsStatus(){
-  try{
-    const s=await db.collection('pending_views').where('phone','==',currentPhone).get();
-    if(s.empty)return;
-    const today=s.docs.map(x=>x.data()).filter(d=>d.cycle===cycleId());
-    if(!today.length){$('myViewsStatus').innerHTML='';return;}
-    const d=today.sort((a,b)=>ms(b.time)-ms(a.time))[0];
+  try{const s=await db.collection('pending_views').where('phone','==',currentPhone).get();if(s.empty)return;
+    const d=s.docs.map(x=>x.data()).filter(x=>x.cycle===cycleId()).sort((a,b)=>ms(b.time)-ms(a.time))[0];
+    if(!d){$('myViewsStatus').innerHTML='';return}
     if(d.status==='pending')$('myViewsStatus').innerHTML=`<div class="st" style="background:#ff9900;color:#000">✅ PENDING - ${esc(d.views)} views = KES ${esc(d.amount)} - Waiting admin. Cannot submit again today.</div>`;
     else if(d.status==='approved')$('myViewsStatus').innerHTML=`<div class="st" style="background:green">✅ APPROVED - KES ${esc(d.amount)} added</div>`;
-    else if(d.status==='rejected')$('myViewsStatus').innerHTML=`<div class="st" style="background:red">❌ CANCELLED: ${esc(d.reason||'Rejected')}</div>`;
-  }catch(e){}
+    else if(d.status==='rejected')$('myViewsStatus').innerHTML=`<div class="st" style="background:red">❌ CANCELLED: ${esc(d.reason||'Rejected')}</div>`}catch(e){}
 }
 async function requestWithdraw(){
   if(busy)return;
@@ -446,7 +467,7 @@ async function requestWithdraw(){
   try{
     const id=currentPhone+'_'+((currentData.wdCount||0)+1),b=db.batch();
     b.update(db.collection('users').doc(currentPhone),{balance:inc(-amt),wdCount:inc(1)});
-    b.set(db.collection('pending_withdrawals').doc(id),{phone:currentPhone,mpesaPhone:phone,amount:amt,fee:rec,status:'pending',time:TS()});
+    b.set(db.collection('pending_withdrawals').doc(id),{phone:currentPhone,mpesaPhone:phone,amount:amt,fee,receive:rec,status:'pending',time:TS()});
     await b.commit();msg.innerText=`Sent - Receive ${rec}`;loadMyWithdrawStatus();
   }catch(e){msg.innerText=e.code==='permission-denied'?'Rejected - refresh and try again':e.message}finally{busy=false}
 }
@@ -460,6 +481,7 @@ async function loadMyInvites(){
     el.innerHTML=invites.map(d=>{const p=d.state==='paid',c=p?'#00ff88':'#ff6600';return `<div style="background:#1a2332;padding:10px;border-radius:8px;margin-bottom:8px;border-left:3px solid ${c}"><div style="display:flex;justify-content:space-between"><b>${esc(d.phone)}</b><span style="background:${c};color:#000;padding:2px 6px;border-radius:10px;font-size:10px;font-weight:800">${p?'PAID':'UNPAID'}</span></div><p style="font-size:11px;color:${c}">${p?'PAID (80)':'Not paid yet'}</p></div>`}).join('')}
   catch(e){el.innerHTML='Error: '+esc(e.message)}
 }
+// ---- owner tools ----
 async function adminSearchUser(){
   const p=normalizePhone($('adminSearchPhone').value),res=$('adminSearchResult');if(!isOwner(currentPhone)||!p)return;
   try{const doc=await db.collection('users').doc(p).get();if(!doc.exists){res.innerHTML=`<p style="color:red">❌ ${esc(p)} NOT FOUND</p>`;adminFoundUser=null;return}
