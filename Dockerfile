@@ -1,7 +1,4 @@
-FROM node:20
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-EXPOSE 10000
-CMD ["node", "index.js"]
+FROM php:8.2-apache
+WORKDIR /var/www/html
+COPY . /var/www/html/
+EXPOSE 80
