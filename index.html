@@ -6,6 +6,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://js.paystack.co/v1/inline.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Orbitron:wght@700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -119,8 +120,8 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 </div>
 <div class="box" id="unlockBox" style="background:#ffcc00;color:#000;text-align:center;display:none">
 <h3>🔒 DASHBOARD LOCKED!</h3><p>Balance <b id="balLock">KES 0</b> locked.</p>
-<div style="background:#000;color:#ffcc00;padding:12px;border-radius:8px;margin:10px 0;font-weight:900">TILL: 3624692 | Amount: 80</div>
-<input id="mpesaCode" maxlength="10" placeholder="M-Pesa Code (10 chars)"><button class="btn btn-dark" onclick="unlockNow()">SUBMIT PAYMENT CODE</button><div id="payStatus"></div>
+<div style="background:#000;color:#ffcc00;padding:12px;border-radius:8px;margin:10px 0;font-weight:900">Unlock fee: KES 80 (M-Pesa / Card via Paystack)</div>
+<button class="btn btn-dark" onclick="unlockNow()">💳 PAY KES 80 NOW</button><div id="payStatus"></div>
 </div>
 <div id="paidArea">
 <div class="box"><h4>Referral - Earn 40 <span class="tag tag-new">OPEN</span></h4>
@@ -133,7 +134,7 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <div id="myInvitesList" style="margin-top:10px;max-height:350px;overflow-y:auto">Loading...</div>
 <button class="btn btn-dark" style="font-size:11px;padding:8px" onclick="loadMyInvites()">🔄 REFRESH LIST</button></div>
 <div class="box"><h4>Withdraw - Manual <span class="tag tag-new">REAL</span></h4>
-<p style="font-size:12px;color:#aaa">Min KES 100 - works even if locked. Fee 7 KES</p>
+<p style="font-size:12px;color:#aaa">Min KES 100 - works even if locked. Fee 7 KES. Paid to M-Pesa after admin approval.</p>
 <input id="withdrawPhone" placeholder="M-Pesa Number"><input id="withdrawAmt" type="number" placeholder="Amount - Min 100">
 <button class="btn btn-green" id="wdBtn" onclick="requestWithdraw()">WITHDRAW REQUEST</button>
 <div id="withdrawStatus" style="margin-top:10px"></div><p id="withdrawMsg" style="font-size:11px;color:#aaa;margin-top:6px"></p></div>
@@ -152,7 +153,6 @@ const ms=t=>t&&t.toMillis?t.toMillis():+t||0;
 async function syncClock(){try{const r=db.collection('config').doc('clock');await r.set({t:TS()});clockOffset=(await r.get()).data().t.toMillis()-Date.now()}catch(e){}}
 function tickClock(){const t=nowMs(),c=cycleId(t);if(lastCycle!==null&&c!==lastCycle){location.reload();return}lastCycle=c;const l=Math.max(0,nextReset(t)-t),el=$('countdown23');if(el)el.innerText=`Submit before 5 PM - ${Math.floor(l/3600000)}h ${Math.floor(l%3600000/60000)}m left`}
 setInterval(tickClock,1000);
-// ---- one tab per browser ----
 const bc=window.BroadcastChannel?new BroadcastChannel('mtaani_tab'):null,tabId=Math.random().toString(36).slice(2);let tabBlocked=false;
 if(bc){bc.onmessage=e=>{if(e.data==='hello'&&!tabBlocked)bc.postMessage('busy');if(e.data==='busy'&&!tabBlocked){tabBlocked=true;$('tabBlock').style.display='flex'}};bc.postMessage('hello')}
 const sid=()=>localStorage.getItem('mt_sid')||'';
@@ -173,7 +173,6 @@ async function stampAdvertForUser(){
     if(qr){
       const q=Math.round(base.width*0.22),pad=Math.round(q*0.08),tot=q+pad*4,qx=base.width-tot-20,qy=base.height-tot-20;
       x.fillStyle="#FFD700";x.fillRect(qx,qy,tot,tot);x.fillStyle="#FFFFFF";x.fillRect(qx+pad,qy+pad,tot-pad*2,tot-pad*2);x.drawImage(qr,qx+pad*2,qy+pad*2,q,q);
-      // 3 gold dots, size relative to QR, placed above the QR box
       const r=Math.max(4,Math.round(q*0.05)),dy=qy+pad*2-Math.round(q*0.36);x.fillStyle="#FFD700";
       [0.1,0.3,0.5].forEach(k=>{x.beginPath();x.arc(qx+pad*2+q*k,dy,r,0,Math.PI*2);x.fill()});
     }
@@ -193,7 +192,6 @@ async function updateAdvert(){
 }
 function checkFullScreenshot(file){return new Promise(res=>{if(file.size<3000){res({ok:false,reason:"File too small"});return}const img=new Image();img.onload=()=>res(img.height<img.width?{ok:false,reason:"Not a full portrait screenshot"}:{ok:true});img.onerror=()=>res({ok:true});img.src=URL.createObjectURL(file)})}
 function parseNairobiDateTime(str){const[d,t]=str.split('T'),[y,m,dd]=d.split('-').map(Number),[hh,mm]=t.split(':').map(Number);return{ms:Date.UTC(y,m-1,dd,hh,mm)-3*3600000,hour:hh,full:`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`}}
-// ---- auth ----
 async function registerUser(){
   const p=normalizePhone($('phoneInput').value),g=$('gmailInput').value.trim(),pass=$('passInput').value,conf=$('passConfirm').value,msg=$('guestMsg'),btn=$('regBtn');
   const raw=$('refInput').value.trim()||new URLSearchParams(location.search).get('ref')||'',ref=raw?normalizePhone(raw):null;
@@ -233,7 +231,6 @@ auth.onAuthStateChanged(async u=>{
     await render();
   },e=>{});
 });
-// ---- render ----
 function isLocked(){const d=currentData;return (d.viewCount||0)>=2||refTotal()>=20}
 function refTotal(){const r=ms(currentData.refResetAt);return invites.filter(x=>ms(x.createdAt)>r).length}
 async function render(){
@@ -256,11 +253,18 @@ function applyLockUI(){
   $('expiryText').innerText=d.state==='paid'&&d.expiryTime?'Expires in '+Math.max(0,Math.ceil((d.expiryTime-nowMs())/DAY))+' days':'';
 }
 function updateSubmitButton(){const b=$('viewBtn'),done=!isOwner(currentPhone)&&currentData&&currentData.lastSubmitCycle===cycleId();if(b&&!busy){b.disabled=!!done;b.innerText=done?'DONE TODAY - WAIT 5 PM RESET':'SUBMIT VIEWS (3 KES each)'}}
-// ---- payments / admin ----
+const PAYSTACK_PK='pk_live_f5bafce512b6886d08e193be98fb5d38b79a1bba',API_BASE='https://mtaani-paystack.musauvincent76.workers.dev';
 async function unlockNow(){
-  const code=$('mpesaCode').value.trim().toUpperCase();if(!/^[A-Z0-9]{10}$/.test(code)){alert('Enter 10-char code');return}
-  try{await db.collection('payments').doc(code).set({phone:currentPhone,mpesaCode:code,amount:80,till:'3624692',status:'pending',date:new Date()});$('mpesaCode').value='';alert('Code received');loadMyPayment()}
-  catch(e){alert(e.code==='permission-denied'?'Code already used':e.message)}
+  if(busy)return;
+  if(PAYSTACK_PK.includes('PUT_YOUR')){alert('Paystack not set up yet');return}
+  const ch='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',ref=Array.from(crypto.getRandomValues(new Uint8Array(10)),b=>ch[b%ch.length]).join('');
+  busy=true;
+  try{await db.collection('payments').doc(ref).set({phone:currentPhone,mpesaCode:ref,amount:80,till:'3624692',status:'pending',date:new Date()})}
+  catch(e){busy=false;alert('Could not start payment: '+e.message);return}
+  busy=false;
+  PaystackPop.setup({key:PAYSTACK_PK,email:(currentData.gmail||currentPhone+'@mtaani.app'),amount:8000,currency:'KES',ref:ref,metadata:{phone:currentPhone},
+    callback:function(){alert('Payment received! Waiting for admin approval.');loadMyPayment()},
+    onClose:function(){loadMyPayment()}}).openIframe();
 }
 async function applyPaidUnlock(phone){await db.collection('users').doc(phone).update({state:'paid',expiryTime:nowMs()+7*DAY,viewCount:0,freeDone:0,paidThisCycle:0,refResetAt:new Date()})}
 async function creditReferrer(refPhone){
@@ -285,7 +289,7 @@ async function loadPendingViews(){
   const el=$('pendingViews');if(!el)return;
   try{const s=await db.collection('pending_views').where('status','==','pending').limit(10).get();
     if(s.empty){el.innerHTML='<p style="font-size:11px;color:#aaa">No pending views</p>';return}
-    el.innerHTML=s.docs.map(doc=>{const d=doc.data(),id=esc(doc.id);return `<div class="it"><b>${esc(d.phone)}</b> - ${esc(d.views)} views = KES ${esc(d.amount)}<br><span style="font-size:10px;color:#aaa">Posted ${esc(d.postedFull)} | ${esc(d.diffMins)} mins ago | dots ✅ QR ✅</span>${d.screenshot?`<img src="${esc(d.screenshot)}" style="width:100%;margin-top:6px;border-radius:6px">`:''}<div style="display:flex;gap:6px;margin-top:6px"><button class="btn btn-green" style="padding:6px;font-size:11px" data-a="av" data-id="${id}">✅ APPROVE + PAY ${esc(d.amount)}</button><button class="btn btn-dark" style="padding:6px;font-size:11px;background:red;color:#fff" data-a="rv" data-id="${id}">❌ REJECT</button></div></div>`}).join('')}
+    el.innerHTML=s.docs.map(doc=>{const d=doc.data(),id=esc(doc.id);return `<div class="it"><b>${esc(d.phone)}</b> - ${esc(d.views)} views = KES ${esc(d.amount)}<br><span style="font-size:10px;color:#aaa">Posted ${esc(d.postedFull)} | ${esc(d.diffMins)} mins ago | ${d.flags&&d.flags.length?'⚠️ '+esc(d.flags.join(' · ')):'✅ clean'}</span>${d.screenshot?`<img src="${esc(d.screenshot)}" style="width:100%;margin-top:6px;border-radius:6px">`:''}<div style="display:flex;gap:6px;margin-top:6px"><button class="btn btn-green" style="padding:6px;font-size:11px" data-a="av" data-id="${id}">✅ APPROVE + PAY ${esc(d.amount)}</button><button class="btn btn-dark" style="padding:6px;font-size:11px;background:red;color:#fff" data-a="rv" data-id="${id}">❌ REJECT</button></div></div>`}).join('')}
   catch(e){el.innerText=e.message}
 }
 async function approveView(id){
@@ -313,31 +317,60 @@ async function doCheckin(){
   finally{busy=false;if(btn){btn.style.pointerEvents='auto';btn.innerHTML='CHECK IN'}}
 }
 async function getImageHash(f){const h=await crypto.subtle.digest('SHA-256',await f.arrayBuffer());return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
-// ---- QR + dots ----
-function readQRFromFile(file){
-  return new Promise(res=>{const img=new Image();
-    img.onload=()=>{const W=img.width,H=img.height,tries=[[0,0,W,H,1],[0,0,W,H,2],[W*.4,H*.4,W*.6,H*.6,1],[W*.4,H*.4,W*.6,H*.6,2],[W*.7,H*.7,W*.3,H*.3,4]];
-      for(const[sx,sy,sw,sh,k]of tries){try{const c=document.createElement('canvas');c.width=sw*k;c.height=sh*k;const x=c.getContext('2d');x.drawImage(img,sx,sy,sw,sh,0,0,c.width,c.height);
-        const code=jsQR(x.getImageData(0,0,c.width,c.height).data,c.width,c.height,{inversionAttempts:"attemptBoth"});
-        if(code){const f=p=>({x:sx+p.x/k,y:sy+p.y/k});res({data:code.data,tl:f(code.location.topLeftCorner),tr:f(code.location.topRightCorner),img});return}}catch(e){}}
-      res(null)};
-    img.onerror=()=>res(null);img.src=URL.createObjectURL(file)});
+const SEC={MIN_H:20.5,MAX_H:23.5,MAX_VIEWS:53,REJECT_AT:3};
+const EDIT_SIGS=['photoshop','adobe','canva','snapseed','lightroom','picsart','gimp','photopea','pixlr','fotor','remini','faceapp','midjourney','dall-e','openai','gemini','stable diffusion','firefly','c2pa','jumbf','synthid','ai generated'];
+const fileImg=f=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=URL.createObjectURL(f)});
+async function editorTrace(file){
+  try{const b=new Uint8Array(await file.arrayBuffer()),s=a=>{let t='';for(let i=0;i<a.length;i++)t+=String.fromCharCode(a[i]);return t.toLowerCase()};
+    const t=s(b.subarray(0,262144))+s(b.subarray(Math.max(0,b.length-65536)));return EDIT_SIGS.find(k=>t.includes(k))||null}catch(e){return null}
 }
-function dotsOk(q){ // look for 3 small round gold blobs above the QR (position relative to QR size)
+function readQR(img){
+  const W=img.width,H=img.height,R=[[0,0,W,H],[0,H*.4,W,H*.6],[W*.35,H*.4,W*.65,H*.6],[0,H*.6,W,H*.4]];
+  for(const[sx,sy,sw,sh]of R)for(const k of[1,2,3]){
+    const cw=Math.min(2200,Math.round(sw*k)),f=cw/sw,ch=Math.round(sh*f);
+    try{const c=document.createElement('canvas');c.width=cw;c.height=ch;const x=c.getContext('2d');x.drawImage(img,sx,sy,sw,sh,0,0,cw,ch);
+      const q=jsQR(x.getImageData(0,0,cw,ch).data,cw,ch,{inversionAttempts:'attemptBoth'});
+      if(q){const p=o=>({x:sx+o.x/f,y:sy+o.y/f});return{data:q.data,topLeft:p(q.location.topLeftCorner),topRight:p(q.location.topRightCorner),img:img}}
+    }catch(e){/* retry */}
+  }
+  return null;
+}
+function countDots(q){
   try{
-    const{img,tl,tr}=q,Ws=Math.hypot(tr.x-tl.x,tr.y-tl.y);if(Ws<20)return false;
-    const x0=Math.max(0,Math.floor(tl.x-.1*Ws)),x1=Math.min(img.width,Math.ceil(tr.x+.1*Ws)),y0=Math.max(0,Math.floor(tl.y-.75*Ws)),y1=Math.max(0,Math.floor(tl.y-.22*Ws)),w=x1-x0,h=y1-y0;if(w<8||h<8)return false;
-    const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(img,x0,y0,w,h,0,0,w,h);const d=x.getImageData(0,0,w,h).data,m=new Uint8Array(w*h);
-    for(let i=0;i<w*h;i++){const r=d[i*4],g=d[i*4+1],b=d[i*4+2];m[i]=(r>185&&g>145&&b<120&&r-b>100)?1:0}
-    let blobs=0;const minA=.002*Ws*Ws,maxA=.03*Ws*Ws;
+    const{img,tl,tr}=q,Ws=Math.hypot(tr.x-tl.x,tr.y-tl.y);if(Ws<20)return 0;
+    const x0=Math.max(0,Math.floor(tl.x-.15*Ws)),x1=Math.min(img.width,Math.ceil(tr.x+.15*Ws)),y0=Math.max(0,Math.floor(tl.y-1.1*Ws)),y1=Math.floor(tl.y-.2*Ws),w=x1-x0,h=y1-y0;
+    if(w<8||h<8)return 0;
+    const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(img,x0,y0,w,h,0,0,w,h);
+    const d=x.getImageData(0,0,w,h).data,m=new Uint8Array(w*h);
+    for(let i=0;i<w*h;i++){const r=d[i*4],g=d[i*4+1],b=d[i*4+2];m[i]=(r>150&&g>110&&b<150&&r-b>80&&g-b>50&&r-g>-10&&r-g<110)?1:0}
+    let blobs=0;const minA=.0008*Ws*Ws,maxA=.05*Ws*Ws;
     for(let s=0;s<w*h;s++){if(m[s]!==1)continue;let st=[s],a=0,minx=w,maxx=0,miny=h,maxy=0;m[s]=2;
       while(st.length){const p=st.pop(),px=p%w,py=(p/w)|0;a++;if(px<minx)minx=px;if(px>maxx)maxx=px;if(py<miny)miny=py;if(py>maxy)maxy=py;
         for(const n of[p-1,p+1,p-w,p+w]){if(n<0||n>=w*h)continue;if((n===p-1&&px===0)||(n===p+1&&px===w-1))continue;if(m[n]===1){m[n]=2;st.push(n)}}}
-      const bw=maxx-minx+1,bh=maxy-miny+1,ratio=bw/bh;if(a>=minA&&a<=maxA&&ratio>.6&&ratio<1.6&&a/(bw*bh)>.55)blobs++}
-    return blobs>=3;
-  }catch(e){return false}
+      const bw=maxx-minx+1,bh=maxy-miny+1,ratio=bw/bh;if(a>=minA&&a<=maxA&&ratio>.5&&ratio<2&&a/(bw*bh)>.4)blobs++}
+    return blobs;
+  }catch(e){return 0}
 }
-// ---- submit ----
+async function ocrRead(file,img){
+  const run=async s=>{try{return(await Tesseract.recognize(s,'eng')).data.text||''}catch(e){return ''}};
+  const full=await run(file),sh=Math.round(img.height*.4),c=document.createElement('canvas');
+  c.width=img.width*2;c.height=sh*2;c.getContext('2d').drawImage(img,0,img.height-sh,img.width,sh,0,0,c.width,c.height);
+  return{full,bottom:await run(c)};
+}
+function ocrChecks(typed,postedFull,o){
+  const R={reject:null,points:0,flags:[]},lo=(o.full+'\n'+o.bottom).toLowerCase(),L=new Set();let m;
+  const r1=/(?:viewed by|views?|seen by|viewers?)\s*[:\-]?\s*(\d{1,3})\b/g,r2=/\b(\d{1,3})\s*(?:views?|viewers?)\b/g;
+  while((m=r1.exec(lo)))L.add(+m[1]);while((m=r2.exec(lo)))L.add(+m[1]);
+  const all=new Set((o.bottom.match(/\b\d{1,3}\b/g)||[]).map(Number));
+  if([...L].some(n=>n>SEC.MAX_VIEWS))R.reject=`Maximum views is ${SEC.MAX_VIEWS} - your image shows more`;
+  else if(L.size&&!L.has(typed)&&!all.has(typed))R.reject=`Views mismatch - you typed ${typed} but image shows ${[...L].join('/')}. Type what is visible`;
+  else if(!L.has(typed)&&!all.has(typed)){R.points+=1;R.flags.push('Views not confirmed by OCR')}
+  if(!/viewed by|views?|viewers?|seen|status|today|yesterday|delete|forward/.test(lo)){R.points+=2;R.flags.push('Does not look like a WhatsApp status screen')}
+  const[th,tm]=postedFull.split(':').map(Number),tmin=th*60+tm,times=[];let t;const rt=/(\d{1,2}):(\d{2})\s*([ap])\.?\s*m/g;
+  while((t=rt.exec(lo))){let h=+t[1]%12;if(t[3]==='p')h+=12;times.push(h*60+ +t[2])}
+  if(times.length&&!times.some(x=>{const d=Math.abs(x-tmin);return Math.min(d,1440-d)<=10})){R.points+=1;R.flags.push('Status time in image differs from typed time')}
+  return R;
+}
 async function submitViews(){
   if(busy)return;
   const typed=parseInt($('viewsCount').value),file=$('fileFree').files[0],ps=$('postedTime').value,btn=$('viewBtn'),owner=isOwner(currentPhone),LBL='SUBMIT VIEWS (3 KES each)',statusEl=$('myViewsStatus');
@@ -348,41 +381,48 @@ async function submitViews(){
     if(isLocked()){cancelENG('Account locked - Unlock first with 3 paid referrals or pay 80');return}
   }
   if(!file){alert('Upload FULL screenshot!');return}if(!ps){alert('Enter post time!');return}
-  if(!typed||typed<=0||typed>53){cancelENG('Invalid views - Enter 1 to 53');return}
+  if(!typed||typed<=0||typed>SEC.MAX_VIEWS){cancelENG('Invalid views - Enter 1 to 53');return}
   if(!$('notEdited').checked||!$('fullScreen').checked){cancelENG('Please confirm both checkboxes');return}
   const{ms:postedMs,hour:postedHour,full:postedFull}=parseNairobiDateTime(ps);
   if(postedHour>=16&&postedHour<17){cancelENG('REJECTED! System Reset 4PM-5PM. Post after 5PM');return}
   const diffMs=nowMs()-postedMs,diffMins=Math.floor(diffMs/60000),diffHrs=diffMs/3600000;
   if(diffMs<-60000){cancelENG('Future time not allowed');return}
-  if(!owner&&diffMins<10){cancelENG(`Posted only ${diffMins} mins ago - Wait at least 10 mins`);return}
-  if(!owner&&diffHrs>23){cancelENG(`Expired - Posted ${postedFull}, ${diffHrs.toFixed(1)}h ago. Max 23h allowed`);return}
-  busy=true;btn.disabled=true;
+  if(!owner&&diffHrs<SEC.MIN_H){cancelENG(`Status up only ${diffHrs.toFixed(1)}h - it must stay up at least ${SEC.MIN_H}h before you submit`);return}
+  if(!owner&&diffHrs>SEC.MAX_H){cancelENG(`Expired - Posted ${postedFull}, ${diffHrs.toFixed(1)}h ago. Max ${SEC.MAX_H}h allowed`);return}
+  busy=true;btn.disabled=true;let pts=0;const flags=[],add=(n,t)=>{pts+=n;flags.push(t)},tick=t=>{btn.innerText=t;return new Promise(r=>setTimeout(r,30))};
   try{
-    btn.innerText='CHECKING SCREENSHOT...';
+    await tick('CHECK 1/5: FILE...');
     const fc=await checkFullScreenshot(file);if(!fc.ok){cancelENG(`Invalid screenshot - ${fc.reason}`);return}
-    const small=await new Promise(res=>{const img=new Image();img.onload=()=>{try{const c=document.createElement('canvas');c.width=img.width*.35;c.height=img.height*.35;c.getContext('2d').drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',0.4))}catch(e){res('')}};img.onerror=()=>res('');img.src=URL.createObjectURL(file)});
+    const img=await fileImg(file);if(!img){cancelENG('Cannot open image');return}
     if(!owner){
-      btn.innerText='CHECKING YOUR WHITE QR + DOTS...';
-      const q=await readQRFromFile(file);
+      const tr=await editorTrace(file);if(tr){cancelENG(`Edited or AI-made image detected (${tr}) - use the original screenshot`);return}
+      const ratio=img.height/img.width;if(ratio<1.6||ratio>2.9||img.width<400)add(1,'Unusual screenshot size');
+      if(file.type==='image/webp')add(1,'WebP file');
+      const lm=file.lastModified;if(lm){if(lm<postedMs+SEC.MIN_H*3600000-20*60000)add(2,'Screenshot file is older than the minimum posting time');if(Date.now()-lm>8*3600000)add(1,'Screenshot file is old')}
+      await tick('CHECK 2/5: YOUR WHITE QR...');
+      const q=readQR(img);
       if(!q){cancelENG('No QR found in screenshot - Download advert with your WHITE QR');return}
       if(q.data.trim()!==myQrToken()){cancelENG('Invalid QR - This QR is not yours or old. Download new advert today');return}
-      if(!dotsOk(q)){cancelENG('3 GOLD DOTS missing or damaged - Use the original advert, do not edit or crop');return}
+      await tick('CHECK 3/5: 3 GOLD DOTS...');
+      const n=countDots(q);
+      if(n<=1){cancelENG(`3 GOLD DOTS missing or damaged (found ${n}) - Use the original advert, do not edit or crop`);return}
+      if(n===2)add(2,'Only 2 of 3 gold dots found');
     }
-    btn.innerText='READING VIEWS...';
-    const{data:{text}}=await Tesseract.recognize(file,'eng');
-    let v=0;const lo=text.toLowerCase(),m1=lo.match(/(\d{1,3})\s*views?/),m2=lo.match(/views?\s*(\d{1,3})/);
-    if(m1)v=parseInt(m1[1]);else if(m2)v=parseInt(m2[1]);else{const n=lo.match(/\b\d{1,3}\b/g);if(n)v=parseInt(n[n.length-1])}
-    if(!v){cancelENG('Cannot read views - Screenshot must show e.g. "23 views" clearly at bottom');return}
-    if(v>53){cancelENG(`Maximum views is 53 - Your image shows ${v} views`);return}
-    if(v!==typed){cancelENG(`Views mismatch - You typed ${typed} but image shows ${v} views. Type what is visible`);return}
+    await tick('CHECK 4/5: READING VIEWS...');
+    const r=ocrChecks(typed,postedFull,await ocrRead(file,img));
+    if(r.reject){cancelENG(r.reject);return}
+    pts+=r.points;flags.push(...r.flags);
+    await tick('CHECK 5/5: FINAL SCORE...');
+    if(!owner&&pts>=SEC.REJECT_AT){cancelENG('Screenshot looks edited or invalid: '+flags.join('; '));return}
+    const small=await new Promise(res=>{const c=document.createElement('canvas');c.width=img.width*.35;c.height=img.height*.35;try{c.getContext('2d').drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',0.4))}catch(e){res('')}});
     const hash=await getImageHash(file),b=db.batch();
-    b.set(db.collection('pending_views').doc(hash),{phone:currentPhone,views:v,amount:v*3,status:'pending',screenshot:small,time:TS(),cycle:cycleId(),postedFull,diffMins,typedViews:typed});
+    b.set(db.collection('pending_views').doc(hash),{phone:currentPhone,views:typed,amount:typed*3,status:'pending',screenshot:small,time:TS(),cycle:cycleId(),postedFull,diffMins,typedViews:typed,flags,score:pts});
     if(!owner){
       b.set(db.collection('used_qr').doc(myQrToken()),{phone:currentPhone,time:TS()});
       b.update(db.collection('users').doc(currentPhone),{viewCount:inc(1),freeDone:inc(1),lastSubmitCycle:cycleId()});
     }
     await b.commit();
-    showStatus(`✅ PENDING - ${v} views = KES ${v*3} - Waiting admin approval. Cannot submit again today.`,'#ff9900');btn.innerText='SUBMITTED - PENDING';busy=false;
+    showStatus(`✅ WAITING FOR APPROVAL - ${typed} views = KES ${typed*3}. Cannot submit again today.`,'#ff9900');btn.innerText='SUBMITTED - PENDING';busy=false;
   }catch(e){cancelENG(e.code==='permission-denied'?'Rejected by server - duplicate screenshot, QR already used, or limit reached':`Error - ${e.message}`)}
 }
 async function loadMyViewsStatus(){
@@ -406,7 +446,7 @@ async function requestWithdraw(){
   }catch(e){msg.innerText=e.code==='permission-denied'?'Rejected - refresh and try again':e.message}finally{busy=false}
 }
 async function loadMyWithdrawStatus(){try{const s=await db.collection('pending_withdrawals').where('phone','==',currentPhone).get();if(s.empty)return;const d=s.docs.map(x=>x.data()).sort((a,b)=>ms(b.time)-ms(a.time))[0];
-  if(d.status==='pending')$('withdrawStatus').innerHTML=`<div class="st" style="background:orange">WAITING - KES ${esc(d.amount)} | Receive ${esc(d.receive)}</div>`;else if(d.status==='approved')$('withdrawStatus').innerHTML=`<div class="st" style="background:green">APPROVED - KES ${esc(d.receive)} sent</div>`}catch(e){}}
+  if(d.status==='pending')$('withdrawStatus').innerHTML=`<div class="st" style="background:orange">WAITING - KES ${esc(d.amount)} | Receive ${esc(d.receive)}</div>`;else if(d.status==='approved')$('withdrawStatus').innerHTML=`<div class="st" style="background:green">APPROVED - KES ${esc(d.receive)} sent to M-Pesa</div>`;else if(d.status==='failed'||d.status==='rejected')$('withdrawStatus').innerHTML=`<div class="st" style="background:red">NOT PAID - contact admin</div>`}catch(e){}}
 async function loadMyInvites(){
   const el=$('myInvitesList');
   try{const s=await db.collection('users').where('referredBy','==',currentPhone).get();invites=s.docs.map(x=>x.data());$('inviteCount').innerText=s.size;
@@ -415,7 +455,6 @@ async function loadMyInvites(){
     el.innerHTML=invites.map(d=>{const p=d.state==='paid',c=p?'#00ff88':'#ff6600';return `<div style="background:#1a2332;padding:10px;border-radius:8px;margin-bottom:8px;border-left:3px solid ${c}"><div style="display:flex;justify-content:space-between"><b>${esc(d.phone)}</b><span style="background:${c};color:#000;padding:2px 6px;border-radius:10px;font-size:10px;font-weight:800">${p?'PAID':'UNPAID'}</span></div><p style="font-size:11px;color:${c}">${p?'PAID (80)':'Not paid yet'}</p></div>`}).join('')}
   catch(e){el.innerHTML='Error: '+esc(e.message)}
 }
-// ---- owner tools ----
 async function adminSearchUser(){
   const p=normalizePhone($('adminSearchPhone').value),res=$('adminSearchResult');if(!isOwner(currentPhone)||!p)return;
   try{const doc=await db.collection('users').doc(p).get();if(!doc.exists){res.innerHTML=`<p style="color:red">❌ ${esc(p)} NOT FOUND</p>`;adminFoundUser=null;return}
