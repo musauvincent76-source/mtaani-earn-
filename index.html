@@ -278,7 +278,6 @@ function applyLockUI(){
   $('unlockBox').style.display=locked?'block':'none';
   $('statusText').innerText=locked?'LOCKED 🔒':(d.state==='paid'?'UNLOCKED ✅':'ACTIVE ✅');
   $('expiryText').innerText=d.state==='paid'&&d.expiryTime?'Expires in '+Math.max(0,Math.ceil((d.expiryTime-nowMs())/DAY))+' days':'';
-  // PAY NOW BANNER LOGIC - FULL FIX
   const expired = d.state==='paid' && d.expiryTime && nowMs() > d.expiryTime;
   if(expired){ localStorage.removeItem('payDismissed'); }
   const dismissed = localStorage.getItem('payDismissed')==='yes';
@@ -375,6 +374,7 @@ function readQR(img){
     try{const c=document.createElement('canvas');c.width=cw;c.height=ch;const x=c.getContext('2d');x.drawImage(img,sx,sy,sw,sh,0,0,cw,ch);
       const q=jsQR(x.getImageData(0,0,cw,ch).data,cw,ch,{inversionAttempts:'attemptBoth'});
       if(q){const p=o=>({x:sx+o.x/f,y:sy+o.y/f});return{data:q.data,[STRIPPED]
+    }catch(e){}
   }
   return null;
 }
