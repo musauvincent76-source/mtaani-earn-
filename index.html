@@ -54,7 +54,8 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <input id="loginPhone" placeholder="Phone Number">
 <input id="loginPass" type="password" placeholder="Your Password">
 <button class="btn btn-green" id="loginBtn" onclick="loginUser()">LOGIN NOW</button>
-<span class="link" onclick="showRegister()">No account? REGISTER</span>
+<span class="link" onclick="showRegister()">No account? REGISTER</span><br>
+<span class="link" onclick="forgotPassword()">Forgot Password? Click here</span>
 <p id="loginMsg" style="font-size:11px;color:#ffcc00;margin-top:6px"></p>
 </div>
 </div>
@@ -215,7 +216,15 @@ async function loginUser(){
     const s=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem('mt_sid',s);
     await auth.signInWithEmailAndPassword(p+DOM,pass);
     await db.collection('users').doc(p).update({sessionId:s});
+    msg.innerText='Login success! Loading dashboard...';
   }catch(e){msg.innerText=['auth/wrong-password','auth/user-not-found','auth/invalid-credential','auth/invalid-login-credentials'].includes(e.code)?'Wrong phone or password':e.message;btn.disabled=false}
+}
+function forgotPassword(){
+  const p=normalizePhone($('loginPhone').value);
+  if(!p||!/^0\d{9}$/.test(p)){alert('Andika phone yako kwanza kwenye Login Phone box');return}
+  const text=encodeURIComponent('Hello Mtaani Earn, I forgot my password. My phone is '+p+'. Please reset my password.');
+  window.open('https://wa.me/254703182307?text='+text,'_blank');
+  $('loginMsg').innerText='WhatsApp imefunguka. Tuma message, admin atakuresetia password.';
 }
 function logout(){if(unsub)unsub();localStorage.removeItem('mt_sid');auth.signOut().then(()=>location.reload())}
 auth.onAuthStateChanged(async u=>{
@@ -226,7 +235,6 @@ auth.onAuthStateChanged(async u=>{
   let first=true;
   unsub=db.collection('users').doc(currentPhone).onSnapshot(async s=>{
     if(!s.exists)return;currentData=s.data();
-    if(sid()&&currentData.sessionId!==sid()){alert('Logged in on another device/tab. Login again.');logout();return}
     if(first){first=false;await loadOfficialAdvert()}
     await render();
   },e=>{});
@@ -330,7 +338,7 @@ function readQR(img){
     const cw=Math.min(2200,Math.round(sw*k)),f=cw/sw,ch=Math.round(sh*f);
     try{const c=document.createElement('canvas');c.width=cw;c.height=ch;const x=c.getContext('2d');x.drawImage(img,sx,sy,sw,sh,0,0,cw,ch);
       const q=jsQR(x.getImageData(0,0,cw,ch).data,cw,ch,{inversionAttempts:'attemptBoth'});
-      if(q){const p=o=>({x:sx+o.x/f,y:sy+o.y/f});return{data:q.data,img,[STRIPPED]
+      if(q){const p=o=>({x:sx+o.x/f,y:sy+o.y/f});return{data:q.data,[STRIPPED]
     }catch(e){/* retry */}
   }
   return null;
@@ -446,7 +454,7 @@ async function requestWithdraw(){
   try{
     const id=currentPhone+'_'+((currentData.wdCount||0)+1),b=db.batch();
     b.update(db.collection('users').doc(currentPhone),{balance:inc(-amt),wdCount:inc(1)});
-    b.set(db.collection('pending_withdrawals').doc(id),{phone:currentPhone,mpesaPhone:phone,amount:amt,fee,receive:rec,status:'pending',time:TS()});
+    b.set(db.collection('pending_withdrawals').doc(id),{phone:currentPhone,mpesaPhone:phone,amount:amt,fee:rec,status:'pending',time:TS()});
     await b.commit();msg.innerText=`Sent - Receive ${rec}`;loadMyWithdrawStatus();
   }catch(e){msg.innerText=e.code==='permission-denied'?'Rejected - refresh and try again':e.message}finally{busy=false}
 }
