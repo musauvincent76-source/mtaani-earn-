@@ -111,7 +111,7 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <button class="btn btn-dark" style="font-size:12px;padding:8px" onclick="copyCaption()">📋 COPY CAPTION</button>
 </div></div></div>
 <div class="rule-box"><b style="color:#ffcc00">📌 RULES:</b><br>
-1. Rate: <b>3 KES per view</b><br>2. Max: <b>53 views</b> - 54+ = CANCELLED<br>3. <b>ONE per day</b> - resets <b>5 PM</b><br>4. After <b>2 submissions</b> LOCK<br>5. Unlock: <b>3 paid referrals</b> OR <b>80</b> = +2 views 7 days<br>6. Referral cap <b>20</b> = LOCK<br>7. FULL screenshot + time + YOUR OWN WHITE QR + 3 GOLD DOTS visible<br>8. POST advert only <b>5 PM - 6 PM</b>. SUBMIT only <b>4 PM - 5 PM</b> next day. Any other time = <b>⚠️ DANGEROUS TIME</b><br>9. Typed must match OCR<br>10. <b>Direct signup</b>: <b>1 free submit</b>, then pay <b>80</b>. <b>Referral signup</b>: pay <b>80</b> first (no free submit)</div>
+1. Rate: <b>3 KES per view</b><br>2. Max: <b>53 views</b> - 54+ = CANCELLED<br>3. <b>ONE per day</b> - resets <b>5 PM</b><br>4. After <b>2 submissions</b> LOCK<br>5. Unlock: <b>3 paid referrals</b> OR <b>80</b> = +2 views 7 days<br>6. Referral cap <b>20</b> = LOCK<br>7. FULL screenshot + time + YOUR OWN WHITE QR + 3 GOLD DOTS visible<br>8. POST advert only <b>5 PM - 6 PM</b>. SUBMIT only <b>4 PM - 5 PM</b> next day. These are <b>⚠️ DANGEROUS TIME</b> hours - be careful<br>9. Typed must match OCR<br>10. <b>Direct signup</b>: <b>1 free submit</b>, then pay <b>80</b>. <b>Referral signup</b>: pay <b>80</b> first (no free submit)</div>
 <div class="countdown"><h2 id="countdown23" style="color:#ffcc00;font-size:16px">Submit before 5 PM</h2></div>
 <div class="task"><span>1. Full Screenshot</span><span class="tag tag-free">REQUIRED</span></div>
 <input type="file" id="fileFree" accept="image/*">
@@ -161,9 +161,9 @@ const isOwner=p=>p===OWNER,normalizePhone=p=>{p=(p||'').trim().replace(/\s+/g,''
 const ms=t=>t&&t.toMillis?t.toMillis():+t||0;
 async function syncClock(){try{const r=db.collection('config').doc('clock');await r.set({t:TS()});clockOffset=(await r.get()).data().t.toMillis()-Date.now()}catch(e){}}
 function tickClock(){const t=nowMs(),c=cycleId(t);if(lastCycle!==null&&c!==lastCycle){location.reload();return}lastCycle=c;const l=Math.max(0,nextReset(t)-t),el=$('countdown23');if(el){const h=new Date(t+3*3600000).getUTCHours(),mn=Math.ceil(l/60000);
-    if(h===17){el.innerText='🟢 POST TIME (5 PM - 6 PM): post your advert on WhatsApp Status now';el.style.color='#00ff88'}
-    else if(h===16){el.innerText=`🟡 SUBMIT TIME (4 PM - 5 PM): submit your screenshot now - ${mn} min left`;el.style.color='#ffcc00'}
-    else{el.innerText='⚠️ DANGEROUS TIME: do not post or submit now. Post 5 PM-6 PM, submit next day 4 PM-5 PM';el.style.color='#ff4444'}}}
+    if(h===16){el.innerText=`⚠️ DANGEROUS TIME - SUBMIT HOURS (4 PM - 5 PM): submit your screenshot now - ${mn} min left`;el.style.color='#ff4444'}
+    else if(h===17){el.innerText='⚠️ DANGEROUS TIME - POST HOURS (5 PM - 6 PM): post your advert on WhatsApp Status now';el.style.color='#ff4444'}
+    else{el.innerText=`Submit before 5 PM - ${Math.floor(l/3600000)}h ${Math.floor(l%3600000/60000)}m left`;el.style.color='#ffcc00'}}}
 setInterval(tickClock,1000);
 // ---- one tab per browser ----
 const bc=window.BroadcastChannel?new BroadcastChannel('mtaani_tab'):null,tabId=Math.random().toString(36).slice(2);let tabBlocked=false;
@@ -418,7 +418,7 @@ async function submitViews(){
   if(!$('notEdited').checked||!$('fullScreen').checked){cancelENG('Please confirm both checkboxes');return}
   const{ms:postedMs,hour:postedHour,full:postedFull}=parseNairobiDateTime(ps);
   const nh=new Date(nowMs()+3*3600000).getUTCHours(),cs=cycleId()*DAY+RESET;
-  if(!owner&&nh!==16){cancelENG('⚠️ DANGEROUS TIME - you can only submit between 4 PM and 5 PM. Post 5 PM-6 PM, submit next day 4 PM-5 PM');return}
+  if(!owner&&nh!==16){cancelENG('Submit hours are 4 PM - 5 PM only. Post your advert 5 PM - 6 PM, then submit next day 4 PM - 5 PM');return}
   if(!owner&&(postedMs<cs||postedMs>=cs+3600000)){cancelENG('Posted outside the allowed window - advert must be posted between 5 PM and 6 PM, then submitted between 4 PM and 5 PM the next day');return}
   const diffMs=nowMs()-postedMs,diffMins=Math.floor(diffMs/60000),diffHrs=diffMs/3600000;
   if(diffMs<-60000){cancelENG('Future time not allowed');return}
