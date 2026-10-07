@@ -111,7 +111,7 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <button class="btn btn-dark" style="font-size:12px;padding:8px" onclick="copyCaption()">📋 COPY CAPTION</button>
 </div></div></div>
 <div class="rule-box"><b style="color:#ffcc00">📌 RULES:</b><br>
-1. Rate: <b>3 KES per view</b><br>2. Max: <b>53 views</b> - 54+ = CANCELLED<br>3. <b>ONE per day</b> - resets <b>5 PM</b><br>4. After <b>2 submissions</b> LOCK<br>5. Unlock: <b>3 paid referrals</b> OR <b>80</b> = +2 views 7 days<br>6. Referral cap <b>20</b> = LOCK<br>7. FULL screenshot + time + YOUR OWN WHITE QR + 3 GOLD DOTS visible<br>8. Valid <b>5PM to 4PM</b> next day - <b>4PM-5PM BLOCKED</b><br>9. Typed must match OCR<br>10. <b>Direct signup</b>: pay <b>80</b> first (no free submit). <b>Referral signup</b>: <b>1 free submit</b>, then pay <b>80</b></div>
+1. Rate: <b>3 KES per view</b><br>2. Max: <b>53 views</b> - 54+ = CANCELLED<br>3. <b>ONE per day</b> - resets <b>5 PM</b><br>4. After <b>2 submissions</b> LOCK<br>5. Unlock: <b>3 paid referrals</b> OR <b>80</b> = +2 views 7 days<br>6. Referral cap <b>20</b> = LOCK<br>7. FULL screenshot + time + YOUR OWN WHITE QR + 3 GOLD DOTS visible<br>8. POST advert only <b>5 PM - 6 PM</b>. SUBMIT only <b>4 PM - 5 PM</b> next day. Any other time = <b>⚠️ DANGEROUS TIME</b><br>9. Typed must match OCR<br>10. <b>Direct signup</b>: <b>1 free submit</b>, then pay <b>80</b>. <b>Referral signup</b>: pay <b>80</b> first (no free submit)</div>
 <div class="countdown"><h2 id="countdown23" style="color:#ffcc00;font-size:16px">Submit before 5 PM</h2></div>
 <div class="task"><span>1. Full Screenshot</span><span class="tag tag-free">REQUIRED</span></div>
 <input type="file" id="fileFree" accept="image/*">
@@ -160,7 +160,10 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const isOwner=p=>p===OWNER,normalizePhone=p=>{p=(p||'').trim().replace(/\s+/g,'');if(p.startsWith('+254'))p='0'+p.slice(4);if(p.startsWith('254'))p='0'+p.slice(3);return p};
 const ms=t=>t&&t.toMillis?t.toMillis():+t||0;
 async function syncClock(){try{const r=db.collection('config').doc('clock');await r.set({t:TS()});clockOffset=(await r.get()).data().t.toMillis()-Date.now()}catch(e){}}
-function tickClock(){const t=nowMs(),c=cycleId(t);if(lastCycle!==null&&c!==lastCycle){location.reload();return}lastCycle=c;const l=Math.max(0,nextReset(t)-t),el=$('countdown23');if(el)el.innerText=`Submit before 5 PM - ${Math.floor(l/3600000)}h ${Math.floor(l%3600000/60000)}m left`}
+function tickClock(){const t=nowMs(),c=cycleId(t);if(lastCycle!==null&&c!==lastCycle){location.reload();return}lastCycle=c;const l=Math.max(0,nextReset(t)-t),el=$('countdown23');if(el){const h=new Date(t+3*3600000).getUTCHours(),mn=Math.ceil(l/60000);
+    if(h===17){el.innerText='🟢 POST TIME (5 PM - 6 PM): post your advert on WhatsApp Status now';el.style.color='#00ff88'}
+    else if(h===16){el.innerText=`🟡 SUBMIT TIME (4 PM - 5 PM): submit your screenshot now - ${mn} min left`;el.style.color='#ffcc00'}
+    else{el.innerText='⚠️ DANGEROUS TIME: do not post or submit now. Post 5 PM-6 PM, submit next day 4 PM-5 PM';el.style.color='#ff4444'}}}
 setInterval(tickClock,1000);
 // ---- one tab per browser ----
 const bc=window.BroadcastChannel?new BroadcastChannel('mtaani_tab'):null,tabId=Math.random().toString(36).slice(2);let tabBlocked=false;
@@ -255,7 +258,7 @@ auth.onAuthStateChanged(async u=>{
 });
 // ---- render ----
 const unpaid=()=>currentData.state!=='paid';
-const freeLimit=()=>(unpaid()?(currentData.referredBy?1:0):2)+(currentData.bonusFree||0);
+const freeLimit=()=>(unpaid()?(currentData.referredBy?0:1):2)+(currentData.bonusFree||0);
 function isLocked(){const d=currentData;return !!d.adminLocked||(d.viewCount||0)>=freeLimit()||refTotal()>=20}
 function refTotal(){const r=ms(currentData.refResetAt);return invites.filter(x=>ms(x.createdAt)>r).length}
 async function render(){
@@ -347,7 +350,7 @@ async function doCheckin(){
 }
 async function getImageHash(f){const h=await crypto.subtle.digest('SHA-256',await f.arrayBuffer());return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 // ---- QR + dots ---- (SECURITY v2)
-const SEC={MIN_H:20.5,MAX_H:23.5,MAX_VIEWS:53,REJECT_AT:3};
+const SEC={MIN_H:21.5,MAX_H:24.5,MAX_VIEWS:53,REJECT_AT:3};
 const EDIT_SIGS=['photoshop','adobe','canva','snapseed','lightroom','picsart','gimp','photopea','pixlr','fotor','remini','faceapp','midjourney','dall-e','openai','gemini','stable diffusion','firefly','c2pa','jumbf','synthid','ai generated'];
 const fileImg=f=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=URL.createObjectURL(f)});
 async function editorTrace(file){
@@ -414,7 +417,9 @@ async function submitViews(){
   if(!typed||typed<=0||typed>SEC.MAX_VIEWS){cancelENG('Invalid views - Enter 1 to 53');return}
   if(!$('notEdited').checked||!$('fullScreen').checked){cancelENG('Please confirm both checkboxes');return}
   const{ms:postedMs,hour:postedHour,full:postedFull}=parseNairobiDateTime(ps);
-  if(postedHour>=16&&postedHour<17){cancelENG('REJECTED! System Reset 4PM-5PM. Post after 5PM');return}
+  const nh=new Date(nowMs()+3*3600000).getUTCHours(),cs=cycleId()*DAY+RESET;
+  if(!owner&&nh!==16){cancelENG('⚠️ DANGEROUS TIME - you can only submit between 4 PM and 5 PM. Post 5 PM-6 PM, submit next day 4 PM-5 PM');return}
+  if(!owner&&(postedMs<cs||postedMs>=cs+3600000)){cancelENG('Posted outside the allowed window - advert must be posted between 5 PM and 6 PM, then submitted between 4 PM and 5 PM the next day');return}
   const diffMs=nowMs()-postedMs,diffMins=Math.floor(diffMs/60000),diffHrs=diffMs/3600000;
   if(diffMs<-60000){cancelENG('Future time not allowed');return}
   if(!owner&&diffHrs<SEC.MIN_H){cancelENG(`Status up only ${diffHrs.toFixed(1)}h - it must stay up at least ${SEC.MIN_H}h before you submit`);return}
