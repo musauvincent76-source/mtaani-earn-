@@ -118,6 +118,12 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 </div>
 <div id="sec-users" class="box" style="display:none">
 <h3 style="color:#aaa">👥 USERS</h3>
+<div style="background:#000;padding:12px;border-radius:10px;border:1px solid gold;margin:10px 0">
+<h4 style="color:gold;font-size:12px">🔍 MANAGE USER (refresh / free submit / lock)</h4>
+<input id="mgPhone" placeholder="Phone e.g 0712345678 (or tap a phone below)">
+<button class="btn-yellow" onclick="mgSearch()">🔍 SEARCH</button>
+<div id="mgResult"></div>
+</div>
 <table><thead><tr><th>PHONE</th><th>BAL</th><th>STATUS</th><th>REF</th><th>VIEWS</th></tr></thead><tbody id="usersTable"></tbody></table>
 </div>
 </div>
@@ -236,8 +242,8 @@ async function loadData() {
 async function loadUsersOnly() {
   const usersSnap = await db.collection('users').orderBy('createdAt', 'desc').limit(100).get();
   let html = ''; usersSnap.forEach(doc => {
-    const d = doc.data(), status = d.state === 'paid' ? '✅ PAID' : ((d.viewCount >= 2 || d.refLocked) ? '🔒 LOCKED' : '🟡 FREE');
-    html += `<tr><td>${esc(d.phone)}</td><td style='color:#ffcc00'>${esc(d.balance)}</td><td>${status}</td><td>${esc(d.referredBy || 'Direct')}</td><td>V:${esc(d.viewCount || 0)} R:${esc(d.refTotal || 0)}</td></tr>`;
+    const d = doc.data(), status = d.adminLocked ? '⛔ ADMIN LOCK' : ((d.viewCount >= (d.state === 'paid' ? 2 : (d.referredBy ? 1 : 0)) + (d.bonusFree || 0) || d.refLocked) ? '🔒 LOCKED' : (d.state === 'paid' ? '✅ PAID' : '🟡 FREE'));
+    html += `<tr><td><span style="cursor:pointer;text-decoration:underline" data-a="mgsel" data-id="${esc(d.phone)}">${esc(d.phone)}</span></td><td style='color:#ffcc00'>${esc(d.balance)}</td><td>${status}</td><td>${esc(d.referredBy || 'Direct')}</td><td>V:${esc(d.viewCount || 0)} R:${esc(d.refTotal || 0)}</td></tr>`;
   });
   $('usersTable').innerHTML = html;
 }
@@ -318,7 +324,7 @@ async function rejectWithdraw(b) {
 }
 
 // ---- unlock payments (80): verify with Paystack, then approve ----
-async function applyPaidUnlock(phone) { await db.collection('users').doc(phone).update({ state: 'paid', expiryTime: Date.now() + 7 * DAY, viewCount: 0, freeDone: 0, paidThisCycle: 0, refResetAt: new Date() }) }
+async function applyPaidUnlock(phone) { await db.collection('users').doc(phone).update({ state: 'paid', expiryTime: Date.now() + 7 * DAY, viewCount: 0, freeDone: 0, paidThisCycle: 0, bonusFree: 0, refResetAt: new Date() }) }
 async function creditReferrer(refPhone) {
   const r = db.collection('users').doc(refPhone), s = await r.get(); if (!s.exists) return;
   await r.update({ balance: FV.increment(40), paidThisCycle: FV.increment(1) });
@@ -378,6 +384,34 @@ async function resetPassword(b) {
   finally { b.disabled = false; loadResets() }
 }
 async function deleteReset(id) { if (!confirm('Futa ombi hili?')) return; await db.collection('password_resets').doc(id).delete(); loadResets() }
+async function mgSearch() {
+  const p = normalizePhone($('mgPhone').value), el = $('mgResult'); if (!p) return;
+  try {
+    const doc = await db.collection('users').doc(p).get();
+    if (!doc.exists) { el.innerHTML = `<p style="color:red;font-size:11px;margin-top:8px">❌ ${esc(p)} NOT FOUND</p>`; return }
+    const d = doc.data(), lim = (d.state === 'paid' ? 2 : (d.referredBy ? 1 : 0)) + (d.bonusFree || 0);
+    const bs = 'style="width:auto;margin:0;padding:8px 12px"';
+    el.innerHTML = `<div class="card" style="border-left:4px solid gold;font-size:11px"><b style="color:gold">${esc(d.phone)}</b> ${d.referredBy ? '(referral from ' + esc(d.referredBy) + ')' : '(direct)'}<br>Balance KES ${esc(d.balance)} | State: ${esc(d.state)} | Views ${esc(d.viewCount || 0)}/${lim} | Bonus free: ${esc(d.bonusFree || 0)}${d.adminLocked ? '<br><b style="color:#ff4444">⛔ LOCKED BY ADMIN</b>' : ''}
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+      <button class="btn btn-yellow" ${bs} data-a="mg" data-op="refresh" data-id="${esc(d.phone)}">🔄 REFRESH</button>
+      <button class="btn btn-green" ${bs} data-a="mg" data-op="free" data-id="${esc(d.phone)}">🎁 GIVE FREE SUBMIT</button>
+      ${d.adminLocked ? `<button class="btn btn-green" ${bs} data-a="mg" data-op="unlock" data-id="${esc(d.phone)}">🔓 UNLOCK</button>` : `<button class="btn btn-red" ${bs} data-a="mg" data-op="lock" data-id="${esc(d.phone)}">⛔ LOCK</button>`}
+      </div></div>`;
+  } catch (e) { el.innerHTML = 'Error: ' + esc(e.message) }
+}
+async function mgAct(b) {
+  const phone = b.dataset.id, op = b.dataset.op;
+  const OPS = {
+    refresh: [{ viewCount: 0, freeDone: 0, lastSubmitCycle: -1, paidThisCycle: 0, refResetAt: new Date() }, 'Refresh ' + phone + '? Views zinarudi 0 na anaweza kutuma tena leo.'],
+    free: [{ bonusFree: FV.increment(1), lastSubmitCycle: -1 }, 'Mpe ' + phone + ' free submit 1 (anaweza kutuma leo)?'],
+    lock: [{ adminLocked: true }, 'Funga ' + phone + '? Hataweza kutuma wala check-in (withdraw inafanya kazi).'],
+    unlock: [{ adminLocked: false }, 'Fungua ' + phone + '?']
+  };
+  const o = OPS[op]; if (!o || !confirm(o[1])) return;
+  b.disabled = true;
+  try { await db.collection('users').doc(phone).update(o[0]); alert('✅ Done'); $('mgPhone').value = phone; mgSearch(); loadUsersOnly() }
+  catch (e) { alert('Error: ' + e.message); b.disabled = false }
+}
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-a]'); if (!b) return;
   const a = b.dataset.a, id = b.dataset.id;
@@ -390,7 +424,9 @@ document.addEventListener('click', e => {
   else if (a === 'pr') rejectPayment(id);
   else if (a === 'rs') resetPassword(b);
   else if (a === 'rd') deleteReset(id);
+  else if (a === 'mg') mgAct(b);
+  else if (a === 'mgsel') { $('mgPhone').value = id; mgSearch(); window.scrollTo(0, 0) }
 });
 </script>
 </body>
-  </html>
+</html>
