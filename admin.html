@@ -75,6 +75,7 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <span class="tab" onclick="showSection('withdraw')" id="tab-withdraw">💸 WITHDRAW</span>
 <span class="tab" onclick="showSection('users')" id="tab-users">👥 USERS</span>
 <span class="tab" onclick="showSection('payments')" id="tab-payments">💰 PAYMENTS</span>
+<span class="tab" onclick="showSection('resets')" id="tab-resets">🔑 RESETS</span>
 </div>
 
 <div id="sec-views" class="box" style="border:2px solid #ffcc00">
@@ -110,6 +111,11 @@ input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #2d37
 <p style="font-size:9px;color:#aaa">VERIFY + APPROVE inaangalia Paystack kuwa mtu amelipa kweli kabla ya kumfungulia.</p>
 <table><thead><tr><th>PHONE</th><th>CODE</th><th>AMT</th><th>DATE / STATUS</th><th></th></tr></thead><tbody id="paymentsTable"></tbody></table>
 </div>
+<div id="sec-resets" class="box" style="display:none;border:2px solid #ffcc00">
+<h3 style="color:#ffcc00">🔑 PASSWORD RESET REQUESTS</h3>
+<p style="font-size:9px;color:#aaa">Thibitisha mtu kwa WhatsApp (kutoka namba yake) kabla ya kuweka password mpya. Kisha mtumie password hiyo.</p>
+<div id="resetsTable"></div>
+</div>
 <div id="sec-users" class="box" style="display:none">
 <h3 style="color:#aaa">👥 USERS</h3>
 <table><thead><tr><th>PHONE</th><th>BAL</th><th>STATUS</th><th>REF</th><th>VIEWS</th></tr></thead><tbody id="usersTable"></tbody></table>
@@ -123,16 +129,16 @@ const firebaseConfig = { apiKey: "AIzaSyBh3Zv2N2WVsXEkMzGgpmldZ9qamUAhGSo", auth
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore(), auth = firebase.auth(), FV = firebase.firestore.FieldValue, $ = id => document.getElementById(id);
 const OWNER = '0703182307', DOM = '@mtaani.app', DAY = 86400000;
-const API_BASE = 'https://mtaani-paystack.musauvincent76.workers.dev';
+const API_BASE = 'https://PUT-YOUR-WORKER-URL.workers.dev';
 let MAINT_MODE = false, dashShown = false;
 const IMGS = {};
-const esc = s => String(s?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const normalizePhone = p => { p = (p || '').trim().replace(/\s+/g, ''); if (p.startsWith('+254')) p = '0' + p.slice(4); if (p.startsWith('254')) p = '0' + p.slice(3); return p };
 
 // ---- real login (Firebase Auth, owner only) ----
 async function adminLogin() {
   const p = normalizePhone($('adminPhone').value), pass = $('adminPass').value, msg = $('adminMsg');
-  if (!p ||!pass) { msg.innerText = 'Enter phone and password'; return }
+  if (!p || !pass) { msg.innerText = 'Enter phone and password'; return }
   msg.innerText = 'Checking...';
   try { await auth.signInWithEmailAndPassword(p + DOM, pass) }
   catch (e) { msg.innerText = 'Wrong phone or password' }
@@ -155,12 +161,13 @@ function showDash() { if (dashShown) return; dashShown = true; $('loginAdmin').s
 function showSection(s) {
   document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
   $('tab-' + s).classList.add('active');
-  ['views','advert','withdraw','payments','users'].forEach(k => { const el = $('sec-' + k); if (el) el.style.display = (k === s? 'block' : 'none') });
+  ['views','advert','withdraw','payments','users','resets'].forEach(k => { const el = $('sec-' + k); if (el) el.style.display = (k === s ? 'block' : 'none') });
   if (s === 'views') loadPendingViews();
   if (s === 'advert') loadCurrentAdvert();
   if (s === 'withdraw') loadWithdraws();
   if (s === 'payments') loadPayments();
   if (s === 'users') loadUsersOnly();
+  if (s === 'resets') loadResets();
 }
 async function loadMaintStatus() {
   try { const doc = await db.collection('config').doc('site_status').get(); if (doc.exists) MAINT_MODE = doc.data().maintenance || false; updateMaintUI() }
@@ -177,8 +184,8 @@ function updateMaintUI() {
   }
 }
 async function toggleMaintenance() {
-  const newMode =!MAINT_MODE;
-  if (!confirm(newMode? "FUNGA SITE?" : "RUDISHA LIVE?")) return;
+  const newMode = !MAINT_MODE;
+  if (!confirm(newMode ? "FUNGA SITE?" : "RUDISHA LIVE?")) return;
   await db.collection('config').doc('site_status').set({ maintenance: newMode, updatedAt: new Date() }, { merge: true });
   MAINT_MODE = newMode; updateMaintUI();
 }
@@ -229,7 +236,7 @@ async function loadData() {
 async function loadUsersOnly() {
   const usersSnap = await db.collection('users').orderBy('createdAt', 'desc').limit(100).get();
   let html = ''; usersSnap.forEach(doc => {
-    const d = doc.data(), status = d.state === 'paid'? '✅ PAID' : ((d.viewCount >= 2 || d.refLocked)? '🔒 LOCKED' : '🟡 FREE');
+    const d = doc.data(), status = d.state === 'paid' ? '✅ PAID' : ((d.viewCount >= 2 || d.refLocked) ? '🔒 LOCKED' : '🟡 FREE');
     html += `<tr><td>${esc(d.phone)}</td><td style='color:#ffcc00'>${esc(d.balance)}</td><td>${status}</td><td>${esc(d.referredBy || 'Direct')}</td><td>V:${esc(d.viewCount || 0)} R:${esc(d.refTotal || 0)}</td></tr>`;
   });
   $('usersTable').innerHTML = html;
@@ -241,18 +248,18 @@ async function loadPendingViews() {
   snap.forEach(doc => {
     const d = doc.data(), timeStr = d.time?.toDate?.()?.toLocaleString() || '', posted = d.postedFull || d.postedHour || '';
     const imgSrc = String(d.imageBase64 || d.screenshot || '');
-    const safeImg = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(imgSrc) || /^https:\/\//.test(imgSrc)? imgSrc : '';
+    const safeImg = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(imgSrc) || /^https:\/\//.test(imgSrc) ? imgSrc : '';
     IMGS[doc.id] = safeImg;
-    const flags = d.flags && d.flags.length? '⚠️ ' + esc(d.flags.join(' · ')) : '✅ clean';
+    const flags = d.flags && d.flags.length ? '⚠️ ' + esc(d.flags.join(' · ')) : '✅ clean';
     html += `<div class="card" style="border:1px solid gold">
       <div style="display:flex;justify-content:space-between"><b style="color:gold">${esc(d.phone)}</b><span style="color:#00ff88;font-weight:900">${esc(d.views)} views = KES ${esc(d.amount)}</span></div>
       <div style="font-size:10px;color:#aaa;margin-top:4px">Posted: ${esc(posted)} | ${esc(d.diffMins || 0)} mins ago | ${esc(timeStr)}<br>Typed:${esc(d.typedViews || d.views)} | ${flags}</div>
       <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
-        ${safeImg? `<button class="btn" style="background:#fff;color:#000" data-a="img" data-id="${esc(doc.id)}">👁️ VIEW SCREENSHOT</button>` : `<span style="font-size:10px;color:red">No image saved</span>`}
+        ${safeImg ? `<button class="btn" style="background:#fff;color:#000" data-a="img" data-id="${esc(doc.id)}">👁️ VIEW SCREENSHOT</button>` : `<span style="font-size:10px;color:red">No image saved</span>`}
         <button class="btn btn-green" data-a="av" data-id="${esc(doc.id)}" data-ph="${esc(d.phone)}" data-amt="${esc(d.amount)}">✅ APPROVE + PAY</button>
         <button class="btn btn-red" data-a="rv" data-id="${esc(doc.id)}">❌ REJECT</button>
       </div>
-      ${safeImg? `<img src="${esc(safeImg)}" style="width:100%;max-height:200px;object-fit:contain;background:#000;margin-top:8px;border-radius:8px;cursor:pointer" data-a="img" data-id="${esc(doc.id)}">` : ''}
+      ${safeImg ? `<img src="${esc(safeImg)}" style="width:100%;max-height:200px;object-fit:contain;background:#000;margin-top:8px;border-radius:8px;cursor:pointer" data-a="img" data-id="${esc(doc.id)}">` : ''}
     </div>`;
   });
   $('pendingViewsTable').innerHTML = html;
@@ -261,7 +268,7 @@ async function approveView(id, phone, amount) {
   amount = parseInt(amount);
   if (!confirm(`Approve ${phone} KES ${amount}? Pesa itaongezwa balance`)) return;
   const ref = db.collection('pending_views').doc(id), s = await ref.get();
-  if (!s.exists || s.data().status!== 'pending') { alert('Already handled'); loadPendingViews(); return }
+  if (!s.exists || s.data().status !== 'pending') { alert('Already handled'); loadPendingViews(); return }
   await db.collection('users').doc(phone).update({ balance: FV.increment(amount) });
   await ref.update({ status: 'approved', approvedAt: new Date() });
   alert(`✅ Approved ${phone} +KES ${amount}`);
@@ -272,6 +279,8 @@ async function rejectView(id) {
   await db.collection('pending_views').doc(id).update({ status: 'rejected', reason: reason });
   loadPendingViews();
 }
+
+// ---- withdrawals: APPROVE -> Paystack pays automatically ----
 async function loadWithdraws() {
   const snap = await db.collection('pending_withdrawals').where('status', '==', 'pending').get();
   let html = '';
@@ -293,7 +302,7 @@ async function payWithdraw(b) {
     const r = await api('/withdraw', { id: id, phone: phone, amount: rec });
     if (!r.ok) { alert('Paystack: ' + (r.error || 'failed') + '\n(Kama ni "duplicate reference", transfer ilishatumwa - angalia Paystack dashboard)'); return }
     await db.collection('pending_withdrawals').doc(id).update({ status: 'approved', approvedAt: new Date(), paystackStatus: r.status, paystackRef: r.reference });
-    alert(r.status === 'otp'? 'Transfer imeundwa lakini Paystack inataka OTP. Zima OTP kwenye Paystack settings na u-confirm kwenye dashboard.' : '✅ Imetumwa! Paystack status: ' + r.status);
+    alert(r.status === 'otp' ? 'Transfer imeundwa lakini Paystack inataka OTP. Zima OTP kwenye Paystack settings na u-confirm kwenye dashboard.' : '✅ Imetumwa! Paystack status: ' + r.status);
   } catch (e) { alert('Error: ' + e.message) }
   finally { loadWithdraws(); loadData() }
 }
@@ -301,12 +310,14 @@ async function rejectWithdraw(b) {
   const id = b.dataset.id, phone = b.dataset.ph, amt = parseInt(b.dataset.amt);
   if (!confirm(`Kataa withdraw na rudisha KES ${amt} kwa balance ya ${phone}?`)) return;
   const ref = db.collection('pending_withdrawals').doc(id), s = await ref.get();
-  if (!s.exists || s.data().status!== 'pending') { alert('Already handled'); loadWithdraws(); return }
+  if (!s.exists || s.data().status !== 'pending') { alert('Already handled'); loadWithdraws(); return }
   const batch = db.batch();
   batch.update(ref, { status: 'rejected', approvedAt: new Date() });
   batch.update(db.collection('users').doc(phone), { balance: FV.increment(amt) });
   await batch.commit(); loadWithdraws(); loadData();
 }
+
+// ---- unlock payments (80): verify with Paystack, then approve ----
 async function applyPaidUnlock(phone) { await db.collection('users').doc(phone).update({ state: 'paid', expiryTime: Date.now() + 7 * DAY, viewCount: 0, freeDone: 0, paidThisCycle: 0, refResetAt: new Date() }) }
 async function creditReferrer(refPhone) {
   const r = db.collection('users').doc(refPhone), s = await r.get(); if (!s.exists) return;
@@ -318,15 +329,15 @@ async function verifyApprovePayment(b) {
   const code = b.dataset.id; b.disabled = true; b.innerText = 'CHECKING...';
   try {
     const ref = db.collection('payments').doc(code), p = (await ref.get()).data();
-    if (!p || p.status!== 'pending') { alert('Already handled'); return }
+    if (!p || p.status !== 'pending') { alert('Already handled'); return }
     const r = await api('/verify', { reference: code });
     if (!r.ok) { alert('Error: ' + (r.error || 'verify failed')); return }
     if (!r.paid) { alert('Paystack haioni malipo ya KES 80 kwa code hii. Bado hajalipa.'); return }
-    if (r.phone && r.phone!== p.phone) { alert('Namba hailingani: malipo ni ya ' + r.phone + ' lakini ombi ni la ' + p.phone); return }
+    if (r.phone && r.phone !== p.phone) { alert('Namba hailingani: malipo ni ya ' + r.phone + ' lakini ombi ni la ' + p.phone); return }
     await ref.update({ status: 'approved', approvedAt: new Date() });
     await applyPaidUnlock(p.phone);
     const u = (await db.collection('users').doc(p.phone).get()).data();
-    if (u && u.referredBy &&!u.referralPaid) { await creditReferrer(u.referredBy); await db.collection('users').doc(p.phone).update({ referralPaid: true }) }
+    if (u && u.referredBy && !u.referralPaid) { await creditReferrer(u.referredBy); await db.collection('users').doc(p.phone).update({ referralPaid: true }) }
     alert('✅ Imethibitishwa na ' + p.phone + ' amefunguliwa.');
   } catch (e) { alert('Error: ' + e.message) }
   finally { loadPayments(); loadData() }
@@ -339,10 +350,34 @@ async function loadPayments() {
   const snap = await db.collection('payments').orderBy('date', 'desc').limit(50).get(); let html = '';
   snap.forEach(doc => {
     const d = doc.data(), pend = d.status === 'pending';
-    html += `<tr><td>${esc(d.phone)}</td><td>${esc(d.mpesaCode)}</td><td>${esc(d.amount)}</td><td>${esc(d.date?.toDate?.()?.toLocaleString() || '')} - ${esc(d.status)}</td><td>${pend? `<button class="btn btn-green" data-a="pv" data-id="${esc(doc.id)}">VERIFY + APPROVE</button> <button class="btn btn-red" data-a="pr" data-id="${esc(doc.id)}">REJECT</button>` : ''}</td></tr>`;
+    html += `<tr><td>${esc(d.phone)}</td><td>${esc(d.mpesaCode)}</td><td>${esc(d.amount)}</td><td>${esc(d.date?.toDate?.()?.toLocaleString() || '')} - ${esc(d.status)}</td><td>${pend ? `<button class="btn btn-green" data-a="pv" data-id="${esc(doc.id)}">VERIFY + APPROVE</button> <button class="btn btn-red" data-a="pr" data-id="${esc(doc.id)}">REJECT</button>` : ''}</td></tr>`;
   });
   $('paymentsTable').innerHTML = html;
 }
+async function loadResets() {
+  const snap = await db.collection('password_resets').where('status', '==', 'pending').get(); let html = '';
+  for (const doc of snap.docs) {
+    const d = doc.data(); let match = '❓ user not found';
+    try { const u = await db.collection('users').doc(d.phone).get(); if (u.exists) match = String(u.data().gmail || '').toLowerCase() === d.gmail ? '✅ Gmail matches registration' : '⚠️ Gmail DIFFERENT from registration' } catch (e) {}
+    html += `<div class="card" style="border:1px solid gold"><b style="color:gold">${esc(d.phone)}</b> | ${esc(d.gmail)}<br><span style="font-size:10px;color:#aaa">${match}</span>
+      <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap"><button class="btn btn-green" data-a="rs" data-id="${esc(doc.id)}">🔑 SET NEW PASSWORD</button><button class="btn btn-red" data-a="rd" data-id="${esc(doc.id)}">🗑️ DELETE</button></div></div>`;
+  }
+  $('resetsTable').innerHTML = html || '<p style="font-size:11px;color:#aaa">No requests</p>';
+}
+async function resetPassword(b) {
+  if (!apiReady()) return;
+  const phone = b.dataset.id, pw = prompt(`New password for ${phone} (min 6). Utamtumia kwa WhatsApp:`);
+  if (!pw) return; if (pw.length < 6) { alert('Min 6 characters'); return }
+  b.disabled = true;
+  try {
+    const r = await api('/resetpw', { phone: phone, password: pw });
+    if (!r.ok) { alert('Error: ' + (r.error || 'failed')); return }
+    await db.collection('password_resets').doc(phone).delete();
+    alert('✅ Password imebadilishwa. Mtumie ' + phone + ' password: ' + pw);
+  } catch (e) { alert('Error: ' + e.message) }
+  finally { b.disabled = false; loadResets() }
+}
+async function deleteReset(id) { if (!confirm('Futa ombi hili?')) return; await db.collection('password_resets').doc(id).delete(); loadResets() }
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-a]'); if (!b) return;
   const a = b.dataset.a, id = b.dataset.id;
@@ -353,7 +388,9 @@ document.addEventListener('click', e => {
   else if (a === 'wr') rejectWithdraw(b);
   else if (a === 'pv') verifyApprovePayment(b);
   else if (a === 'pr') rejectPayment(id);
+  else if (a === 'rs') resetPassword(b);
+  else if (a === 'rd') deleteReset(id);
 });
 </script>
 </body>
-</html>
+  </html>
